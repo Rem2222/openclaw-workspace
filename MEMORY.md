@@ -67,6 +67,27 @@
 - Удалять устаревшую информацию
 - Добавлять значимые события, решения, уроки
 
+## Git бэкап (настроен 2026-03-14)
+
+**Репозиторий:** https://github.com/Rem2222/openclaw-workspace (приватный)
+
+**SSH-ключ для бэкапа:**
+- Файл: `~/.ssh/id_ed25519_openclaw`
+- Отпечаток: `SHA256:LBXIwrFV3zw4/I3sQrwSwmdYoliYjtan2uBi43SsDqc`
+- Comment: `openclaw-backup@rem`
+
+**Авто-бэкап:** настроен в HEARTBEAT.md — пушится при каждом сердцебиении если есть изменения
+
+**Команды для ручного бэкапа:**
+```bash
+cd ~/.openclaw/workspace
+git add .
+git commit -m "Update memory"
+git push
+```
+
+---
+
 ## Правила работы от Rem (обязательно соблюдать!)
 
 ### Правило 1: Предупреждение о длительных операциях
