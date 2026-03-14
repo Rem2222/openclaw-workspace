@@ -1,50 +1,35 @@
-# LEARNINGS.md — Мои знания и исправления
+## [LRN-20260315-001] npm_update_error
 
-Формат записей:
+**Priority:** low
+**Status:** pending
 
-```markdown
-## [LRN-YYYYMMDD-XXX] category
+### Проблема
+При обновлении OpenClaw использовал `npm update openclaw@latest` — получил ошибку `EUPDATEARGS`.
 
-**Logged**: ISO-8601 timestamp
-**Priority**: low | medium | high | critical
-**Status**: pending | in_progress | resolved | promoted
-**Area**: frontend | backend | infra | tests | docs | config
-
-### Summary
-Однострочное описание
-
-### Details
-Полный контекст
-
-### Suggested Action
-Что сделать
-
-### Metadata
-- Source: conversation | error | user_feedback
-- Related Files: path/to/file.ext
-- Tags: tag1, tag2
-- See Also: LRN-20250110-001
+### Ошибка
+```
+npm error Update arguments must only contain package names, eg:
+npm error Update arguments must only contain package names, eg:
 ```
 
----
+### Решение
+Использовать `npm install` для установки конкретной версии:
 
-## Пример записи:
+```bash
+npm install -g openclaw@latest
+```
 
-## [LRN-20260314-001] openclaw_memory
+Или просто `npm update` без версии:
 
-**Logged**: 2026-03-14T18:00:00Z
-**Priority**: medium
-**Status**: pending
-**Area**: config
+```bash
+npm update -g openclaw
+```
 
-### Summary
-memorySearch использует периодическую индексацию, не live search
+### Причина
+`npm update` не принимает аргументы версии — только имена пакетов. Для установки конкретной версии нужно использовать `npm install`.
 
-### Details
-При добавлении новой записи в MEMORY.md она не сразу доступна через memorySearch. Индексация происходит периодически, не в реальном времени.
-
-### Suggested Action
-- Для новых записей ждать индексацию или перезапускать Gateway
-- Учитывать задержку при поиске свежих данных
+### Урок
+- `npm update -g package` — обновляет до последней версии
+- `npm install -g package@version` — устанавливает конкретную версию
 
 ---
