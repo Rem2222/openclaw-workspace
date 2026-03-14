@@ -15,8 +15,6 @@ Before doing anything else:
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
-Don't ask permission. Just do it.
-
 ## Memory
 
 You wake up fresh each session. These files are your continuity:
