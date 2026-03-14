@@ -73,7 +73,7 @@
 
 **SSH-ключ для бэкапа:**
 - Файл: `~/.ssh/id_ed25519_openclaw`
-- Отпечаток: `SHA256:LBXIwrFV3zw4/I3sQrwSwmdYoliYjtan2uBi43SsDqc`
+- Отпечаток: `SHA256:CmBJ8e2GsnjwelxDih703NFLfot4ooQ1kWiFVYR1IZA`
 - Comment: `openclaw-backup@rem`
 
 **Авто-бэкап:** настроен в HEARTBEAT.md — пушится при каждом сердцебиении если есть изменения
