@@ -2,18 +2,6 @@
 
 # Регулярные задачи для сердцебиений
 
-## 🔄 Авто-бэкап в GitHub
-
-**При каждом сердцебиении:**
-```bash
-cd ~/.openclaw/workspace
-if [ -n "$(git status --porcelain)" ]; then
-  git add .
-  git commit -m "Auto backup: $(date '+%Y-%m-%d %H:%M')"
-  git push origin main 2>/dev/null || true
-fi
-```
-
 ## 🧠 Self-Improvement
 
 **При каждом сердцебиении:**
