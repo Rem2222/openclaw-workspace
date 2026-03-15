@@ -40,7 +40,7 @@
 
 **Logged**: 2026-03-14T16:50:00Z
 **Priority**: high
-**Status**: pending
+**Status**: resolved
 **Area**: config
 
 ### Summary
@@ -56,8 +56,14 @@ ModuleNotFoundError: No module named 'duckduckgo_search'
 - Python 3.12.3
 - OpenClaw workspace
 
-### Suggested Fix
-- Проверить путь к pip
-- Установить через `python3 -m pip install duckduckgo-search --user`
+### Resolution
+**2026-03-15 18:07** — Ошибка закрыта как нерелевантная.
+
+**Причина:** У нас уже есть рабочий инструмент поиска — **web_search (Brave API)**:
+- Используется через tool `web_search(query="...", count=5)`
+- Работает стабильно, не требует установки дополнительных пакетов
+- DuckDuckGo не нужен — функционал уже покрыт
+
+**Решение:** Оставить как есть, не устанавливать duckduckgo-search.
 
 ---

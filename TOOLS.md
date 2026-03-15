@@ -37,4 +37,10 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
+## 🖥 TUI (Terminal UI)
+
+**Разрыв строки в вводе:** `Ctrl+Enter`
+
+---
+
 Add whatever helps you do your job. This is your cheat sheet.
