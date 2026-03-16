@@ -1,0 +1,65 @@
+#!/bin/bash
+# OpenViking CLI wrapper
+
+WORKSPACE="$HOME/.openclaw/workspace"
+
+command="$1"
+shift
+
+case "$command" in
+  search)
+    node "$WORKSPACE/skills/openviking-search/openviking-search.js" search "$@"
+    ;;
+  store)
+    subcmd="$1"
+    shift
+    case "$subcmd" in
+      daily|memory|topic|list|status)
+        node "$WORKSPACE/skills/openviking-store/openviking-store.js" "$subcmd" "$@"
+        ;;
+      *)
+        echo "Usage: viking store <daily|memory|topic|list|status>"
+        exit 1
+        ;;
+    esac
+    ;;
+  info)
+    subcmd="$1"
+    shift
+    case "$subcmd" in
+      structure|tree|stats|recent|memory|overview|all)
+        node "$WORKSPACE/skills/openviking-info/openviking-info.js" "$subcmd" "$@"
+        ;;
+      *)
+        node "$WORKSPACE/skills/openviking-info/openviking-info.js" help
+        ;;
+    esac
+    ;;
+  status)
+    echo "OpenViking Status:"
+    echo "  Search: $(node "$WORKSPACE/skills/openviking-search/openviking-search.js" status 2>&1 | head -1)"
+    echo "  Store:  $(node "$WORKSPACE/skills/openviking-store/openviking-store.js" status 2>&1 | head -1)"
+    ;;
+  *)
+    echo "OpenViking CLI — контекстная база знаний"
+    echo ""
+    echo "Usage:"
+    echo "  viking search <query>          - поиск по памяти"
+    echo "  viking store <cmd> [args]      - хранение информации"
+    echo "    - daily <title> [content]    - в дневник дня"
+    echo "    - memory <section> [content] - в MEMORY.md"
+    echo "    - topic <t> <title> [content]- в тематический файл"
+    echo "  viking info <cmd> [args]       - информация"
+    echo "    - structure [dir]            - структура workspace"
+    echo "    - stats                      - статистика файлов"
+    echo "    - recent [limit]             - последние изменения"
+    echo "    - memory                     - обзор MEMORY.md"
+    echo "    - all                        - полный отчёт"
+    echo "  viking status                  - статус системы"
+    echo ""
+    echo "Examples:"
+    echo "  viking search 'ollama настройка'"
+    echo "  viking store daily 'Урок' 'Текст > Мозг'"
+    echo "  viking info stats"
+    ;;
+esac
