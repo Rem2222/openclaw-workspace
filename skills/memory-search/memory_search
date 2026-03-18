@@ -1,0 +1,169 @@
+#!/bin/bash
+# memory_search — Универсальный поиск по памяти
+#
+# Использование:
+#   memory_search "Запрос" [Опции]
+#
+# Движки:
+#   file        — Файловый поиск через OpenClaw (по умолчанию)
+#   openviking  — Семантический поиск через OpenViking
+#   hybrid      — Комбинированный поиск
+
+set -e
+
+# Аргументы
+QUERY=""
+ENGINE="file"
+MAX_RESULTS=10
+MIN_SCORE=0.3
+
+# Парсинг аргументов
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --engine)
+            ENGINE="$2"
+            shift 2
+            ;;
+        --max-results)
+            MAX_RESULTS="$2"
+            shift 2
+            ;;
+        --min-score)
+            MIN_SCORE="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Использование: memory_search \"Запрос\" [Опции]"
+            echo ""
+            echo "Аргументы:"
+            echo "  --engine <engine>     Движок: file, openviking, hybrid (default: file)"
+            echo "  --max-results <n>     Макс. результатов (default: 10)"
+            echo "  --min-score <n>       Мин. score (default: 0.3)"
+            echo ""
+            echo "Примеры:"
+            echo "  memory_search \"как меня зовут\""
+            echo "  memory_search \"как меня зовут\" --engine openviking"
+            echo "  memory_search \"как меня зовут\" --engine hybrid --max-results 5"
+            exit 0
+            ;;
+        *)
+            if [ -z "$QUERY" ]; then
+                QUERY="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Проверка аргументов
+if [ -z "$QUERY" ]; then
+    echo "❌ Ошибка: Запрос обязателен"
+    echo "Использование: memory_search \"Запрос\" [Опции]"
+    exit 1
+fi
+
+# Проверка движка
+if [[ ! "$ENGINE" =~ ^(file|openviking|hybrid)$ ]]; then
+    echo "❌ Ошибка: Неверный движок '$ENGINE'"
+    echo "Допустимые значения: file, openviking, hybrid"
+    exit 1
+fi
+
+# Функция поиска через OpenClaw (file engine)
+search_file() {
+    local query="$1"
+    local max_results="$2"
+    local min_score="$3"
+    
+    echo "📁 Файловый поиск (OpenClaw): \"$query\""
+    
+    # Используем встроенную команду OpenClaw
+    openclaw memory search "$query" --max-results "$max_results" 2>/dev/null || {
+        echo "⚠️ Файловый поиск недоступен"
+        return 1
+    }
+}
+
+# Функция поиска через OpenViking (openviking engine)
+search_openviking() {
+    local query="$1"
+    local max_results="$2"
+    local min_score="${3:-0.3}"
+    
+    echo "🔍 Семантический поиск (OpenViking): \"$query\""
+    
+    # Проверка доступности OpenViking
+    if [[ ! -d "$HOME/.openviking/venv" ]]; then
+        echo "❌ OpenViking не установлен"
+        return 1
+    fi
+    
+    # Активация окружения
+    source ~/.openviking/venv/bin/activate 2>/dev/null || {
+        echo "❌ Не удалось активировать OpenViking окружение"
+        return 1
+    }
+    
+    # Поиск
+    python3 << PYEOF
+import sys
+sys.path.insert(0, '/home/rem/.openclaw/skills/openviking-memory/lib')
+from openviking_client import OpenVikingMemory
+
+memory = OpenVikingMemory()
+try:
+    results = memory.search(query="$query", top_k=$max_results)
+    
+    if not results:
+        print(f"❌ Ничего не найдено для запроса: $query")
+        sys.exit(0)
+    
+    print(f"🔍 Найдено {len(results)} результатов для: \"$query\"\n")
+    
+    score_threshold = $min_score
+    for i, r in enumerate(results, 1):
+        score = r.get('score', 0)
+        if score >= score_threshold:
+            print(f"{i}. {r['uri']} (score: {score:.4f})")
+            abstract = r.get('abstract', '')
+            if abstract:
+                print(f"   {abstract[:200]}...")
+            print()
+finally:
+    memory.close()
+PYEOF
+}
+
+# Функция гибридного поиска
+search_hybrid() {
+    local query="$1"
+    local max_results="$2"
+    local min_score="$3"
+    
+    echo "🔀 Гибридный поиск: \"$query\""
+    echo ""
+    
+    # Запускаем оба поиска параллельно
+    local half_results=$((max_results / 2 + 1))
+    
+    # OpenViking поиск
+    search_openviking "$query" "$half_results"
+    echo ""
+    
+    # Файловый поиск
+    echo "---"
+    search_file "$query" "$half_results" "$min_score"
+}
+
+# Main: выбор движка
+case $ENGINE in
+    file)
+        search_file "$QUERY" "$MAX_RESULTS" "$MIN_SCORE"
+        ;;
+    openviking)
+        search_openviking "$QUERY" "$MAX_RESULTS" "$MIN_SCORE"
+        ;;
+    hybrid)
+        search_hybrid "$QUERY" "$MAX_RESULTS" "$MIN_SCORE"
+        ;;
+esac

@@ -7,11 +7,22 @@
  * - Сохранение в дневник дня
  * - Сохранение в долгосрочную память (MEMORY.md)
  * - Создание тематических файлов
+ * - Загрузку в OpenViking векторную базу
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+
+// Import OpenViking HTTP client
+const HTTP_CLIENT_PATH = path.join(__dirname, '..', 'openviking-search', 'openviking-http.js');
+let openvikingClient = null;
+
+try {
+  openvikingClient = require(HTTP_CLIENT_PATH);
+} catch (e) {
+  // HTTP client not available — will skip OpenViking upload
+}
 
 const CONFIG = {
   WORKSPACE: process.env.HOME + '/.openclaw/workspace',
@@ -23,6 +34,81 @@ const CONFIG = {
  */
 function getTodayDate() {
   return new Date().toISOString().split('T')[0];
+}
+
+/**
+ * Форматирование заголовка для OpenViking
+ */
+function formatVikingTitle(title, type, extra = '') {
+  const prefix = {
+    daily: '[Дневник]',
+    memory: '[Память]',
+    topic: '[Тема]',
+  }[type] || '[Запись]';
+  
+  if (extra) {
+    return `${prefix} ${title} — ${extra}`;
+  }
+  return `${prefix} ${title}`;
+}
+
+/**
+ * Форматирование контента для OpenViking
+ */
+function formatVikingContent(title, content, type, metadata = {}) {
+  const lines = [
+    `# ${title}`,
+    ``,
+    `**Тип:** ${type === 'daily' ? 'Дневник' : type === 'memory' ? 'Память' : 'Тема'}`,
+    `**Дата:** ${getTodayDate()}`,
+    `**Время:** ${new Date().toLocaleTimeString('ru-RU')}`,
+    '',
+    '---',
+    '',
+    content,
+  ];
+  
+  // Add metadata
+  if (metadata.file) {
+    lines.push(`\n\n_Источник: ${metadata.file}_`);
+  }
+  if (metadata.topic) {
+    lines.push(`_Тема: ${metadata.topic}_`);
+  }
+  if (metadata.section) {
+    lines.push(`_Раздел: ${metadata.section}_`);
+  }
+  
+  return lines.join('\n');
+}
+
+/**
+ * Загрузка в OpenViking
+ */
+async function uploadToOpenViking(title, content, type, metadata = {}) {
+  if (!openvikingClient) {
+    console.log('  ⚠️  OpenViking HTTP client не доступен — пропуск загрузки');
+    return { success: false, reason: 'client_unavailable' };
+  }
+  
+  const formattedTitle = formatVikingTitle(title, type, metadata.topic || metadata.section || '');
+  const formattedContent = formatVikingContent(title, content, type, metadata);
+  
+  try {
+    console.log('  📤 Загрузка в OpenViking...');
+    
+    const result = await openvikingClient.addResource({
+      content: formattedContent,
+      title: formattedTitle,
+      description: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+    });
+    
+    console.log(`  ✅ Ресурс добавлен: ${result.uri}`);
+    return { success: true, ...result };
+  } catch (error) {
+    console.log(`  ❌ Ошибка загрузки в OpenViking: ${error.message}`);
+    return { success: false, error: error.message };
+  }
 }
 
 /**
@@ -61,6 +147,7 @@ function storeInDailyLog(title, content, date = null) {
     file: path.relative(CONFIG.WORKSPACE, filePath),
     title,
     length: entry.length,
+    type: 'daily',
   };
 }
 
@@ -88,7 +175,7 @@ function storeInMemory(section, content, append = true) {
     // Раздел существует — добавляем в него
     if (append) {
       // Ищем конец раздела (следующий ## или конец файла)
-      const sectionMatch = fileContent.match(new RegExp(`(## ${section}[\\s\\S]*?)(?=## |$)`, 'm'));
+      const sectionMatch = fileContent.match(new RegExp(`(## ${section}[\s\S]*?)(?=## |$)`, 'm'));
       
       if (sectionMatch) {
         // Добавляем новую запись в раздел
@@ -111,6 +198,7 @@ function storeInMemory(section, content, append = true) {
     file: 'MEMORY.md',
     section,
     length: entryContent.length,
+    type: 'memory',
   };
 }
 
@@ -149,6 +237,7 @@ function storeInTopic(topic, title, content) {
     topic,
     title,
     length: entry.length,
+    type: 'topic',
   };
 }
 
@@ -189,10 +278,37 @@ function smartStore(data, options = {}) {
  * CLI
  */
 if (require.main === module) {
-  const command = process.argv[2] || 'help';
-  const args = process.argv.slice(3);
+  const rawArgs = process.argv.slice(2);
   
-  function main() {
+  // Парсинг аргументов с поддержкой флагов
+  function parseArgsWithFlags(args) {
+    const result = {
+      command: null,
+      args: [],
+      flags: {},
+    };
+    
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      
+      if (arg === '--viking') {
+        result.flags.viking = true;
+      } else if (!result.command) {
+        result.command = arg;
+      } else {
+        result.args.push(arg);
+      }
+    }
+    
+    return result;
+  }
+  
+  const parsed = parseArgsWithFlags(rawArgs);
+  const command = parsed.command || 'help';
+  const args = parsed.args;
+  const flags = parsed.flags;
+  
+  async function main() {
     try {
       if (command === 'daily') {
         // Сохранение в дневник дня
@@ -201,6 +317,11 @@ if (require.main === module) {
         const result = storeInDailyLog(title, content);
         console.log('Сохранено в дневник:');
         console.log(JSON.stringify(result, null, 2));
+        
+        // Загрузка в OpenViking
+        if (flags.viking) {
+          await uploadToOpenViking(title, content, 'daily', { file: result.file });
+        }
       }
       else if (command === 'memory') {
         // Сохранение в MEMORY.md
@@ -209,6 +330,11 @@ if (require.main === module) {
         const result = storeInMemory(section, content);
         console.log('Сохранено в MEMORY.md:');
         console.log(JSON.stringify(result, null, 2));
+        
+        // Загрузка в OpenViking
+        if (flags.viking) {
+          await uploadToOpenViking(content, content, 'memory', { section, file: result.file });
+        }
       }
       else if (command === 'topic') {
         // Сохранение в тематический файл
@@ -218,6 +344,11 @@ if (require.main === module) {
         const result = storeInTopic(topic, title, content);
         console.log('Сохранено в тематический файл:');
         console.log(JSON.stringify(result, null, 2));
+        
+        // Загрузка в OpenViking
+        if (flags.viking) {
+          await uploadToOpenViking(title, content, 'topic', { topic, file: result.file });
+        }
       }
       else if (command === 'list') {
         // Список тематических файлов
@@ -244,21 +375,27 @@ if (require.main === module) {
           const files = fs.readdirSync(memoryDir).filter(f => f.endsWith('.md'));
           console.log('    Memory files:', files.length);
         }
+        
+        console.log('  OpenViking HTTP client:', openvikingClient ? '✅' : '❌');
       }
       else {
         console.log('OpenViking Store — хранение информации');
         console.log('');
         console.log('Usage:');
-        console.log('  store daily <title> [content...]     - сохранить в дневник дня');
-        console.log('  store memory <section> [content...]  - сохранить в MEMORY.md');
-        console.log('  store topic <topic> <title> [content] - сохранить в тематический файл');
+        console.log('  store daily <title> [content...] [--viking]     - сохранить в дневник дня');
+        console.log('  store memory <section> [content...] [--viking]  - сохранить в MEMORY.md');
+        console.log('  store topic <topic> <title> [content] [--viking] - сохранить в тематический файл');
         console.log('  store list                           - список тематических файлов');
         console.log('  store status                         - статус системы');
         console.log('');
+        console.log('Options:');
+        console.log('  --viking    Загрузить запись в OpenViking векторную базу');
+        console.log('');
         console.log('Examples:');
         console.log('  store daily "Урок дня" "Изучил ollama"');
-        console.log('  store memory "Уроки" "Текст > Мозг"');
-        console.log('  store topic projects "Проект X" "Описание проекта"');
+        console.log('  store daily "Урок дня" "Изучил ollama" --viking');
+        console.log('  store memory "Уроки" "Текст > Мозг" --viking');
+        console.log('  store topic projects "Проект X" "Описание проекта" --viking');
       }
     } catch (error) {
       console.error('Error:', error.message);
@@ -269,4 +406,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { storeInDailyLog, storeInMemory, storeInTopic, smartStore, CONFIG };
+module.exports = { storeInDailyLog, storeInMemory, storeInTopic, smartStore, uploadToOpenViking, CONFIG };

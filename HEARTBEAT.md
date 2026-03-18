@@ -6,6 +6,20 @@
 
 **При каждом сердцебиении:**
 
+## Авто-сохранение в OpenViking
+
+### При каждом heartbeat (если прошло >1 часа)
+```bash
+# Сохранить контекст текущей сессии
+~/.openclaw/skills/openviking-memory/scripts/auto_save "${SESSION_ID:-session-$(date +%Y%m%d-%H%M%S)}" "Session Context" "$(date +%Y-%m-%d)" < /dev/null
+```
+
+### Вечером (при "на сегодня достаточно")
+```bash
+# Архивировать день в OpenViking
+~/.openclaw/skills/openviking-memory/scripts/auto_save "daily-$(date +%Y%m%d)" "Daily Archive" "$(date +%Y-%m-%d)" < /dev/null
+```
+
 ## Ежедневный регламент
 
 ### Утро (если онлайн)
@@ -23,10 +37,20 @@
   - Запомнить варианты использования
   - Обновить контекст для будущих предложений
 
+### Авто-сохранение в OpenViking
+```bash
+# Сохранить контекст текущей сессии
+~/.openclaw/skills/openviking-memory/scripts/auto_save
+
+# Архивировать день в OpenViking
+ov_store "$(cat memory/2026-03-17-*.md)" "Daily Archive" "$(date +%Y-%m-%d)"
+```
+
 ### **Последняя проверка дня** (при "на сегодня достаточно")
 - **Итоговая сводка** — темы, задачи, токены
 - **Проверка работы memory** — тестовый запрос к memory и ожидание результата
 - **Git бэкап** — коммит + пуш в GitHub
+- **OpenViking Daily Archive** — архивировать день в OpenViking
 
 ---
 

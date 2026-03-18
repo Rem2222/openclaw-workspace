@@ -1,0 +1,165 @@
+#!/bin/bash
+# memory_get — Чтение контента из памяти
+#
+# Использование:
+#   memory_get "Путь_или_URI" [Опции]
+#
+# Поддерживаемые форматы:
+#   Файл: memory/2026-03-17.md
+#   OpenViking: viking://resources/memory-abc123
+
+set -e
+
+# Аргументы
+PATH_OR_URI=""
+LEVEL="overview"
+FROM_LINE=1
+LIMIT=""
+
+# Парсинг аргументов
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --level)
+            LEVEL="$2"
+            shift 2
+            ;;
+        --from)
+            FROM_LINE="$2"
+            shift 2
+            ;;
+        --limit)
+            LIMIT="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Использование: memory_get \"Путь_или_URI\" [Опции]"
+            echo ""
+            echo "Аргументы:"
+            echo "  --level <level>     Уровень для OpenViking: abstract, overview, read (default: overview)"
+            echo "  --from <line>       Начальная строка для файла (default: 1)"
+            echo "  --limit <lines>     Количество строк (default: все)"
+            echo ""
+            echo "Примеры:"
+            echo "  memory_get \"memory/2026-03-17.md\""
+            echo "  memory_get \"viking://resources/memory-abc123\" --level overview"
+            echo "  memory_get \"memory/2026-03-17.md\" --from 10 --limit 50"
+            exit 0
+            ;;
+        *)
+            if [ -z "$PATH_OR_URI" ]; then
+                PATH_OR_URI="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Проверка аргументов
+if [ -z "$PATH_OR_URI" ]; then
+    echo "❌ Ошибка: Путь или URI обязателен"
+    echo "Использование: memory_get \"Путь_или_URI\" [Опции]"
+    exit 1
+fi
+
+# Проверка уровня
+if [[ ! "$LEVEL" =~ ^(abstract|overview|read)$ ]]; then
+    echo "❌ Ошибка: Неверный уровень '$LEVEL'"
+    echo "Допустимые значения: abstract, overview, read"
+    exit 1
+fi
+
+# Функция чтения файла
+read_file() {
+    local filepath="$1"
+    local from_line="$2"
+    local limit="$3"
+    
+    # Проверка existence файла
+    if [ ! -f "$filepath" ]; then
+        echo "❌ Файл не найден: $filepath"
+        return 1
+    fi
+    
+    echo "📖 Чтение файла: $filepath"
+    echo ""
+    echo "=" . 60
+    
+    if [ -n "$LIMIT" ]; then
+        sed -n "${from_line},$((from_line + limit - 1))p" "$filepath"
+    else
+        tail -n +"$from_line" "$filepath"
+    fi
+    
+    echo "=" . 60
+}
+
+# Функция чтения OpenViking URI
+read_openviking() {
+    local uri="$1"
+    local level="$2"
+    
+    echo "📖 Чтение OpenViking (уровень: $level): $uri"
+    echo ""
+    
+    # Проверка доступности OpenViking
+    if [[ ! -d "$HOME/.openviking/venv" ]]; then
+        echo "❌ OpenViking не установлен"
+        return 1
+    fi
+    
+    # Активация окружения
+    source ~/.openviking/venv/bin/activate 2>/dev/null || {
+        echo "❌ Не удалось активировать OpenViking окружение"
+        return 1
+    }
+    
+    # Чтение
+    python3 << PYEOF
+import sys
+sys.path.insert(0, '/home/rem/.openclaw/skills/openviking-memory/lib')
+from openviking_client import OpenVikingMemory
+
+memory = OpenVikingMemory()
+try:
+    content = memory.read(uri="$uri", level="$level")
+    
+    if not content:
+        print(f"❌ Контент не найден по URI: $uri")
+        sys.exit(0)
+    
+    print("=" . 60)
+    print(content)
+    print("=" . 60)
+finally:
+    memory.close()
+PYEOF
+}
+
+# Main: определение типа пути
+if [[ "$PATH_OR_URI" == viking://* ]]; then
+    # OpenViking URI
+    read_openviking "$PATH_OR_URI" "$LEVEL"
+else
+    # Файловый путь
+    
+    # Проверка абсолютного пути
+    if [[ "$PATH_OR_URI" == /* ]]; then
+        FILEPATH="$PATH_OR_URI"
+    else
+        # Относительный путь — пробуем разные варианты
+        if [ -f "$PATH_OR_URI" ]; then
+            FILEPATH="$PATH_OR_URI"
+        elif [ -f "~/.openclaw/workspace/$PATH_OR_URI" ]; then
+            FILEPATH="~/.openclaw/workspace/$PATH_OR_URI"
+        elif [ -f "~/.openclaw/workspace/memory/$PATH_OR_URI" ]; then
+            FILEPATH="~/.openclaw/workspace/memory/$PATH_OR_URI"
+        elif [ -f "~/.openclaw/memory/$PATH_OR_URI" ]; then
+            FILEPATH="~/.openclaw/memory/$PATH_OR_URI"
+        else
+            echo "❌ Файл не найден: $PATH_OR_URI"
+            exit 1
+        fi
+    fi
+    
+    read_file "$FILEPATH" "$FROM_LINE" "$LIMIT"
+fi

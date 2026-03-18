@@ -3,11 +3,12 @@
 /**
  * OpenViking Search — семантический поиск по контекстной базе знаний
  * 
- * ВЕРСИЯ 2.0: Прямой поиск по файлам workspace без зависимости от API
+ * ВЕРСИЯ 3.0: Интеграция с OpenViking HTTP API
  * 
  * Поддерживает:
  * - Текстовый поиск (grep) по MEMORY.md и memory/*.md
- * - Семантический поиск через OpenViking (когда API будет готов)
+ * - Семантический поиск через OpenViking HTTP API
+ * - Комбинированный поиск (текстовый + семантический)
  * - Возврат результатов с citation
  */
 
@@ -15,11 +16,51 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// Import HTTP client for semantic search
+const httpClient = require('./openviking-http');
+
 const CONFIG = {
   WORKSPACE: process.env.HOME + '/.openclaw/workspace',
   TOP_K: parseInt(process.env.OPENVIKING_TOP_K) || 10,
   CONTEXT_LINES: parseInt(process.env.OPENVIKING_CONTEXT) || 3,
 };
+
+/**
+ * Режим AGENT — для интеграции с OpenClaw
+ * Возвращает отформатированную строку для вывода пользователю
+ */
+async function agentSearch(query, options = {}) {
+  const limit = options.limit || 5;
+  
+  // Семантический поиск
+  const results = await httpClient.search(query, { limit });
+  
+  if (!results || results.length === 0) {
+    return '❌ Ничего не найдено в памяти по запросу: ' + query;
+  }
+  
+  const lines = [
+    '',
+    `🔍 Из памяти:`,
+  ];
+  
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    const type = r.context_type === 'memory' ? '🧠' : '📄';
+    const num = i + 1;
+    const uri = r.uri.replace('viking://resources/', '').replace('viking://agent/', '');
+    
+    lines.push(``);
+    lines.push(`[${num}] ${type} ${uri}`);
+    
+    if (r.abstract) {
+      const abstract = r.abstract.length > 150 ? r.abstract.substring(0, 147) + '...' : r.abstract;
+      lines.push(`    ${abstract}`);
+    }
+  }
+  
+  return lines.join('\n');
+}
 
 /**
  * Основной поиск — комбинация текстового и семантического
@@ -35,13 +76,24 @@ async function searchViking(query, options = {}) {
   // 1. Текстовый поиск (grep) — быстрый и надёжный
   const textResults = textualSearch(query, options);
   if (textResults.results.length > 0) {
-    results.results.push(...textResults.results);
+    results.results.push(...textResults.results.map(r => ({ ...r, source_type: 'text' })));
     textResults.results.forEach(r => results.sources.add(r.source));
   }
   
-  // 2. Семантический поиск (когда OpenViking API будет готов)
-  // const semanticResults = await semanticSearch(query, options);
-  // results.results.push(...semanticResults.results);
+  // 2. Семантический поиск через OpenViking HTTP API
+  try {
+    const semanticResults = await httpClient.semanticSearch(query, { limit: CONFIG.TOP_K });
+    if (semanticResults.results && semanticResults.results.length > 0) {
+      results.results.push(...semanticResults.results.map(r => ({ 
+        ...r, 
+        source_type: 'semantic',
+        score: r.score || 1.0 
+      })));
+      semanticResults.results.forEach(r => results.sources.add(r.uri || 'semantic'));
+    }
+  } catch (error) {
+    console.error('Semantic search failed:', error.message);
+  }
   
   // Сортировка и тримминг
   results.results.sort((a, b) => b.score - a.score);
@@ -52,6 +104,25 @@ async function searchViking(query, options = {}) {
   results.sources = Array.from(results.sources);
   
   return results;
+}
+
+/**
+ * Только семантический поиск
+ */
+async function semanticOnly(query, options = {}) {
+  try {
+    return await httpClient.semanticSearch(query, { limit: CONFIG.TOP_K });
+  } catch (error) {
+    console.error('Semantic search failed:', error.message);
+    return { query, count: 0, results: [] };
+  }
+}
+
+/**
+ * Только текстовый поиск
+ */
+function textOnly(query, options = {}) {
+  return textualSearch(query, options);
 }
 
 /**
@@ -179,12 +250,10 @@ function partialMatchScore(text, term) {
 }
 
 /**
- * Семантический поиск через OpenViking API (заглушка)
+ * Семантический поиск через OpenViking HTTP API
  */
 async function semanticSearch(query, options = {}) {
-  // TODO: Интеграция с OpenViking API когда endpoint будет готов
-  // Пока возвращает пустой результат
-  return { query, count: 0, results: [], type: 'semantic' };
+  return await httpClient.semanticSearch(query, options);
 }
 
 /**
@@ -232,6 +301,38 @@ function truncate(text, maxLen) {
  * Форматирование вывода для человека
  */
 function formatResultsHuman(results) {
+  // Handle array format (raw semantic search results)
+  if (Array.isArray(results)) {
+    if (results.length === 0) {
+      return '❌ Ничего не найдено';
+    }
+    
+    const lines = [
+      '',
+      `🔍 Найдено: ${results.length} результатов (semantic)`,
+      '',
+    ];
+    
+    for (let i = 0; i < Math.min(results.length, 5); i++) {
+      const r = results[i];
+      const type = r.context_type === 'memory' ? '🧠' : '📄';
+      const scoreStr = r.score ? ` (score: ${r.score.toFixed(3)})` : '';
+      lines.push(`  ${type} ${r.uri}${scoreStr}`);
+      if (r.abstract) {
+        const abstract = r.abstract.length > 120 ? r.abstract.substring(0, 117) + '...' : r.abstract;
+        lines.push(`     ${abstract}`);
+      }
+      lines.push('');
+    }
+    
+    if (results.length > 5) {
+      lines.push(`  ... и ещё ${results.length - 5} результатов`);
+    }
+    
+    return lines.join('\n');
+  }
+  
+  // Handle object format (combined/text search results)
   if (results.count === 0) {
     return '❌ Ничего не найдено по запросу: ' + results.query;
   }
@@ -259,6 +360,27 @@ function formatResultsHuman(results) {
 }
 
 /**
+ * Parse CLI arguments
+ */
+function parseArgs(args) {
+  const result = {
+    query: '',
+    flags: {},
+  };
+  
+  for (const arg of args) {
+    if (arg.startsWith('--')) {
+      const key = arg.slice(2);
+      result.flags[key] = true;
+    } else {
+      result.query += (result.query ? ' ' : '') + arg;
+    }
+  }
+  
+  return result;
+}
+
+/**
  * CLI
  */
 if (require.main === module) {
@@ -268,8 +390,38 @@ if (require.main === module) {
   async function main() {
     try {
       if (command === 'search') {
+        const parsed = parseArgs(args);
+        const query = parsed.query;
+        
+        if (!query) {
+          console.error('Error: Query is required');
+          console.error('Usage: openviking-search search <query> [--semantic]');
+          process.exit(1);
+        }
+        
+        let results;
+        
+        // Режим поиска определяется флагом --semantic
+        if (parsed.flags.semantic) {
+          // Только семантический поиск
+          results = await semanticOnly(query);
+        } else {
+          // Комбинированный поиск (текст + семантика)
+          results = await searchViking(query);
+        }
+        
+        if (process.env.HUMAN_READABLE) {
+          console.log(formatResultsHuman(results));
+        } else {
+          console.log(JSON.stringify(results, null, 2));
+        }
+      } else if (command === 'semantic') {
         const query = args.join(' ');
-        const results = await searchViking(query);
+        const results = await semanticOnly(query);
+        console.log(JSON.stringify(results, null, 2));
+      } else if (command === 'text') {
+        const query = args.join(' ');
+        const results = textOnly(query);
         
         if (process.env.HUMAN_READABLE) {
           console.log(formatResultsHuman(results));
@@ -302,15 +454,20 @@ if (require.main === module) {
         console.log('  Total files:', memoryFiles.length);
       } else {
         console.log('Usage:');
-        console.log('  openviking-search search <query>     - текстовый поиск');
-        console.log('  openviking-search read <file>        - чтение файла');
-        console.log('  openviking-search browse <dir>       - просмотр директории');
-        console.log('  openviking-search status             - проверка статуса');
+        console.log('  openviking-search search <query>        - комбинированный поиск (текст + семантика)');
+        console.log('  openviking-search search <query> --semantic  - только семантический поиск');
+        console.log('  openviking-search semantic <query>      - только семантический поиск');
+        console.log('  openviking-search text <query>          - только текстовый поиск');
+        console.log('  openviking-search read <file>           - чтение файла');
+        console.log('  openviking-search browse <dir>          - просмотр директории');
+        console.log('  openviking-search status                - проверка статуса');
         console.log('');
         console.log('Environment variables:');
         console.log('  OPENVIKING_TOP_K=10        - количество результатов');
         console.log('  OPENVIKING_CONTEXT=3       - строки контекста');
         console.log('  HUMAN_READABLE=1           - человеческий вывод');
+        console.log('  OPENVIKING_HOST=localhost   - хост OpenViking');
+        console.log('  OPENVIKING_PORT=8000        - порт OpenViking');
       }
     } catch (error) {
       console.error('Error:', error.message);
@@ -321,4 +478,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { searchViking, readFile, browseDirectory, CONFIG, formatResultsHuman };
+module.exports = { searchViking, semanticOnly, textOnly, agentSearch, readFile, browseDirectory, CONFIG, formatResultsHuman };
