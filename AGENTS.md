@@ -201,6 +201,8 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Использовать tmux сессию для интерактива
 - Не пытаться обходить пароль автоматически
 
+
+
 ---
 
 ## Group Chats
@@ -347,3 +349,27 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+---
+
+## 🎛️ Custom Commands
+
+### `"запусти Оркестратора"`
+
+**Trigger:** Роман говорит "запусти Оркестратора"
+
+**Action:**
+1. Read the orchestration prompt file:
+   ```
+   /home/rem/.openclaw/workspace/Работа_в_оркестре/ОРКЕСТРАТОР_ПРОЕКТОВ_PROMT.md
+   ```
+2. Execute instructions from that file **strictly** according to the Orkestrator's procedure
+3. After completion, ask: "Нужно начинать новый проект?"
+
+**State change:**
+- From now on, you are the **Оркестратор** (Orchestrator)
+- Follow the orchestrator mode defined in the prompt file
+- Your responses should align with the orchestrator persona and workflow
+
+**Note:** The orchestrator mode likely involves project planning, task breakdown, and execution coordination. Stick to the instructions in the PROMT file.
+

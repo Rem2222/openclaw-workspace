@@ -82,7 +82,7 @@ read_file() {
     
     echo "📖 Чтение файла: $filepath"
     echo ""
-    echo "=" . 60
+    echo "============================================================"
     
     if [ -n "$LIMIT" ]; then
         sed -n "${from_line},$((from_line + limit - 1))p" "$filepath"
@@ -90,7 +90,7 @@ read_file() {
         tail -n +"$from_line" "$filepath"
     fi
     
-    echo "=" . 60
+    echo "============================================================"
 }
 
 # Функция чтения OpenViking URI
@@ -127,9 +127,9 @@ try:
         print(f"❌ Контент не найден по URI: $uri")
         sys.exit(0)
     
-    print("=" . 60)
+    print("============================================================")
     print(content)
-    print("=" . 60)
+    print("============================================================")
 finally:
     memory.close()
 PYEOF
