@@ -13,20 +13,29 @@ echo "🔄 Восстановление контекста..."
 
 ### При каждом heartbeat (если прошло >1 часа)
 ```bash
+# Создать краткую сводку текущей активности
+echo "# Heartbeat Check $(date +%Y-%m-%d %H:%M)\n\n## Статус:\n- Сервера: OK\n- Задач: 0\n- Активность: heartbeat\n" > /tmp/heartbeat-summary.md
+
 # Сохранить контекст текущей сессии
-~/.openclaw/skills/openviking-memory/scripts/auto_save "${SESSION_ID:-session-$(date +%Y%m%d-%H%M%S)}" "Session Context" "$(date +%Y-%m-%d)" < /dev/null
+~/.openclaw/skills/openviking-memory/scripts/auto_save "heartbeat-$(date +%Y%m%d-%H%M)" "Heartbeat Check $(date +%Y-%m-%d)" "$(date +%Y-%m-%d)" < /tmp/heartbeat-summary.md
 ```
 
 **Результат автосохранения:**
-- L0 (abstract) — метаданные
-- L1 (overview) — краткое описание
+- L0 (abstract) — метаданные (автосгенерация через Ollama)
+- L1 (overview) — краткое описание (автосгенерация через Ollama)
 - L2 (read) — полный текст
 - URI ресурса — viking://resources/memory-xxx
 
 ### Вечером (при "на сегодня достаточно")
 ```bash
-# Архивировать день в OpenViking
-~/.openclaw/skills/openviking-memory/scripts/auto_save "daily-$(date +%Y%m%d)" "Daily Archive" "$(date +%Y-%m-%d)" < /dev/null
+# 1. Создать итоговую сводку дня
+echo "# $(date +%Y-%m-%d) — Итоговая сводка дня\n\n## 🎯 Главные проекты:\n...\n\n## ✅ Что сделано:\n...\n\n## 📊 Токены:\n...\n\n## 🔄 Задачи на завтра:\n...\n" > /tmp/daily-summary-$(date +%Y-%m-%d).md
+
+# 2. Сохранить в OpenViking
+~/.openclaw/skills/openviking-memory/scripts/auto_save "daily-$(date +%Y%m%d)" "Итоговая сводка дня $(date +%Y-%m-%d)" "$(date +%Y-%m-%d)" < /tmp/daily-summary-$(date +%Y-%m-%d).md
+
+# 3. Git бэкап
+cd ~/.openclaw/workspace && git add . && git commit -m "Daily backup $(date +%Y-%m-%d)" && git push
 ```
 
 ## 🖥️ Мониторинг серверов
