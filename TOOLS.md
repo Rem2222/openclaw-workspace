@@ -37,6 +37,39 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
+## 🐜 Antfarm (Orchestration)
+
+**Путь к CLI:**
+```bash
+node /home/rem/.openclaw/workspace/antfarm/dist/cli/cli.js
+```
+
+**Alias (добавить в ~/.bashrc):**
+```bash
+alias antfarm="node /home/rem/.openclaw/workspace/antfarm/dist/cli/cli.js"
+```
+
+**Dashboard:**
+- Запуск: `antfarm dashboard`
+- URL: http://localhost:3333
+- Остановка: `antfarm dashboard stop`
+
+**Workflow:**
+```bash
+antfarm workflow run feature-dev "Описание задачи"
+antfarm workflow run bug-fix "Описание бага"
+antfarm workflow run security-audit "/путь/к/проекту"
+```
+
+**Статус:**
+```bash
+antfarm workflow status "запрос"
+antfarm workflow runs
+antfarm logs 50
+```
+
+---
+
 ## 🖥 TUI (Terminal UI)
 
 **Разрыв строки в вводе:** `Ctrl+Enter`
@@ -44,3 +77,19 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+<!-- antfarm:workflows -->
+# Antfarm Workflows
+
+Antfarm CLI (always use full path to avoid PATH issues):
+`node ~/.openclaw/workspace/antfarm/dist/cli/cli.js`
+
+Commands:
+- Install: `node ~/.openclaw/workspace/antfarm/dist/cli/cli.js workflow install <name>`
+- Run: `node ~/.openclaw/workspace/antfarm/dist/cli/cli.js workflow run <workflow-id> "<task>"`
+- Status: `node ~/.openclaw/workspace/antfarm/dist/cli/cli.js workflow status "<task title>"`
+- Logs: `node ~/.openclaw/workspace/antfarm/dist/cli/cli.js logs`
+
+Workflows are self-advancing via per-agent cron jobs. No manual orchestration needed.
+<!-- /antfarm:workflows -->
+

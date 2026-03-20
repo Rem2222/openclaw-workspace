@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-03-19T19:15:02Z",
+  "timestamp": "2026-03-20T21:45:03Z",
   "total": 5,
-  "up": 5,
-  "down": 0,
+  "up": 4,
+  "down": 1,
   "servers": {
     "Ollama": {
-      "status": "UP",
+      "status": "DOWN",
       "response_time": 48
     },
     "Backend": {
@@ -14,15 +14,15 @@
     },
     "Frontend": {
       "status": "UP",
-      "response_time": 5
+      "response_time": 4
     },
     "OpenMOSS": {
       "status": "UP",
-      "response_time": 5
+      "response_time": 6
     },
     "MissionControl": {
       "status": "UP",
-      "response_time": 99
+      "response_time": 2
     }
   }
 }

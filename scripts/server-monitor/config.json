@@ -39,7 +39,7 @@
     {
       "name": "MissionControl",
       "host": "localhost",
-      "port": 4000,
+      "port": 3333,
       "type": "http",
       "path": "/",
       "timeout": 5,
