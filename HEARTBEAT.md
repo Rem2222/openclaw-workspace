@@ -2,42 +2,6 @@
 
 # Регулярные задачи для сердцебиений
 
-## 🔄 Автосохранение в OpenViking
-
-### При старте сессии (автоматическое восстановление контекста)
-```bash
-# Найти последний сохранённый контекст
-echo "🔄 Восстановление контекста..."
-~/.openclaw/skills/openviking-memory/scripts/ov_search "recent session context" 3
-```
-
-### При каждом heartbeat (если прошло >1 часа)
-```bash
-# Создать краткую сводку текущей активности
-echo "# Heartbeat Check $(date +%Y-%m-%d %H:%M)\n\n## Статус:\n- Сервера: OK\n- Задач: 0\n- Активность: heartbeat\n" > /tmp/heartbeat-summary.md
-
-# Сохранить контекст текущей сессии
-~/.openclaw/skills/openviking-memory/scripts/auto_save "heartbeat-$(date +%Y%m%d-%H%M)" "Heartbeat Check $(date +%Y-%m-%d)" "$(date +%Y-%m-%d)" < /tmp/heartbeat-summary.md
-```
-
-**Результат автосохранения:**
-- L0 (abstract) — метаданные (автосгенерация через Ollama)
-- L1 (overview) — краткое описание (автосгенерация через Ollama)
-- L2 (read) — полный текст
-- URI ресурса — viking://resources/memory-xxx
-
-### Вечером (при "на сегодня достаточно")
-```bash
-# 1. Создать итоговую сводку дня
-echo "# $(date +%Y-%m-%d) — Итоговая сводка дня\n\n## 🎯 Главные проекты:\n...\n\n## ✅ Что сделано:\n...\n\n## 📊 Токены:\n...\n\n## 🔄 Задачи на завтра:\n...\n" > /tmp/daily-summary-$(date +%Y-%m-%d).md
-
-# 2. Сохранить в OpenViking
-~/.openclaw/skills/openviking-memory/scripts/auto_save "daily-$(date +%Y%m%d)" "Итоговая сводка дня $(date +%Y-%m-%d)" "$(date +%Y-%m-%d)" < /tmp/daily-summary-$(date +%Y-%m-%d).md
-
-# 3. Git бэкап
-cd ~/.openclaw/workspace && git add . && git commit -m "Daily backup $(date +%Y-%m-%d)" && git push
-```
-
 ## 🖥️ Мониторинг серверов
 
 **При каждом heartbeat (каждый час):**
@@ -103,16 +67,10 @@ openclaw subagents list --recent 30 | grep -q "running" && echo "⚠️ Есть
   - Запомнить варианты использования
   - Обновить контекст для будущих предложений
 
-### Автосохранение в OpenViking (настроено в секции "Авто-сохранение в OpenViking")
-- Работает автоматически при каждом heartbeat
-- Сохраняет L0, L1, L2 уровни
-- Архивирует день при "на сегодня достаточно"
-
 ### **Последняя проверка дня** (при "на сегодня достаточно")
 - **Итоговая сводка** — темы, задачи, токены
 - **Проверка работы memory** — тестовый запрос к memory и ожидание результата
 - **Git бэкап** — коммит + пуш в GitHub
-- **OpenViking Daily Archive** — архивировать день в OpenViking
 
 ---
 
