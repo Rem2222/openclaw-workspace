@@ -19,6 +19,42 @@ done
 
 **Cron:** Автоматическая проверка каждые 15 минут уже настроена.
 
+## ⚡ Мониторинг нагрузки процессора
+
+**При каждом heartbeat проверять нагрузку на процессы:**
+```bash
+# Проверить Gateway CPU
+GATEWAY_CPU=$(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $3}')
+if (( $(echo "$GATEWAY_CPU > 50" | bc -l) 2>/dev/null || echo "0" )); then
+  echo "⚠️ Gateway CPU: ${GATEWAY_CPU}%"
+fi
+
+# Проверить общую нагрузку
+LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
+echo "📊 Load average: $LOAD"
+```
+
+**Если Gateway CPU > 50% — предупредить.**
+
+## 🔴 Проверка зависших сессий
+
+**При каждом heartbeat:**
+```bash
+# Проверить есть ли зависшие сессии (asks > 5 минут без ответа)
+# Список активных сессий можно получить через API Gateway
+curl -s -m 5 http://localhost:18789/api/sessions 2>/dev/null | python3 -c "
+import sys, json
+try:
+    sessions = json.load(sys.stdin)
+    stuck = [s for s in sessions if s.get('duration', 0) > 300000 and s.get('asks', 0) == 0]
+    if stuck:
+        print(f'⚠️ Зависших сессий: {len(stuck)}')
+        for s in stuck[:3]:
+            print(f'  - {s.get(\"key\", \"unknown\")}: {s.get(\"duration\", 0)//60000} min')
+except: pass
+" 2>/dev/null || echo "Не могу проверить сессии"
+```
+
 ## 📝 Личный To-Do
 
 **При каждом heartbeat показывать:**
