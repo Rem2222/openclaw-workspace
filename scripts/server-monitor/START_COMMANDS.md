@@ -29,21 +29,21 @@ journalctl --user -u openclaw-frontend -f
 
 ### Backend (Dashboard API)
 ```bash
-cd ~/Projects/Dashboard/OpenClaw-Dashboard && npm start
+cd ~/.openclaw/workspace/projects/Dashboard/OpenClaw-Dashboard && npm start
 ```
 - Порт: 3000
 - URL: http://localhost:3000/health
 
 ### Frontend (Dashboard UI)
 ```bash
-cd ~/Projects/Dashboard/OpenClaw-Dashboard-Frontend && npm run dev
+cd ~/.openclaw/workspace/projects/Dashboard/OpenClaw-Dashboard-Frontend && npm run dev
 ```
 - Порт: 5173
 - URL: http://localhost:5173/
 
 ## OpenMOSS (если появится код)
 ```bash
-cd ~/Projects/OpenMOSS && python -m uvicorn app.main:app --host 0.0.0.0 --port 6565
+cd ~/.openclaw/workspace/projects/OpenMOSS && python -m uvicorn app.main:app --host 0.0.0.0 --port 6565
 ```
 - Порт: 6565
 - URL: http://localhost:6565/

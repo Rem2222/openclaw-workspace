@@ -43,6 +43,16 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
 
+### 🔍 Recall Priority (IMPORTANT)
+
+When asked about past work, decisions, projects, or events:
+
+1. **LCM tools first** — `lcm_grep`, `lcm_expand_query`, `lcm_describe`
+2. **Then memory files** — `memory_search` tool or read `memory/*.md`
+3. **Only then exec/grep** — if nothing found in LCM or memory
+
+This prevents relying on outdated file analysis when LCM has fresher context.
+
 ## Safety
 
 - Don't exfiltrate private data. Ever.

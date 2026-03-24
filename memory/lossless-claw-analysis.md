@@ -30,14 +30,16 @@
 
 ### Может работать (нужно настроить):
 
-#### 1. Контекстный движок LCM (НЕ работает — не подключён)
+#### 1. Контекстный движок LCM ✅ РАБОТАЕТ
 
-**Проблема:** `plugins.slots.contextEngine` не установлен в `lossless-claw`
+**Статус:** `plugins.slots.contextEngine` выставлен в `"lossless-claw"` — LCM активен!
 
 В конфиге:
 ```json
 "plugins": {
-  "slots": {},        // ← ПУСТО! Не задан слот для contextEngine
+  "slots": {
+    "contextEngine": "lossless-claw"
+  },
   "entries": {
     "lossless-claw": {
       "enabled": true,
