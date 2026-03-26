@@ -15,8 +15,8 @@ export default class Campfire extends Phaser.Physics.Arcade.Sprite {
     this.maxHP = CAMPFIRE_MAX_HP;
     this.hp = this.maxHP;
     
-    // Light circle (visual only)
-    this.lightCircle = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, 150, 0xFF9500, 0.15);
+    // Light circle (visual only) - brighter and bigger
+    this.lightCircle = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, 200, 0xFF9500, 0.25);
     this.lightCircle.setDepth(0);
     
     // Animated glow
@@ -51,8 +51,8 @@ export default class Campfire extends Phaser.Physics.Arcade.Sprite {
     
     // Update light based on HP
     const hpPercent = this.hp / this.maxHP;
-    this.lightCircle.setRadius(50 + hpPercent * 100);
-    this.lightCircle.setAlpha(hpPercent * 0.3);
+    this.lightCircle.setRadius(80 + hpPercent * 120);
+    this.lightCircle.setAlpha(hpPercent * 0.25);
     
     return this.hp;
   }

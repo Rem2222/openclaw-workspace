@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
-import { CAMPFIRE_X, CAMPFIRE_Y, CAMPFIRE_LIGHT_RADIUS } from '../../config/constants.js';
+import { CAMPFIRE_X, CAMPFIRE_Y } from '../../config/constants.js';
+
+// Monsters take light damage only when very close to campfire (inside visual glow)
+const LIGHT_DAMAGE_RADIUS = 180;
 
 export default class Monster extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, config) {
@@ -65,9 +68,9 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
     this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
-    // Check if in campfire light zone
+    // Check if in campfire light zone (only take damage when very close)
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const inLightZone = distToCampfire < CAMPFIRE_LIGHT_RADIUS;
+    const inLightZone = distToCampfire < LIGHT_DAMAGE_RADIUS;
     
     if (inLightZone) {
       // Monster takes light damage and moves away
