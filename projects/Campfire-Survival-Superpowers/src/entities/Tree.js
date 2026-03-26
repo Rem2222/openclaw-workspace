@@ -5,12 +5,10 @@ export default class Tree extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'tree');
     scene.add.existing(this);
-    scene.physics.add.existing(this);
+    // No physics body - trees are just visual/interaction objects
+    // Monsters pass through them
     
     this.setDepth(2);
-    this.body.setSize(50, 60);
-    this.body.setOffset(15, 10);
-    this.body.setImmovable(true);
     
     this.active = true;
     this.chopProgress = 0;
@@ -65,7 +63,6 @@ export default class Tree extends Phaser.Physics.Arcade.Sprite {
       onComplete: () => {
         this.setActive(false);
         this.setVisible(false);
-        this.body.enable = false;
       }
     });
   }

@@ -96,7 +96,7 @@ export default class WaveManager {
     
     if (this.monstersAlive <= 0 && this.waveInProgress) {
       this.waveInProgress = false;
-      this.scene.gameState.endWave();
+      gameState.endWave();
       
       if (this.currentWave >= this.maxWaves) {
         this.onAllWavesComplete();
