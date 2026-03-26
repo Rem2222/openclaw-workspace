@@ -47,7 +47,9 @@ export default class WaveManager {
     gameState.waveDuration = this.waveDuration;
     
     this.waveTimer = this.scene.time.delayedCall(this.waveDuration, () => {
-      if (this.waveInProgress && !this.scene.gameOver) {
+      // Time's up - wave always ends when timer fires
+      if (this.waveInProgress) {
+        console.log('TIMER: Wave time expired, ending wave');
         this.endWave();
       }
     });
