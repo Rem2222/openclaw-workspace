@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import gameState from '../systems/GameState.js';
 
 export default class Log extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
@@ -48,7 +49,7 @@ export default class Log extends Phaser.Physics.Arcade.Sprite {
     });
     
     // Add to game state
-    this.scene.gameState.addLog();
+    gameState.addLog();
     
     // Pickup animation
     this.scene.tweens.add({

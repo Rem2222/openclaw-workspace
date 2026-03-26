@@ -114,11 +114,11 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
 
   attackPlayer() {
     this.attackCooldown = 1000;
-    this.scene.gameState.damagePlayer(this.damage);
+    gameState.damagePlayer(this.damage);
   }
 
   attackCampfire() {
     this.attackCooldown = 1500;
-    this.scene.gameState.damageCampfire(this.damage);
+    gameState.damageCampfire(this.damage);
   }
 }
