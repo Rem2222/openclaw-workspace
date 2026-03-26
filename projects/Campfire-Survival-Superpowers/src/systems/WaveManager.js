@@ -2,6 +2,7 @@ import Wisp from '../entities/monsters/Wisp.js';
 import Crawler from '../entities/monsters/Crawler.js';
 import Brute from '../entities/monsters/Brute.js';
 import Specter from '../entities/monsters/Specter.js';
+import gameState from '../systems/GameState.js';
 import { GAME_WIDTH, GAME_HEIGHT, MONSTER_SPAWN_MARGIN } from '../config/constants.js';
 
 const MONSTER_TYPES = {
@@ -30,7 +31,7 @@ export default class WaveManager {
     }
     
     this.waveInProgress = true;
-    this.scene.gameState.startWave(this.currentWave);
+    gameState.startWave(this.currentWave);
     
     const waveConfig = this.getWaveConfig(this.currentWave);
     this.spawnWave(waveConfig);
