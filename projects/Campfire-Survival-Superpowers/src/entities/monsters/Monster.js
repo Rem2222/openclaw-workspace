@@ -131,6 +131,19 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       this.hpBar.setPosition(this.x - 20, this.y - 25);
       this.hpBarBg.setPosition(this.x, this.y - 25);
     }
+    
+    // Visibility based on distance to light - eyes in darkness, visible in light
+    const LIGHT_RADIUS = 200; // How far the light reaches
+    if (distToCampfire > LIGHT_RADIUS) {
+      // In darkness - like glowing eyes only (very transparent body)
+      this.setAlpha(0.2);
+      // Eyes stay more visible
+      if (this.eyes) this.eyes.setAlpha(0.6);
+    } else {
+      // In light - fully visible
+      this.setAlpha(1.0);
+      if (this.eyes) this.eyes.setAlpha(1.0);
+    }
   }
 
   attackPlayer() {
