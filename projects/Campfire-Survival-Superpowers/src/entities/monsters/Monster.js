@@ -87,11 +87,14 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     if (!this.alive || !this.scene) return;
     
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
-    this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
-    // Campfire is SAFE ZONE - monsters are REPELLED by light and cannot enter!
+    // Monsters ALWAYS chase the PLAYER, not the campfire
+    const targetX = this.scene.player.x;
+    const targetY = this.scene.player.y;
+    
+    // Campfire is SAFE ZONE - monsters are REPELLED by light!
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const SAFE_ZONE_RADIUS = 120; // Monsters cannot enter - it's the hero's safe zone
+    const SAFE_ZONE_RADIUS = 80; // Reduced - monsters get pushed back at this range
     
     if (distToCampfire < SAFE_ZONE_RADIUS) {
       // Push strongly away from campfire - they are AFRAID of the light!
@@ -103,27 +106,17 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       return; // Don't attack while in safe zone - they're fleeing!
     }
     
-    // Move toward target (only when NOT in safe zone)
-    const targetX = this.target === 'player' ? this.scene.player.x : CAMPFIRE_X;
-    const targetY = this.target === 'player' ? this.scene.player.y : CAMPFIRE_Y;
-    
+    // Move toward player
     const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
     this.setVelocity(
       Math.cos(angle) * this.speed,
       Math.sin(angle) * this.speed
     );
     
-    // Check collision with player
-    if (this.target === 'player' && this.body) {
-      const dist = Phaser.Math.Distance.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
-      if (dist < 40 && this.attackCooldown === 0) {
-        this.attackPlayer();
-      }
-    }
-    
-    // Check collision with campfire
-    if (distToCampfire < 50 && this.attackCooldown === 0) {
-      this.attackCampfire();
+    // Attack player when close enough
+    const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
+    if (distToPlayer < 40 && this.attackCooldown === 0) {
+      this.attackPlayer();
     }
     
     // Update HP bar position to follow monster

@@ -22,7 +22,7 @@ class GameState {
     
     // Wave timer (time-based waves)
     this.waveStartTime = 0;
-    this.waveDuration = 45000; // 45 seconds per wave
+    this.waveDuration = 30000; // 30 seconds per wave
     
     // SkillTree system properties
     this.attackSpeed = 1;

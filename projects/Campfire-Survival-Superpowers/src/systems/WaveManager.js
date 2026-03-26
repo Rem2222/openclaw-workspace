@@ -19,7 +19,7 @@ export default class WaveManager {
     this.maxWaves = 3;
     this.waveInProgress = false;
     this.restDuration = 10000; // 10 seconds between waves
-    this.waveDuration = 45000; // 45 seconds per wave
+    this.waveDuration = 30000; // 30 seconds per wave
     this.monstersAlive = 0;
     this.waveTimer = null;
     this.waveStartTime = 0;
