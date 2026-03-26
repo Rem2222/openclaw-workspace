@@ -4,7 +4,7 @@ export default class Crawler extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y, 'crawler', {
       hp: 30,
-      speed: 80,
+      speed: 150,
       damage: 5,
       target: 'campfire'
     });

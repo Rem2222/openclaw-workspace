@@ -14,6 +14,11 @@ class GameState {
     this.score = 0;
     this.skillPoints = 0;
     this.skills = {};
+    this.monstersAlive = 0;
+    
+    // Rest timer between waves
+    this.restStartTime = 0;
+    this.restDuration = 10000; // 10 seconds
     
     // SkillTree system properties
     this.attackSpeed = 1;
@@ -57,6 +62,18 @@ class GameState {
   endWave() {
     this.waveInProgress = false;
     this.skillPoints += 1; // 1 point per wave survived
+    this.restStartTime = Date.now();
+  }
+  
+  startRest(duration) {
+    this.restDuration = duration;
+    this.restStartTime = Date.now();
+  }
+  
+  getRestRemaining() {
+    if (this.restStartTime === 0) return 0;
+    const elapsed = Date.now() - this.restStartTime;
+    return Math.max(0, this.restDuration - elapsed);
   }
 
   getSkill(skillId) {

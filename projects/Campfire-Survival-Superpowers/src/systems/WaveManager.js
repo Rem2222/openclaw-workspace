@@ -73,6 +73,7 @@ export default class WaveManager {
     });
     
     this.monstersAlive = totalMonsters;
+    gameState.monstersAlive = totalMonsters;
   }
 
   getSpawnPosition() {
@@ -101,6 +102,7 @@ export default class WaveManager {
       if (this.currentWave >= this.maxWaves) {
         this.onAllWavesComplete();
       } else {
+        gameState.startRest(this.restDuration);
         this.scene.time.delayedCall(this.restDuration, () => {
           if (!this.scene.gameOver) {
             this.startNextWave();

@@ -4,7 +4,7 @@ export default class Wisp extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y, 'wisp', {
       hp: 15,
-      speed: 150,
+      speed: 200,
       damage: 3,
       target: 'player'
     });

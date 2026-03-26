@@ -38,6 +38,20 @@ export default class UIScene extends Phaser.Scene {
       color: '#FF9500'
     }).setOrigin(0.5);
     
+    // Rest timer (between waves)
+    this.restTimerText = this.add.text(640, 90, '', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#FFFFFF'
+    }).setOrigin(0.5);
+    
+    // Monsters remaining
+    this.monstersText = this.add.text(640, 115, '', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      color: '#FF6666'
+    }).setOrigin(0.5);
+    
     // Logs counter
     this.logsText = this.add.text(50, 695, '🪵 Logs: 0', {
       fontSize: '16px',
@@ -80,6 +94,21 @@ export default class UIScene extends Phaser.Scene {
       if (gameState.currentWave > 0) {
         this.waveText.setText(`WAVE ${gameState.currentWave}/${gameState.maxWaves}`);
       }
+    }
+    
+    // Rest timer between waves
+    if (!gameState.waveInProgress && gameState.currentWave > 0 && gameState.currentWave < gameState.maxWaves) {
+      const remaining = Math.ceil(gameState.getRestRemaining() / 1000);
+      this.restTimerText.setText(`Next wave in ${remaining}s`);
+    } else if (gameState.waveInProgress) {
+      this.restTimerText.setText('');
+    }
+    
+    // Monsters remaining
+    if (gameState.waveInProgress && gameState.monstersAlive > 0) {
+      this.monstersText.setText(`Monsters: ${gameState.monstersAlive}`);
+    } else {
+      this.monstersText.setText('');
     }
     
     // Update logs
