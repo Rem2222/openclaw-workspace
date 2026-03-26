@@ -3,7 +3,7 @@ import Crawler from '../entities/monsters/Crawler.js';
 import Brute from '../entities/monsters/Brute.js';
 import Specter from '../entities/monsters/Specter.js';
 import gameState from '../systems/GameState.js';
-import { GAME_WIDTH, GAME_HEIGHT, MONSTER_SPAWN_MARGIN } from '../config/constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, MONSTER_SPAWN_MARGIN, NIGHT_WAVES } from '../config/constants.js';
 
 const MONSTER_TYPES = {
   wisp: Wisp,
@@ -16,17 +16,29 @@ export default class WaveManager {
   constructor(scene) {
     this.scene = scene;
     this.currentWave = 0;
-    this.maxWaves = 3;
+    this.maxWaves = NIGHT_WAVES;
     this.waveInProgress = false;
     this.restDuration = 10000; // 10 seconds between waves
     this.waveDuration = 30000; // 30 seconds per wave
     this.monstersAlive = 0;
     this.waveTimer = null;
     this.waveStartTime = 0;
+    this.nightComplete = false;
+    this.wavesThisNight = 0;
+    this.spEarnedThisNight = 0;
+  }
+
+  startNight() {
+    this.nightComplete = false;
+    this.currentWave = 0;
+    this.wavesThisNight = 0;
+    this.spEarnedThisNight = 0;
+    this.startNextWave();
   }
 
   startNextWave() {
     this.currentWave++;
+    this.wavesThisNight++;
     
     if (this.currentWave > this.maxWaves) {
       this.onAllWavesComplete();
@@ -41,34 +53,38 @@ export default class WaveManager {
     
     this.showWaveText();
     
-    // Start wave timer - wave ends after WAVE_DURATION regardless of monsters
+    // Scale difficulty with day number
+    const dayMultiplier = 1 + (gameState.dayNumber - 1) * 0.3;
+    const duration = this.waveDuration * Math.max(0.7, 1 - (gameState.dayNumber - 1) * 0.05);
+    
     this.waveStartTime = Date.now();
     gameState.waveStartTime = this.waveStartTime;
-    gameState.waveDuration = this.waveDuration;
+    gameState.waveDuration = duration;
     
-    this.waveTimer = this.scene.time.delayedCall(this.waveDuration, () => {
-      // Time's up - wave always ends when timer fires
+    this.waveTimer = this.scene.time.delayedCall(duration, () => {
       if (this.waveInProgress) {
-        console.log('TIMER: Wave time expired, ending wave');
         this.endWave();
       }
     });
   }
 
   getWaveConfig(wave) {
+    const dayNum = gameState.dayNumber;
+    const scale = 1 + (dayNum - 1) * 0.3;
+    
     const configs = {
       1: [
-        { type: 'crawler', count: 3 }
+        { type: 'crawler', count: Math.ceil(3 * scale) }
       ],
       2: [
-        { type: 'crawler', count: 4 },
-        { type: 'wisp', count: 2 }
+        { type: 'crawler', count: Math.ceil(4 * scale) },
+        { type: 'wisp', count: Math.ceil(2 * scale) }
       ],
       3: [
-        { type: 'crawler', count: 4 },
-        { type: 'wisp', count: 3 },
-        { type: 'brute', count: 1 },
-        { type: 'specter', count: 2 }
+        { type: 'crawler', count: Math.ceil(4 * scale) },
+        { type: 'wisp', count: Math.ceil(3 * scale) },
+        { type: 'brute', count: Math.ceil(1 * scale) },
+        { type: 'specter', count: Math.ceil(2 * scale) }
       ]
     };
     
@@ -112,7 +128,6 @@ export default class WaveManager {
     this.monstersAlive--;
     gameState.monstersAlive = this.monstersAlive;
     
-    // Wave ends when all monsters killed - NO respawn!
     if (this.monstersAlive <= 0 && this.waveInProgress) {
       this.endWave();
     }
@@ -124,7 +139,9 @@ export default class WaveManager {
       this.waveTimer.remove();
       this.waveTimer = null;
     }
+    const spBefore = gameState.skillPoints;
     gameState.endWave();
+    this.spEarnedThisNight += (gameState.skillPoints - spBefore);
     
     if (this.currentWave >= this.maxWaves) {
       this.onAllWavesComplete();
@@ -137,20 +154,12 @@ export default class WaveManager {
       });
     }
   }
-  
-  getExtraMonstersConfig(wave) {
-    // Reinforcements if all monsters killed early
-    const configs = {
-      1: [{ type: 'crawler', count: 2 }],
-      2: [{ type: 'wisp', count: 3 }],
-      3: [{ type: 'brute', count: 1 }, { type: 'specter', count: 2 }]
-    };
-    return configs[wave] || configs[1];
-  }
 
   onAllWavesComplete() {
-    // Victory!
-    this.scene.showVictory();
+    this.nightComplete = true;
+    gameState.score += this.wavesThisNight * 100;
+    // Signal to GameScene via event
+    this.scene.events.emit('nightComplete');
   }
 
   showWaveText() {

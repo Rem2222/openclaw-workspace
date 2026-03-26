@@ -1,4 +1,4 @@
-import { PLAYER_MAX_HP, CAMPFIRE_MAX_HP } from '../config/constants.js';
+import { PLAYER_MAX_HP, CAMPFIRE_MAX_HP, PHASE_DURATIONS } from '../config/constants.js';
 
 class GameState {
   constructor() {
@@ -35,6 +35,59 @@ class GameState {
     this.maxPlayerHP = PLAYER_MAX_HP;
     this.maxCampfireHP = CAMPFIRE_MAX_HP;
     this.unlockedSkills = [];
+    
+    // Day/Night cycle
+    this.dayPhase = 'day'; // 'day', 'dusk', 'night', 'dawn'
+    this.dayNumber = 1;
+    this.phaseStartTime = 0;
+    this.phaseDurations = {
+      day: PHASE_DURATIONS.DAY,
+      dusk: PHASE_DURATIONS.DUSK,
+      night: 0, // depends on waves
+      dawn: PHASE_DURATIONS.DAWN
+    };
+    this.totalDaysSurvived = 0;
+  }
+
+  startDay() {
+    this.dayPhase = 'day';
+    this.phaseStartTime = Date.now();
+  }
+
+  startDusk() {
+    this.dayPhase = 'dusk';
+    this.phaseStartTime = Date.now();
+  }
+
+  startNight() {
+    this.dayPhase = 'night';
+    this.phaseStartTime = Date.now();
+  }
+
+  startDawn() {
+    this.dayPhase = 'dawn';
+    this.phaseStartTime = Date.now();
+    this.totalDaysSurvived++;
+  }
+
+  getPhaseRemaining() {
+    const duration = this.phaseDurations[this.dayPhase];
+    if (!duration) return Infinity; // night has no fixed duration
+    const elapsed = Date.now() - this.phaseStartTime;
+    return Math.max(0, duration - elapsed);
+  }
+
+  isPhaseComplete() {
+    if (this.dayPhase === 'night') return false; // night ends via WaveManager
+    const remaining = this.getPhaseRemaining();
+    return remaining <= 0;
+  }
+
+  getPhaseProgress() {
+    const duration = this.phaseDurations[this.dayPhase];
+    if (!duration) return 1;
+    const elapsed = Date.now() - this.phaseStartTime;
+    return Math.min(1, elapsed / duration);
   }
 
   damagePlayer(amount) {
@@ -54,7 +107,7 @@ class GameState {
   }
 
   healPlayer(amount) {
-    this.playerHP = Math.min(PLAYER_MAX_HP, this.playerHP + amount);
+    this.playerHP = Math.min(this.maxPlayerHP, this.playerHP + amount);
     return this.playerHP;
   }
 

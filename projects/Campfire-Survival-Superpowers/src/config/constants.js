@@ -20,3 +20,27 @@ export const LOG_HEAL_VALUE = 10;
 export const LOG_PICKUP_RANGE = 30;
 
 export const MONSTER_SPAWN_MARGIN = 100;
+
+export const PHASE_DURATIONS = {
+  DAY: 60000,
+  DUSK: 15000,
+  DAWN: 10000
+};
+
+export const PHASE_COLORS = {
+  DAY: 0x87CEEB,
+  DUSK_START: 0x87CEEB,
+  DUSK_END: 0x1a0a2e,
+  NIGHT: 0x0a0a1e,
+  DAWN_START: 0x0a0a1e,
+  DAWN_END: 0x87CEEB
+};
+
+export const DARKNESS_ALPHA = {
+  DAY: 0,
+  DUSK: 0.6,
+  NIGHT: 0.6,
+  DAWN: 0
+};
+
+export const NIGHT_WAVES = 3;

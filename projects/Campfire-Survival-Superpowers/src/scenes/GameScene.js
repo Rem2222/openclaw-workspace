@@ -6,7 +6,7 @@ import Log from '../entities/Log.js';
 import WaveManager from '../systems/WaveManager.js';
 import SkillTree from '../systems/SkillTree.js';
 import gameState from '../systems/GameState.js';
-import { CAMPFIRE_X, CAMPFIRE_Y } from '../config/constants.js';
+import { CAMPFIRE_X, CAMPFIRE_Y, PHASE_COLORS, DARKNESS_ALPHA } from '../config/constants.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -17,6 +17,10 @@ export default class GameScene extends Phaser.Scene {
     // Reset state
     gameState.reset();
     this.gameOver = false;
+    
+    // Day/Night background
+    this.bgRect = this.add.rectangle(640, 360, 1280, 720, PHASE_COLORS.DAY);
+    this.bgRect.setDepth(-10);
     
     // Groups
     this.monsters = this.add.group();
@@ -36,27 +40,37 @@ export default class GameScene extends Phaser.Scene {
     // Skill tree
     this.skillTree = new SkillTree(this);
     
-    // Start first wave after delay
-    this.time.delayedCall(2000, () => {
-      if (!this.gameOver) {
-        this.waveManager.startNextWave();
-      }
+    // Listen for monster deaths
+    this.events.on('monsterKilled', () => {
+      this.waveManager.onMonsterKilled();
     });
     
-    // R to restart (persistent)
+    // Listen for night complete
+    this.events.on('nightComplete', () => {
+      this.startDawn();
+    });
+    
+    // Create darkness overlay
+    this.createDarkness();
+    
+    // Phase warning text
+    this.phaseText = this.add.text(640, 300, '', {
+      fontSize: '48px',
+      fontFamily: 'Arial Black',
+      color: '#FFA500',
+      stroke: '#000',
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(100).setAlpha(0);
+    
+    // R to restart
     this.input.keyboard.on('keydown-R', () => {
       if (this.gameOver) {
         this.scene.restart();
       }
     });
     
-    // Listen for monster deaths
-    this.events.on('monsterKilled', () => {
-      this.waveManager.onMonsterKilled();
-    });
-    
-    // Create darkness overlay
-    this.createDarkness();
+    // Start day cycle
+    gameState.startDay();
   }
 
   generateTrees() {
@@ -71,11 +85,9 @@ export default class GameScene extends Phaser.Scene {
         x = Phaser.Math.Between(50, 1230);
         y = Phaser.Math.Between(50, 670);
         
-        // Check distance from campfire
         const distToCampfire = Phaser.Math.Distance.Between(x, y, CAMPFIRE_X, CAMPFIRE_Y);
         valid = distToCampfire > minDist;
         
-        // Check distance from other trees
         if (valid) {
           this.trees.getChildren().forEach(tree => {
             if (Phaser.Math.Distance.Between(x, y, tree.x, tree.y) < 80) {
@@ -95,18 +107,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createDarkness() {
-    // Simple darkness overlay without mask
     this.darkness = this.add.rectangle(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       1280,
       720,
       0x000000,
-      0.5
+      DARKNESS_ALPHA.DAY
     );
     this.darkness.setDepth(10);
     
-    // Create a "light hole" around campfire using a circle with blend mode
     this.campfireLight = this.add.circle(
       CAMPFIRE_X,
       CAMPFIRE_Y,
@@ -118,14 +128,124 @@ export default class GameScene extends Phaser.Scene {
     this.campfireLight.setDepth(11);
   }
 
+  // Phase transitions
+  startDusk() {
+    gameState.startDusk();
+    this.tweens.add({
+      targets: this.bgRect,
+      fillColor: PHASE_COLORS.DUSK_END,
+      duration: 15000
+    });
+    this.tweens.add({
+      targets: this.darkness,
+      alpha: DARKNESS_ALPHA.DUSK,
+      duration: 15000
+    });
+    // Enlarge campfire light at night
+    this.tweens.add({
+      targets: this.campfireLight,
+      radius: 400,
+      duration: 15000
+    });
+    this.showPhaseText('Night is coming...', '#FFA500', 3000);
+  }
+
+  startNight() {
+    gameState.startNight();
+    this.bgRect.fillColor = PHASE_COLORS.NIGHT;
+    this.darkness.alpha = DARKNESS_ALPHA.NIGHT;
+    this.campfireLight.radius = 400;
+    this.waveManager.nightComplete = false;
+    this.waveManager.startNight();
+  }
+
+  startDawn() {
+    gameState.startDawn();
+    this.tweens.add({
+      targets: this.bgRect,
+      fillColor: PHASE_COLORS.DAWN_END,
+      duration: 10000
+    });
+    this.tweens.add({
+      targets: this.darkness,
+      alpha: DARKNESS_ALPHA.DAWN,
+      duration: 10000
+    });
+    this.tweens.add({
+      targets: this.campfireLight,
+      radius: 320,
+      duration: 10000
+    });
+    
+    const sp = this.waveManager.spEarnedThisNight;
+    this.showPhaseText(`Night survived! +${sp} SP`, '#FFD700', 8000);
+    
+    // Respawn trees
+    this.respawnTrees();
+    
+    // Clear remaining monsters
+    this.monsters.getChildren().forEach(m => { if (m.alive) m.destroy(); });
+  }
+
+  startNewDay() {
+    gameState.dayNumber++;
+    gameState.startDay();
+    this.bgRect.fillColor = PHASE_COLORS.DAY;
+    this.darkness.alpha = DARKNESS_ALPHA.DAY;
+    this.campfireLight.radius = 320;
+    
+    // Reset wave state for new night
+    gameState.currentWave = 0;
+    gameState.waveInProgress = false;
+    this.waveManager.currentWave = 0;
+  }
+
+  showPhaseText(message, color, duration) {
+    this.phaseText.setText(message).setColor(color).setAlpha(1);
+    this.tweens.add({
+      targets: this.phaseText,
+      alpha: 0,
+      delay: duration - 2000,
+      duration: 2000
+    });
+  }
+
+  respawnTrees() {
+    // Remove dead/inactive trees and add new ones
+    const activeTrees = this.trees.getChildren().filter(t => t.active).length;
+    const toSpawn = Math.max(0, 15 - activeTrees);
+    
+    for (let i = 0; i < toSpawn; i++) {
+      let x, y, valid;
+      let attempts = 0;
+      
+      do {
+        x = Phaser.Math.Between(50, 1230);
+        y = Phaser.Math.Between(50, 670);
+        const distToCampfire = Phaser.Math.Distance.Between(x, y, CAMPFIRE_X, CAMPFIRE_Y);
+        valid = distToCampfire > 200;
+        attempts++;
+      } while (!valid && attempts < 30);
+      
+      if (valid) {
+        const tree = new Tree(this, x, y);
+        this.trees.add(tree);
+        tree.setAlpha(0);
+        this.tweens.add({ targets: tree, alpha: 1, duration: 2000 });
+      }
+    }
+  }
+
   update(time, delta) {
     if (this.gameOver) return;
     
-    // Check game over conditions
     if (gameState.gameOver) {
       this.endGame();
       return;
     }
+    
+    // Phase management
+    this.updatePhase(time);
     
     // Update entities
     this.player.update(time);
@@ -155,6 +275,29 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
+  updatePhase(time) {
+    const phase = gameState.dayPhase;
+    
+    if (phase === 'day') {
+      if (gameState.isPhaseComplete()) {
+        this.startDusk();
+      }
+    } else if (phase === 'dusk') {
+      if (gameState.isPhaseComplete()) {
+        this.startNight();
+      }
+    } else if (phase === 'night') {
+      // Night ends when WaveManager signals
+      if (this.waveManager.nightComplete) {
+        // Already handled by event
+      }
+    } else if (phase === 'dawn') {
+      if (gameState.isPhaseComplete()) {
+        this.startNewDay();
+      }
+    }
+  }
+
   endGame() {
     this.gameOver = true;
     
@@ -167,52 +310,24 @@ export default class GameScene extends Phaser.Scene {
     });
     text.setOrigin(0.5);
     text.setDepth(100);
-    
-    // Fade in
     text.setAlpha(0);
-    this.tweens.add({
-      targets: text,
-      alpha: 1,
-      duration: 500
-    });
+    this.tweens.add({ targets: text, alpha: 1, duration: 500 });
     
-    // Restart hint
-    const restartText = this.add.text(640, 440, 'Press R to restart', {
+    const dayText = this.add.text(640, 430, `Survived ${gameState.totalDaysSurvived} nights`, {
       fontSize: '24px',
       fontFamily: 'Arial',
       color: '#FFFFFF'
+    }).setOrigin(0.5).setDepth(100);
+    
+    const restartText = this.add.text(640, 470, 'Press R to restart', {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#AAAAAA'
     });
     restartText.setOrigin(0.5);
     restartText.setDepth(100);
     
-    // R to restart
     this.input.keyboard.once('keydown-R', () => {
-      this.scene.restart();
-    });
-  }
-
-  showVictory() {
-    this.gameOver = true;
-    
-    const text = this.add.text(640, 360, 'VICTORY!', {
-      fontSize: '72px',
-      fontFamily: 'Arial Black',
-      color: '#FFD700',
-      stroke: '#000',
-      strokeThickness: 8
-    });
-    text.setOrigin(0.5);
-    text.setDepth(100);
-    
-    const waveText = this.add.text(640, 440, `Survived ${this.waveManager.currentWave} waves!`, {
-      fontSize: '28px',
-      fontFamily: 'Arial',
-      color: '#FFFFFF'
-    });
-    waveText.setOrigin(0.5);
-    waveText.setDepth(100);
-    
-    this.time.delayedCall(3000, () => {
       this.scene.restart();
     });
   }
