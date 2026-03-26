@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CAMPFIRE_X, CAMPFIRE_Y } from '../../config/constants.js';
+import gameState from '../../systems/GameState.js';
 
 // Monsters take light damage only when very close to campfire (inside visual glow)
 const LIGHT_DAMAGE_RADIUS = 180;
