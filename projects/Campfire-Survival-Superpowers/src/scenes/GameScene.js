@@ -43,6 +43,13 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
+    // R to restart (persistent)
+    this.input.keyboard.on('keydown-R', () => {
+      if (this.gameOver) {
+        this.scene.restart();
+      }
+    });
+    
     // Listen for monster deaths
     this.events.on('monsterKilled', () => {
       this.waveManager.onMonsterKilled();
@@ -95,7 +102,7 @@ export default class GameScene extends Phaser.Scene {
       1280,
       720,
       0x000000,
-      0.7
+      0.5
     );
     this.darkness.setDepth(10);
     
@@ -103,7 +110,7 @@ export default class GameScene extends Phaser.Scene {
     this.campfireLight = this.add.circle(
       CAMPFIRE_X,
       CAMPFIRE_Y,
-      180,
+      320,
       0x000000,
       0
     );

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CAMPFIRE_X, CAMPFIRE_Y } from '../../config/constants.js';
+import { CAMPFIRE_X, CAMPFIRE_Y, CAMPFIRE_LIGHT_RADIUS } from '../../config/constants.js';
 
 export default class Monster extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, config) {
@@ -18,6 +18,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     
     this.alive = true;
     this.attackCooldown = 0;
+    this.lightDamageCooldown = 0;
   }
 
   takeDamage(amount) {
@@ -62,8 +63,29 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     if (!this.alive || !this.scene) return;
     
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
+    this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
-    // Move toward target
+    // Check if in campfire light zone
+    const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
+    const inLightZone = distToCampfire < CAMPFIRE_LIGHT_RADIUS;
+    
+    if (inLightZone) {
+      // Monster takes light damage and moves away
+      if (this.lightDamageCooldown === 0) {
+        this.takeDamage(5); // Light burns monsters
+        this.lightDamageCooldown = 500;
+      }
+      
+      // Push away from campfire
+      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
+      this.setVelocity(
+        Math.cos(pushAngle) * this.speed * 1.5,
+        Math.sin(pushAngle) * this.speed * 1.5
+      );
+      return;
+    }
+    
+    // Move toward target (only if not in light)
     const targetX = this.target === 'player' ? this.scene.player.x : CAMPFIRE_X;
     const targetY = this.target === 'player' ? this.scene.player.y : CAMPFIRE_Y;
     
@@ -82,7 +104,6 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     }
     
     // Check collision with campfire
-    const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
     if (distToCampfire < 50 && this.attackCooldown === 0) {
       this.attackCampfire();
     }
