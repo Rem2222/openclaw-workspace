@@ -22,6 +22,10 @@ export default class GameScene extends Phaser.Scene {
     this.bgRect = this.add.rectangle(640, 360, 1280, 720, PHASE_COLORS.DAY);
     this.bgRect.setDepth(-10);
     
+    // Phase transition overlays (instead of tweening fillColor which causes flicker)
+    this.duskOverlay = this.add.rectangle(640, 360, 1280, 720, 0x1a0a2e, 0).setDepth(-9).setAlpha(0);
+    this.dawnOverlay = this.add.rectangle(640, 360, 1280, 720, 0x87CEEB, 0).setDepth(-9).setAlpha(0);
+    
     // Groups
     this.monsters = this.add.group();
     this.trees = this.add.group();
@@ -131,15 +135,14 @@ export default class GameScene extends Phaser.Scene {
   // Phase transitions
   startDusk() {
     gameState.startDusk();
-    this.tweens.add({
-      targets: this.bgRect,
-      fillColor: PHASE_COLORS.DUSK_END,
-      duration: 15000
-    });
+    // Smooth darkness transition via overlay alpha (no flicker)
+    this.bgRect.fillColor = 0x1a0a2e;
+    this.duskOverlay.setAlpha(0);
     this.tweens.add({
       targets: this.darkness,
       alpha: DARKNESS_ALPHA.DUSK,
-      duration: 15000
+      duration: 15000,
+      ease: 'Sine.easeIn'
     });
     // Enlarge campfire light at night
     this.tweens.add({
@@ -161,15 +164,13 @@ export default class GameScene extends Phaser.Scene {
 
   startDawn() {
     gameState.startDawn();
-    this.tweens.add({
-      targets: this.bgRect,
-      fillColor: PHASE_COLORS.DAWN_END,
-      duration: 10000
-    });
+    // Smooth dawn transition via darkness fade (no flicker)
+    this.bgRect.fillColor = 0x87CEEB;
     this.tweens.add({
       targets: this.darkness,
       alpha: DARKNESS_ALPHA.DAWN,
-      duration: 10000
+      duration: 10000,
+      ease: 'Sine.easeOut'
     });
     this.tweens.add({
       targets: this.campfireLight,

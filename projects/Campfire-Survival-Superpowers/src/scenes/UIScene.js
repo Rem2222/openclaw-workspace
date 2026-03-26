@@ -83,6 +83,15 @@ export default class UIScene extends Phaser.Scene {
       color: '#8B4513'
     }).setOrigin(0, 0.5);
     
+    // Big phase timer (center of screen)
+    this.bigTimer = this.add.text(640, 360, '', {
+      fontSize: '48px',
+      fontFamily: 'Arial Black',
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(50).setAlpha(0);
+    
     // Skill points
     this.skillPointsText = this.add.text(1230, 695, '⭐ SP: 0', {
       fontSize: '16px',
@@ -105,14 +114,13 @@ export default class UIScene extends Phaser.Scene {
     const remainingSec = Math.ceil(remaining / 1000);
     
     if (phase === 'day') {
-      this.phaseMessage.setText('Prepare for the night!').setColor('#87CEEB');
-      this.phaseMessage.setText(`Prepare for the night! ${remainingSec}s`);
+      this.phaseMessage.setText(`Prepare for the night! ${remainingSec}s`).setColor('#FFFFFF').setStroke('#000000', 3);
     } else if (phase === 'dusk') {
-      this.phaseMessage.setText(`Night approaches... ${remainingSec}s`).setColor('#FFA500');
+      this.phaseMessage.setText(`Night approaches... ${remainingSec}s`).setColor('#FFA500').setStroke('#000000', 3);
     } else if (phase === 'night') {
-      this.phaseMessage.setText('Survive the night!').setColor('#8888FF');
+      this.phaseMessage.setText('Survive the night!').setColor('#8888FF').setStroke('#000000', 3);
     } else if (phase === 'dawn') {
-      this.phaseMessage.setText(`Night survived! ${remainingSec}s`).setColor('#FFD700');
+      this.phaseMessage.setText(`Night survived! ${remainingSec}s`).setColor('#FFD700').setStroke('#000000', 3);
     }
     
     // Campfire HP bar
@@ -162,6 +170,16 @@ export default class UIScene extends Phaser.Scene {
     
     // Skill points
     this.skillPointsText.setText(`⭐ SP: ${gameState.skillPoints}`);
+    
+    // Big timer for day/dusk/dawn phases
+    if (phase === 'day' || phase === 'dusk' || phase === 'dawn') {
+      const mins = Math.floor(remainingSec / 60);
+      const secs = remainingSec % 60;
+      const timeStr = mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+      this.bigTimer.setText(timeStr).setAlpha(0.6);
+    } else {
+      this.bigTimer.setAlpha(0);
+    }
   }
 
   update() {

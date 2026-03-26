@@ -16,7 +16,10 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     
     this.maxHP = config.hp || 20;
     this.hp = this.maxHP;
-    this.speed = config.speed || 100;
+    // ±15% speed variation per monster
+    const baseSpeed = config.speed || 100;
+    const variation = 0.85 + Math.random() * 0.30; // 0.85 to 1.15
+    this.speed = Math.round(baseSpeed * variation);
     this.damage = config.damage || 5;
     this.target = config.target || 'campfire'; // 'campfire' or 'player'
     
@@ -88,42 +91,61 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
     
-    // Monsters ALWAYS chase the PLAYER
-    const targetX = this.scene.player.x;
-    const targetY = this.scene.player.y;
-    
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const SAFE_ZONE_RADIUS = 100; // Campfire safe zone - player takes no damage here
+    const CAMPFIRE_RADIUS = 60; // Monsters cannot enter this zone
     
-    // Check if player is in safe zone (near campfire)
-    const playerInSafeZone = Phaser.Math.Distance.Between(
-      this.scene.player.x, this.scene.player.y, 
-      CAMPFIRE_X, CAMPFIRE_Y
-    ) < SAFE_ZONE_RADIUS;
-    
-    // If player is NOT in safe zone, monsters can attack
-    // If player IS in safe zone, monsters just circle around (no attack, no push)
-    if (!playerInSafeZone) {
-      // Player is in darkness - monsters chase and attack!
-      const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+    // Prevent monsters from entering the campfire itself
+    if (distToCampfire < CAMPFIRE_RADIUS) {
+      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
       this.setVelocity(
-        Math.cos(angle) * this.speed,
-        Math.sin(angle) * this.speed
+        Math.cos(pushAngle) * this.speed * 2,
+        Math.sin(pushAngle) * this.speed * 2
       );
-      
-      // Attack player when close enough
-      const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
-      if (distToPlayer < 40 && this.attackCooldown === 0) {
-        this.attackPlayer();
-      }
+      // Clamp position to stay outside campfire
+      const clampedX = CAMPFIRE_X + Math.cos(pushAngle) * CAMPFIRE_RADIUS;
+      const clampedY = CAMPFIRE_Y + Math.sin(pushAngle) * CAMPFIRE_RADIUS;
+      this.setPosition(clampedX, clampedY);
     } else {
-      // Player is safe at campfire - monsters circle around but can't attack
-      // Just orbit the safe zone
-      const angle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
-      this.setVelocity(
-        Math.cos(angle) * this.speed * 0.8,
-        Math.sin(angle) * this.speed * 0.8
+      // Chase player
+      const targetX = this.scene.player.x;
+      const targetY = this.scene.player.y;
+      
+      // Check if player is in safe zone (near campfire)
+      const playerDistToCampfire = Phaser.Math.Distance.Between(
+        targetX, targetY, CAMPFIRE_X, CAMPFIRE_Y
       );
+      const SAFE_ZONE_RADIUS = 100;
+      
+      if (playerDistToCampfire < SAFE_ZONE_RADIUS) {
+        // Player is at campfire — monsters circle around the safe zone
+        const angleToMe = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
+        // Perpendicular orbit direction (alternate clockwise/counterclockwise)
+        const orbitDir = this.orbitDir || (this.orbitDir = Math.random() < 0.5 ? 1 : -1);
+        const orbitAngle = angleToMe + (Math.PI / 2) * orbitDir;
+        
+        // Move tangent to circle + slight pull toward campfire to maintain orbit
+        const targetOrbitX = CAMPFIRE_X + Math.cos(angleToMe) * (SAFE_ZONE_RADIUS + 20);
+        const targetOrbitY = CAMPFIRE_Y + Math.sin(angleToMe) * (SAFE_ZONE_RADIUS + 20);
+        
+        const orbitAngleToTarget = Phaser.Math.Angle.Between(this.x, this.y, targetOrbitX, targetOrbitY);
+        this.setVelocity(
+          Math.cos(orbitAngleToTarget) * this.speed * 0.6,
+          Math.sin(orbitAngleToTarget) * this.speed * 0.6
+        );
+      } else {
+        // Player is in darkness — chase and attack
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+        this.setVelocity(
+          Math.cos(angle) * this.speed,
+          Math.sin(angle) * this.speed
+        );
+        
+        // Attack player when close enough
+        const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
+        if (distToPlayer < 40 && this.attackCooldown === 0) {
+          this.attackPlayer();
+        }
+      }
     }
     
     // Update HP bar position to follow monster
