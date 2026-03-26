@@ -88,26 +88,27 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createDarkness() {
-    // Full screen dark overlay
+    // Simple darkness overlay without mask
     this.darkness = this.add.rectangle(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       1280,
       720,
       0x000000,
-      0.6
+      0.7
     );
     this.darkness.setDepth(10);
     
-    // Cut out campfire light area
-    const lightGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-    lightGraphics.fillStyle(0xffffff);
-    lightGraphics.fillCircle(CAMPFIRE_X, CAMPFIRE_Y, 150);
-    lightGraphics.generateTexture('lightMask', 1280, 720);
-    
-    const texture = this.textures.get('lightMask');
-    const maskImage = texture.getSourceImage();
-    this.darkness.setMask(new Phaser.Display.Masks.BitmapMask(this, maskImage));
+    // Create a "light hole" around campfire using a circle with blend mode
+    this.campfireLight = this.add.circle(
+      CAMPFIRE_X,
+      CAMPFIRE_Y,
+      180,
+      0x000000,
+      0
+    );
+    this.campfireLight.setBlendMode(Phaser.BlendModes.ERASE);
+    this.campfireLight.setDepth(11);
   }
 
   update(time, delta) {
