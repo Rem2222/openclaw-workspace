@@ -14,6 +14,18 @@ class GameState {
     this.score = 0;
     this.skillPoints = 0;
     this.skills = {};
+    
+    // SkillTree system properties
+    this.attackSpeed = 1;
+    this.damageBonus = 0;
+    this.critChance = 0;
+    this.chopSpeed = 1;
+    this.logsPerTree = 1;
+    this.spPerWave = 0;
+    this.regenRate = 0;
+    this.maxPlayerHP = PLAYER_MAX_HP;
+    this.maxCampfireHP = CAMPFIRE_MAX_HP;
+    this.unlockedSkills = [];
   }
 
   damagePlayer(amount) {

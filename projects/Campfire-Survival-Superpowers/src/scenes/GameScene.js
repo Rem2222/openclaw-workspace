@@ -4,6 +4,7 @@ import Campfire from '../entities/Campfire.js';
 import Tree from '../entities/Tree.js';
 import Log from '../entities/Log.js';
 import WaveManager from '../systems/WaveManager.js';
+import SkillTree from '../systems/SkillTree.js';
 import gameState from '../systems/GameState.js';
 import { CAMPFIRE_X, CAMPFIRE_Y } from '../config/constants.js';
 
@@ -31,6 +32,9 @@ export default class GameScene extends Phaser.Scene {
     
     // Wave manager
     this.waveManager = new WaveManager(this);
+    
+    // Skill tree
+    this.skillTree = new SkillTree(this);
     
     // Start first wave after delay
     this.time.delayedCall(2000, () => {
