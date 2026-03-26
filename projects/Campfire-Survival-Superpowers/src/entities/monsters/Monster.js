@@ -23,12 +23,28 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.alive = true;
     this.attackCooldown = 0;
     this.lightDamageCooldown = 0;
+    
+    // HP bar above monster
+    this.hpBarBg = scene.add.rectangle(x, y - 25, 40, 6, 0x333333).setOrigin(0.5);
+    this.hpBar = scene.add.rectangle(x - 20, y - 25, 40, 4, 0x00FF00).setOrigin(0, 0.5);
+    this.hpBar.setName('hpBar');
   }
 
   takeDamage(amount) {
     if (!this.alive) return;
     
     this.hp -= amount;
+    
+    // Update HP bar
+    const percent = Math.max(0, this.hp / this.maxHP);
+    this.hpBar.width = 40 * percent;
+    if (percent > 0.5) {
+      this.hpBar.fillColor = 0x00FF00;
+    } else if (percent > 0.25) {
+      this.hpBar.fillColor = 0xFFFF00;
+    } else {
+      this.hpBar.fillColor = 0xFF0000;
+    }
     
     // Flash white
     this.scene.tweens.add({
@@ -48,6 +64,10 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.body.enable = false;
+    
+    // Remove HP bars
+    if (this.hpBar) this.hpBar.destroy();
+    if (this.hpBarBg) this.hpBarBg.destroy();
     
     // Death particles
     const particles = this.scene.add.circle(this.x, this.y, 5, 0xFF6666, 0.8);
@@ -69,24 +89,17 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
     this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
-    // Check if in campfire light zone (only take damage when very close)
+    // Check if in campfire light zone (only take damage when very close, ~80px)
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const inLightZone = distToCampfire < LIGHT_DAMAGE_RADIUS;
+    const LIGHT_ZONE = 80; // Only damage inside the bright glow
     
-    if (inLightZone) {
-      // Monster takes light damage and moves away
+    if (distToCampfire < LIGHT_ZONE) {
+      // Monster takes light damage when inside glow
       if (this.lightDamageCooldown === 0) {
-        this.takeDamage(5); // Light burns monsters
+        this.takeDamage(3);
         this.lightDamageCooldown = 500;
       }
-      
-      // Push away from campfire
-      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
-      this.setVelocity(
-        Math.cos(pushAngle) * this.speed * 1.5,
-        Math.sin(pushAngle) * this.speed * 1.5
-      );
-      return;
+      // Don't push away - they can fight through the light
     }
     
     // Move toward target (only if not in light)
@@ -110,6 +123,12 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     // Check collision with campfire
     if (distToCampfire < 50 && this.attackCooldown === 0) {
       this.attackCampfire();
+    }
+    
+    // Update HP bar position to follow monster
+    if (this.hpBar) {
+      this.hpBar.setPosition(this.x - 20, this.y - 25);
+      this.hpBarBg.setPosition(this.x, this.y - 25);
     }
   }
 

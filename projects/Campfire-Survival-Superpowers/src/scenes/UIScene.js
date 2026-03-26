@@ -96,18 +96,18 @@ export default class UIScene extends Phaser.Scene {
       }
     }
     
-    // Rest timer between waves
+    // Rest timer between waves OR wave survival timer
     if (!gameState.waveInProgress && gameState.currentWave > 0 && gameState.currentWave < gameState.maxWaves) {
       const remaining = Math.ceil(gameState.getRestRemaining() / 1000);
       this.restTimerText.setText(`Next wave in ${remaining}s`);
+      this.monstersText.setText('');
     } else if (gameState.waveInProgress) {
-      this.restTimerText.setText('');
-    }
-    
-    // Monsters remaining
-    if (gameState.waveInProgress && gameState.monstersAlive > 0) {
+      // Show time remaining to survive the wave
+      const waveRemaining = Math.ceil(gameState.getWaveRemaining() / 1000);
+      this.restTimerText.setText(`SURVIVE: ${waveRemaining}s`);
       this.monstersText.setText(`Monsters: ${gameState.monstersAlive}`);
     } else {
+      this.restTimerText.setText('');
       this.monstersText.setText('');
     }
     

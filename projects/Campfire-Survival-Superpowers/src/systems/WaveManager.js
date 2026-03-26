@@ -19,7 +19,10 @@ export default class WaveManager {
     this.maxWaves = 3;
     this.waveInProgress = false;
     this.restDuration = 10000; // 10 seconds between waves
+    this.waveDuration = 45000; // 45 seconds per wave
     this.monstersAlive = 0;
+    this.waveTimer = null;
+    this.waveStartTime = 0;
   }
 
   startNextWave() {
@@ -37,6 +40,17 @@ export default class WaveManager {
     this.spawnWave(waveConfig);
     
     this.showWaveText();
+    
+    // Start wave timer - wave ends after WAVE_DURATION regardless of monsters
+    this.waveStartTime = Date.now();
+    gameState.waveStartTime = this.waveStartTime;
+    gameState.waveDuration = this.waveDuration;
+    
+    this.waveTimer = this.scene.time.delayedCall(this.waveDuration, () => {
+      if (this.waveInProgress && !this.scene.gameOver) {
+        this.endWave();
+      }
+    });
   }
 
   getWaveConfig(wave) {
@@ -94,22 +108,49 @@ export default class WaveManager {
 
   onMonsterKilled() {
     this.monstersAlive--;
+    gameState.monstersAlive = this.monstersAlive;
     
+    // Wave continues until timer expires - killing all monsters early is bonus, not goal
+    // If all dead early, spawn more after a delay to keep pressure on
     if (this.monstersAlive <= 0 && this.waveInProgress) {
-      this.waveInProgress = false;
-      gameState.endWave();
-      
-      if (this.currentWave >= this.maxWaves) {
-        this.onAllWavesComplete();
-      } else {
-        gameState.startRest(this.restDuration);
-        this.scene.time.delayedCall(this.restDuration, () => {
-          if (!this.scene.gameOver) {
-            this.startNextWave();
-          }
-        });
-      }
+      // Spawn reinforcements after 5 seconds
+      this.scene.time.delayedCall(5000, () => {
+        if (this.waveInProgress && !this.scene.gameOver) {
+          const extraConfig = this.getExtraMonstersConfig(this.currentWave);
+          this.spawnWave(extraConfig);
+        }
+      });
     }
+  }
+  
+  endWave() {
+    this.waveInProgress = false;
+    if (this.waveTimer) {
+      this.waveTimer.remove();
+      this.waveTimer = null;
+    }
+    gameState.endWave();
+    
+    if (this.currentWave >= this.maxWaves) {
+      this.onAllWavesComplete();
+    } else {
+      gameState.startRest(this.restDuration);
+      this.scene.time.delayedCall(this.restDuration, () => {
+        if (!this.scene.gameOver) {
+          this.startNextWave();
+        }
+      });
+    }
+  }
+  
+  getExtraMonstersConfig(wave) {
+    // Reinforcements if all monsters killed early
+    const configs = {
+      1: [{ type: 'crawler', count: 2 }],
+      2: [{ type: 'wisp', count: 3 }],
+      3: [{ type: 'brute', count: 1 }, { type: 'specter', count: 2 }]
+    };
+    return configs[wave] || configs[1];
   }
 
   onAllWavesComplete() {

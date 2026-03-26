@@ -20,6 +20,10 @@ class GameState {
     this.restStartTime = 0;
     this.restDuration = 10000; // 10 seconds
     
+    // Wave timer (time-based waves)
+    this.waveStartTime = 0;
+    this.waveDuration = 45000; // 45 seconds per wave
+    
     // SkillTree system properties
     this.attackSpeed = 1;
     this.damageBonus = 0;
@@ -74,6 +78,12 @@ class GameState {
     if (this.restStartTime === 0) return 0;
     const elapsed = Date.now() - this.restStartTime;
     return Math.max(0, this.restDuration - elapsed);
+  }
+  
+  getWaveRemaining() {
+    if (this.waveStartTime === 0) return 0;
+    const elapsed = Date.now() - this.waveStartTime;
+    return Math.max(0, this.waveDuration - elapsed);
   }
 
   getSkill(skillId) {

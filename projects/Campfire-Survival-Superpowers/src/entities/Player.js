@@ -53,7 +53,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.lastAttackTime = time;
     this.isAttacking = true;
     
-    // Visual feedback
+    // Visual sword slash effect
+    this.showSwordSlash();
+    
+    // Scale feedback
     this.scene.tweens.add({
       targets: this,
       scaleX: 1.2,
@@ -75,6 +78,64 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     
     monsters.forEach(monster => {
       monster.takeDamage(10);
+    });
+  }
+  
+  showSwordSlash() {
+    // Get attack direction (toward nearest monster or last movement direction)
+    let angle = 0;
+    let targetX = this.x;
+    let targetY = this.y;
+    
+    if (this.scene.monsters) {
+      const monsters = this.scene.monsters.getChildren().filter(m => m.alive);
+      if (monsters.length > 0) {
+        // Find nearest monster
+        let nearest = null;
+        let nearestDist = Infinity;
+        monsters.forEach(m => {
+          const dist = Phaser.Math.Distance.Between(this.x, this.y, m.x, m.y);
+          if (dist < nearestDist && dist < PLAYER_ATTACK_RANGE * 1.5) {
+            nearestDist = dist;
+            nearest = m;
+          }
+        });
+        if (nearest) {
+          targetX = nearest.x;
+          targetY = nearest.y;
+        }
+      }
+    }
+    
+    angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+    
+    // Create sword slash graphics
+    const slash = this.scene.add.graphics();
+    slash.setPosition(this.x, this.y);
+    slash.setDepth(5);
+    
+    // Draw arc slash
+    slash.lineStyle(4, 0xFFFFFF, 1);
+    slash.beginPath();
+    const arcRadius = 35;
+    const arcStart = angle - Math.PI / 3;
+    const arcEnd = angle + Math.PI / 3;
+    slash.arc(0, 0, arcRadius, arcStart, arcEnd);
+    slash.strokePath();
+    
+    // Add glow
+    slash.lineStyle(8, 0xFFDD44, 0.5);
+    slash.beginPath();
+    slash.arc(0, 0, arcRadius, arcStart, arcEnd);
+    slash.strokePath();
+    
+    // Animate and destroy
+    this.scene.tweens.add({
+      targets: slash,
+      alpha: 0,
+      scale: 1.5,
+      duration: 150,
+      onComplete: () => slash.destroy()
     });
   }
 }
