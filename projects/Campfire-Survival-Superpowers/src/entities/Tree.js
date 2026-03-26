@@ -4,7 +4,7 @@ import Log from './Log.js';
 export default class Tree extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'tree');
-    scene.addEntity(this);
+    scene.add.existing(this);
     scene.physics.add.existing(this);
     
     this.setDepth(2);

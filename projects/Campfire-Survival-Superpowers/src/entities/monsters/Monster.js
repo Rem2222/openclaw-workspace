@@ -4,7 +4,7 @@ import { CAMPFIRE_X, CAMPFIRE_Y } from '../../config/constants.js';
 export default class Monster extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, config) {
     super(scene, x, y, texture);
-    scene.addEntity(this);
+    scene.add.existing(this);
     scene.physics.add.existing(this);
     
     this.setDepth(3);

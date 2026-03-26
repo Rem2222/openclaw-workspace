@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 export default class Log extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'log');
-    scene.addEntity(this);
+    scene.add.existing(this);
     scene.physics.add.existing(this);
     
     this.setDepth(2);

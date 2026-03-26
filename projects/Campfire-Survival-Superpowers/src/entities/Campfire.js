@@ -4,7 +4,7 @@ import { CAMPFIRE_X, CAMPFIRE_Y, CAMPFIRE_MAX_HP } from '../config/constants.js'
 export default class Campfire extends Phaser.Physics.Arcade.Sprite {
   constructor(scene) {
     super(scene, CAMPFIRE_X, CAMPFIRE_Y, 'campfire');
-    scene.addEntity(this);
+    scene.add.existing(this);
     scene.physics.add.existing(this);
     
     this.setDepth(1);

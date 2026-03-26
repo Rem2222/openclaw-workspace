@@ -4,7 +4,7 @@ import { PLAYER_SPEED, PLAYER_ATTACK_RANGE, PLAYER_ATTACK_COOLDOWN } from '../co
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'player');
-    scene.addEntity(this);
+    scene.add.existing(this);
     scene.physics.add.existing(this);
     
     this.setCollideWorldBounds(true);
