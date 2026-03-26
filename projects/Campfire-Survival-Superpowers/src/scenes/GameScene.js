@@ -14,17 +14,12 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Reset state
     gameState.reset();
     this.gameOver = false;
     
     // Day/Night background
     this.bgRect = this.add.rectangle(640, 360, 1280, 720, PHASE_COLORS.DAY);
     this.bgRect.setDepth(-10);
-    
-    // Phase transition overlays (instead of tweening fillColor which causes flicker)
-    this.duskOverlay = this.add.rectangle(640, 360, 1280, 720, 0x1a0a2e, 0).setDepth(-9).setAlpha(0);
-    this.dawnOverlay = this.add.rectangle(640, 360, 1280, 720, 0x87CEEB, 0).setDepth(-9).setAlpha(0);
     
     // Groups
     this.monsters = this.add.group();
@@ -65,6 +60,15 @@ export default class GameScene extends Phaser.Scene {
       stroke: '#000',
       strokeThickness: 6
     }).setOrigin(0.5).setDepth(100).setAlpha(0);
+    
+    // Controls hint
+    this.controlsText = this.add.text(640, 695, 'WASD: Move | SPACE: Attack | E: Pick Log | Q: Drop/Feed', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      color: '#CCCCCC',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
     
     // R to restart
     this.input.keyboard.on('keydown-R', () => {
@@ -120,35 +124,17 @@ export default class GameScene extends Phaser.Scene {
       DARKNESS_ALPHA.DAY
     );
     this.darkness.setDepth(10);
-    
-    this.campfireLight = this.add.circle(
-      CAMPFIRE_X,
-      CAMPFIRE_Y,
-      320,
-      0x000000,
-      0
-    );
-    this.campfireLight.setBlendMode(Phaser.BlendModes.ERASE);
-    this.campfireLight.setDepth(11);
+    // campfireLight is now managed by Campfire entity
   }
 
-  // Phase transitions
   startDusk() {
     gameState.startDusk();
-    // Smooth darkness transition via overlay alpha (no flicker)
-    this.bgRect.fillColor = 0x1a0a2e;
-    this.duskOverlay.setAlpha(0);
+    this.bgRect.fillColor = PHASE_COLORS.NIGHT;
     this.tweens.add({
       targets: this.darkness,
       alpha: DARKNESS_ALPHA.DUSK,
       duration: 15000,
       ease: 'Sine.easeIn'
-    });
-    // Enlarge campfire light at night
-    this.tweens.add({
-      targets: this.campfireLight,
-      radius: 400,
-      duration: 15000
     });
     this.showPhaseText('Night is coming...', '#FFA500', 3000);
   }
@@ -157,25 +143,23 @@ export default class GameScene extends Phaser.Scene {
     gameState.startNight();
     this.bgRect.fillColor = PHASE_COLORS.NIGHT;
     this.darkness.alpha = DARKNESS_ALPHA.NIGHT;
-    this.campfireLight.radius = 400;
     this.waveManager.nightComplete = false;
     this.waveManager.startNight();
   }
 
   startDawn() {
     gameState.startDawn();
-    // Smooth dawn transition via darkness fade (no flicker)
-    this.bgRect.fillColor = 0x87CEEB;
+    
+    // Kill ALL remaining monsters
+    this.monsters.getChildren().forEach(m => {
+      if (m.alive) m.die();
+    });
+    
     this.tweens.add({
       targets: this.darkness,
       alpha: DARKNESS_ALPHA.DAWN,
       duration: 10000,
       ease: 'Sine.easeOut'
-    });
-    this.tweens.add({
-      targets: this.campfireLight,
-      radius: 320,
-      duration: 10000
     });
     
     const sp = this.waveManager.spEarnedThisNight;
@@ -183,9 +167,6 @@ export default class GameScene extends Phaser.Scene {
     
     // Respawn trees
     this.respawnTrees();
-    
-    // Clear remaining monsters
-    this.monsters.getChildren().forEach(m => { if (m.alive) m.destroy(); });
   }
 
   startNewDay() {
@@ -193,9 +174,8 @@ export default class GameScene extends Phaser.Scene {
     gameState.startDay();
     this.bgRect.fillColor = PHASE_COLORS.DAY;
     this.darkness.alpha = DARKNESS_ALPHA.DAY;
-    this.campfireLight.radius = 320;
     
-    // Reset wave state for new night
+    // Reset wave state
     gameState.currentWave = 0;
     gameState.waveInProgress = false;
     this.waveManager.currentWave = 0;
@@ -212,7 +192,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   respawnTrees() {
-    // Remove dead/inactive trees and add new ones
     const activeTrees = this.trees.getChildren().filter(t => t.active).length;
     const toSpawn = Math.max(0, 15 - activeTrees);
     
@@ -250,7 +229,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Update entities
     this.player.update(time);
-    this.campfire.update();
+    this.campfire.update(time, delta);
     
     this.monsters.getChildren().forEach(monster => {
       if (monster.alive) {
@@ -258,14 +237,12 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
-    // Check player-log collisions
-    this.physics.overlap(this.player, this.logs, (player, log) => {
-      if (log.active) {
-        log.pickup();
-      }
-    });
+    // Update carried log
+    if (this.player.carriedLog) {
+      this.player.carriedLog.update();
+    }
     
-    // Check player-tree collisions (auto chop)
+    // Player-tree chopping
     this.trees.getChildren().forEach(tree => {
       if (tree.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, tree.x, tree.y);
@@ -286,11 +263,6 @@ export default class GameScene extends Phaser.Scene {
     } else if (phase === 'dusk') {
       if (gameState.isPhaseComplete()) {
         this.startNight();
-      }
-    } else if (phase === 'night') {
-      // Night ends when WaveManager signals
-      if (this.waveManager.nightComplete) {
-        // Already handled by event
       }
     } else if (phase === 'dawn') {
       if (gameState.isPhaseComplete()) {

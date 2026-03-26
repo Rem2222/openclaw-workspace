@@ -47,6 +47,9 @@ class GameState {
       dawn: PHASE_DURATIONS.DAWN
     };
     this.totalDaysSurvived = 0;
+    
+    // Campfire fuel (managed by Campfire entity, but tracked here for UI)
+    this.campfireFuel = 100;
   }
 
   startDay() {

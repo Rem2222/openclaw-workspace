@@ -29,6 +29,15 @@ export default class UIScene extends Phaser.Scene {
       color: '#FFFFFF'
     }).setOrigin(0.5).setDepth(1);
     
+    // Fuel bar
+    this.add.rectangle(640, 48, 200, 8, 0x333333).setOrigin(0.5);
+    this.fuelBar = this.add.rectangle(640, 48, 198, 6, 0xFF9500).setOrigin(0.5);
+    this.fuelLabel = this.add.text(530, 48, '⛽Fuel', {
+      fontSize: '10px',
+      fontFamily: 'Arial',
+      color: '#CCCCCC'
+    }).setOrigin(0.5);
+    
     // Player HP bar background
     this.add.rectangle(150, 25, 200, 20, 0x333333).setOrigin(0.5);
     this.playerHPBar = this.add.rectangle(150, 25, 196, 16, 0xFF9500).setOrigin(0.5, 0.5);
@@ -83,14 +92,14 @@ export default class UIScene extends Phaser.Scene {
       color: '#8B4513'
     }).setOrigin(0, 0.5);
     
-    // Big phase timer (center of screen)
-    this.bigTimer = this.add.text(640, 360, '', {
-      fontSize: '48px',
-      fontFamily: 'Arial Black',
-      color: '#FFFFFF',
+    // Carried log indicator
+    this.carryText = this.add.text(640, 50, '', {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      color: '#FF9500',
       stroke: '#000000',
-      strokeThickness: 6
-    }).setOrigin(0.5).setDepth(50).setAlpha(0);
+      strokeThickness: 3
+    }).setOrigin(0.5);
     
     // Skill points
     this.skillPointsText = this.add.text(1230, 695, '⭐ SP: 0', {
@@ -134,6 +143,17 @@ export default class UIScene extends Phaser.Scene {
       this.campfireHPBar.fillColor = 0xFF0000;
     }
     
+    // Campfire fuel bar
+    const fuelPercent = gameState.campfireFuel / 100;
+    this.fuelBar.width = 198 * fuelPercent;
+    if (fuelPercent > 0.4) {
+      this.fuelBar.fillColor = 0xFF9500;
+    } else if (fuelPercent > 0.15) {
+      this.fuelBar.fillColor = 0xFF6600;
+    } else {
+      this.fuelBar.fillColor = 0xFF0000;
+    }
+    
     // Player HP bar
     const playerPercent = gameState.playerHP / gameState.maxPlayerHP;
     this.playerHPBar.width = 196 * playerPercent;
@@ -171,14 +191,12 @@ export default class UIScene extends Phaser.Scene {
     // Skill points
     this.skillPointsText.setText(`⭐ SP: ${gameState.skillPoints}`);
     
-    // Big timer for day/dusk/dawn phases
-    if (phase === 'day' || phase === 'dusk' || phase === 'dawn') {
-      const mins = Math.floor(remainingSec / 60);
-      const secs = remainingSec % 60;
-      const timeStr = mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
-      this.bigTimer.setText(timeStr).setAlpha(0.6);
+    // Carried log indicator
+    const gameScene = this.scene.get('GameScene');
+    if (gameScene && gameScene.player && gameScene.player.carriedLog) {
+      this.carryText.setText('🪵 Carrying log! (Q to drop / Q near campfire to fuel)');
     } else {
-      this.bigTimer.setAlpha(0);
+      this.carryText.setText('');
     }
   }
 

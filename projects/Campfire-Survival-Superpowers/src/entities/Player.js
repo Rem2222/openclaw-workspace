@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLAYER_SPEED, PLAYER_ATTACK_RANGE, PLAYER_ATTACK_COOLDOWN } from '../config/constants.js';
+import { PLAYER_SPEED, PLAYER_ATTACK_RANGE, PLAYER_ATTACK_COOLDOWN, CAMPFIRE_X, CAMPFIRE_Y } from '../config/constants.js';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
@@ -13,6 +13,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     
     this.lastAttackTime = 0;
     this.isAttacking = false;
+    this.carriedLog = null; // Reference to carried log
     
     // Input
     this.cursors = scene.input.keyboard.createCursorKeys();
@@ -21,12 +22,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
-      attack: Phaser.Input.Keyboard.KeyCodes.SPACE
+      attack: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      pickup: Phaser.Input.Keyboard.KeyCodes.E,
+      drop: Phaser.Input.Keyboard.KeyCodes.Q
     });
   }
 
   update(time) {
     if (this.scene.gameOver) return;
+    
+    // Update carried log position
+    if (this.carriedLog && this.carriedLog.active) {
+      this.carriedLog.setPosition(this.x, this.y + 20);
+    } else {
+      this.carriedLog = null;
+    }
     
     this.setVelocity(0);
     
@@ -39,13 +49,70 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.cursors.up.isDown || this.wasd.up.isDown) vy = -1;
     if (this.cursors.down.isDown || this.wasd.down.isDown) vy = 1;
     
+    // Normalize diagonal movement
+    if (vx !== 0 && vy !== 0) {
+      vx *= 0.707;
+      vy *= 0.707;
+    }
+    
     if (vx !== 0 || vy !== 0) {
       this.setVelocity(PLAYER_SPEED * vx, PLAYER_SPEED * vy);
     }
     
-    // Attack
+    // Attack (SPACE)
     if (Phaser.Input.Keyboard.JustDown(this.wasd.attack) && time > this.lastAttackTime + PLAYER_ATTACK_COOLDOWN) {
       this.attack(time);
+    }
+    
+    // Pickup log (E) — pick up nearest log
+    if (Phaser.Input.Keyboard.JustDown(this.wasd.pickup) && !this.carriedLog) {
+      this.tryPickupLog();
+    }
+    
+    // Drop log (Q) — drop or feed to campfire
+    if (Phaser.Input.Keyboard.JustDown(this.wasd.drop) && this.carriedLog) {
+      this.dropLog();
+    }
+  }
+
+  tryPickupLog() {
+    if (!this.scene.logs) return;
+    
+    const logs = this.scene.logs.getChildren().filter(l => l.active && !l.isCarried);
+    let nearest = null;
+    let nearestDist = Infinity;
+    
+    logs.forEach(log => {
+      const dist = Phaser.Math.Distance.Between(this.x, this.y, log.x, log.y);
+      if (dist < 50 && dist < nearestDist) {
+        nearestDist = dist;
+        nearest = log;
+      }
+    });
+    
+    if (nearest) {
+      this.carriedLog = nearest;
+      nearest.isCarried = true;
+      nearest.body.enable = false;
+    }
+  }
+
+  dropLog() {
+    if (!this.carriedLog) return;
+    
+    const log = this.carriedLog;
+    this.carriedLog = null;
+    
+    // Check if near campfire
+    const dist = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
+    if (dist < 70) {
+      // Feed to campfire
+      log.feedToCampfire();
+    } else {
+      // Drop at current position
+      log.isCarried = false;
+      log.body.enable = true;
+      log.setPosition(this.x, this.y + 20);
     }
   }
 
@@ -53,10 +120,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.lastAttackTime = time;
     this.isAttacking = true;
     
-    // Visual sword slash effect
     this.showSwordSlash();
     
-    // Scale feedback
     this.scene.tweens.add({
       targets: this,
       scaleX: 1.2,
@@ -68,7 +133,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
     
-    // Find monsters in range
     if (!this.scene.monsters) return;
     
     const monsters = this.scene.monsters.getChildren().filter(m => {
@@ -82,15 +146,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
   
   showSwordSlash() {
-    // Get attack direction (toward nearest monster or last movement direction)
     let angle = 0;
-    let targetX = this.x;
-    let targetY = this.y;
     
     if (this.scene.monsters) {
       const monsters = this.scene.monsters.getChildren().filter(m => m.alive);
       if (monsters.length > 0) {
-        // Find nearest monster
         let nearest = null;
         let nearestDist = Infinity;
         monsters.forEach(m => {
@@ -101,35 +161,26 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
           }
         });
         if (nearest) {
-          targetX = nearest.x;
-          targetY = nearest.y;
+          angle = Phaser.Math.Angle.Between(this.x, this.y, nearest.x, nearest.y);
         }
       }
     }
     
-    angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-    
-    // Create sword slash graphics
     const slash = this.scene.add.graphics();
     slash.setPosition(this.x, this.y);
     slash.setDepth(5);
     
-    // Draw arc slash
     slash.lineStyle(4, 0xFFFFFF, 1);
     slash.beginPath();
     const arcRadius = 35;
-    const arcStart = angle - Math.PI / 3;
-    const arcEnd = angle + Math.PI / 3;
-    slash.arc(0, 0, arcRadius, arcStart, arcEnd);
+    slash.arc(0, 0, arcRadius, angle - Math.PI / 3, angle + Math.PI / 3);
     slash.strokePath();
     
-    // Add glow
     slash.lineStyle(8, 0xFFDD44, 0.5);
     slash.beginPath();
-    slash.arc(0, 0, arcRadius, arcStart, arcEnd);
+    slash.arc(0, 0, arcRadius, angle - Math.PI / 3, angle + Math.PI / 3);
     slash.strokePath();
     
-    // Animate and destroy
     this.scene.tweens.add({
       targets: slash,
       alpha: 0,

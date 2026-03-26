@@ -2,9 +2,6 @@ import Phaser from 'phaser';
 import { CAMPFIRE_X, CAMPFIRE_Y } from '../../config/constants.js';
 import gameState from '../../systems/GameState.js';
 
-// Monsters take light damage only when very close to campfire (inside visual glow)
-const LIGHT_DAMAGE_RADIUS = 180;
-
 export default class Monster extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, config) {
     super(scene, x, y, texture);
@@ -18,10 +15,10 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.hp = this.maxHP;
     // ±15% speed variation per monster
     const baseSpeed = config.speed || 100;
-    const variation = 0.85 + Math.random() * 0.30; // 0.85 to 1.15
+    const variation = 0.85 + Math.random() * 0.30;
     this.speed = Math.round(baseSpeed * variation);
     this.damage = config.damage || 5;
-    this.target = config.target || 'campfire'; // 'campfire' or 'player'
+    this.target = config.target || 'player';
     
     this.alive = true;
     this.attackCooldown = 0;
@@ -38,7 +35,6 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     
     this.hp -= amount;
     
-    // Update HP bar
     const percent = Math.max(0, this.hp / this.maxHP);
     this.hpBar.width = 40 * percent;
     if (percent > 0.5) {
@@ -49,7 +45,6 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       this.hpBar.fillColor = 0xFF0000;
     }
     
-    // Flash white
     this.scene.tweens.add({
       targets: this,
       alpha: 0.5,
@@ -68,11 +63,9 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(false);
     this.body.enable = false;
     
-    // Remove HP bars
     if (this.hpBar) this.hpBar.destroy();
     if (this.hpBarBg) this.hpBarBg.destroy();
     
-    // Death particles
     const particles = this.scene.add.circle(this.x, this.y, 5, 0xFF6666, 0.8);
     this.scene.tweens.add({
       targets: particles,
@@ -82,99 +75,76 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       onComplete: () => particles.destroy()
     });
     
-    // Emit event for wave manager
     this.scene.events.emit('monsterKilled');
   }
 
+  getCampfireLightRadius() {
+    const campfire = this.scene.campfire;
+    if (!campfire) return 120;
+    return campfire.getLightRadius();
+  }
+
   update(time, delta) {
-    if (!this.alive || !this.scene) return;
+    if (!this.alive || !this.scene || !this.scene.player) return;
     
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
+    this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const CAMPFIRE_RADIUS = 60; // Monsters cannot enter this zone
+    const lightRadius = this.getCampfireLightRadius();
     
-    // Prevent monsters from entering the campfire itself
-    if (distToCampfire < CAMPFIRE_RADIUS) {
+    // HARD BARRIER: Monsters cannot enter the light radius
+    if (distToCampfire < lightRadius + 30) {
+      // Push monster OUT of light zone
       const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
-      this.setVelocity(
-        Math.cos(pushAngle) * this.speed * 2,
-        Math.sin(pushAngle) * this.speed * 2
-      );
-      // Clamp position to stay outside campfire
-      const clampedX = CAMPFIRE_X + Math.cos(pushAngle) * CAMPFIRE_RADIUS;
-      const clampedY = CAMPFIRE_Y + Math.sin(pushAngle) * CAMPFIRE_RADIUS;
-      this.setPosition(clampedX, clampedY);
-    } else {
-      // Chase player
-      const targetX = this.scene.player.x;
-      const targetY = this.scene.player.y;
+      const pushDist = lightRadius + 35;
+      const targetX = CAMPFIRE_X + Math.cos(pushAngle) * pushDist;
+      const targetY = CAMPFIRE_Y + Math.sin(pushAngle) * pushDist;
       
-      // Check if player is in safe zone (near campfire)
-      const playerDistToCampfire = Phaser.Math.Distance.Between(
-        targetX, targetY, CAMPFIRE_X, CAMPFIRE_Y
-      );
-      const SAFE_ZONE_RADIUS = 100;
+      this.setPosition(targetX, targetY);
+      this.setVelocity(0);
       
-      if (playerDistToCampfire < SAFE_ZONE_RADIUS) {
-        // Player is at campfire — monsters circle around the safe zone
-        const angleToMe = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
-        // Perpendicular orbit direction (alternate clockwise/counterclockwise)
-        const orbitDir = this.orbitDir || (this.orbitDir = Math.random() < 0.5 ? 1 : -1);
-        const orbitAngle = angleToMe + (Math.PI / 2) * orbitDir;
-        
-        // Move tangent to circle + slight pull toward campfire to maintain orbit
-        const targetOrbitX = CAMPFIRE_X + Math.cos(angleToMe) * (SAFE_ZONE_RADIUS + 20);
-        const targetOrbitY = CAMPFIRE_Y + Math.sin(angleToMe) * (SAFE_ZONE_RADIUS + 20);
-        
-        const orbitAngleToTarget = Phaser.Math.Angle.Between(this.x, this.y, targetOrbitX, targetOrbitY);
-        this.setVelocity(
-          Math.cos(orbitAngleToTarget) * this.speed * 0.6,
-          Math.sin(orbitAngleToTarget) * this.speed * 0.6
-        );
-      } else {
-        // Player is in darkness — chase and attack
-        const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-        this.setVelocity(
-          Math.cos(angle) * this.speed,
-          Math.sin(angle) * this.speed
-        );
-        
-        // Attack player when close enough
-        const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
-        if (distToPlayer < 40 && this.attackCooldown === 0) {
-          this.attackPlayer();
-        }
+      // Take light damage if very close
+      if (distToCampfire < lightRadius + 60 && this.lightDamageCooldown === 0) {
+        this.takeDamage(2);
+        this.lightDamageCooldown = 500;
       }
+      return;
     }
     
-    // Update HP bar position to follow monster
+    // Chase player
+    const targetX = this.scene.player.x;
+    const targetY = this.scene.player.y;
+    
+    // Direct chase — uses both X and Y
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+    this.setVelocity(
+      Math.cos(angle) * this.speed,
+      Math.sin(angle) * this.speed
+    );
+    
+    // Attack player when close enough
+    const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
+    if (distToPlayer < 40 && this.attackCooldown === 0) {
+      this.attackPlayer();
+    }
+    
+    // Update HP bar position
     if (this.hpBar) {
       this.hpBar.setPosition(this.x - 20, this.y - 25);
       this.hpBarBg.setPosition(this.x, this.y - 25);
     }
     
-    // Visibility based on distance to light - eyes in darkness, visible in light
-    const LIGHT_RADIUS = 200; // How far the light reaches
-    if (distToCampfire > LIGHT_RADIUS) {
-      // In darkness - like glowing eyes only (very transparent body)
+    // Visibility: glowing eyes in darkness, full body in light
+    if (distToCampfire > lightRadius) {
       this.setAlpha(0.2);
-      // Eyes stay more visible
-      if (this.eyes) this.eyes.setAlpha(0.6);
     } else {
-      // In light - fully visible
       this.setAlpha(1.0);
-      if (this.eyes) this.eyes.setAlpha(1.0);
     }
   }
 
   attackPlayer() {
     this.attackCooldown = 1000;
     gameState.damagePlayer(this.damage);
-  }
-
-  attackCampfire() {
-    this.attackCooldown = 1500;
-    gameState.damageCampfire(this.damage);
   }
 }
