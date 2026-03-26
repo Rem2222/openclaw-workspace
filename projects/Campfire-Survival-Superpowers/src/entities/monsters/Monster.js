@@ -89,20 +89,21 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
     this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
-    // Check if in campfire light zone (only take damage when very close, ~80px)
+    // Campfire is SAFE ZONE - monsters are REPELLED by light and cannot enter!
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const LIGHT_ZONE = 80; // Only damage inside the bright glow
+    const SAFE_ZONE_RADIUS = 120; // Monsters cannot enter - it's the hero's safe zone
     
-    if (distToCampfire < LIGHT_ZONE) {
-      // Monster takes light damage when inside glow
-      if (this.lightDamageCooldown === 0) {
-        this.takeDamage(3);
-        this.lightDamageCooldown = 500;
-      }
-      // Don't push away - they can fight through the light
+    if (distToCampfire < SAFE_ZONE_RADIUS) {
+      // Push strongly away from campfire - they are AFRAID of the light!
+      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
+      this.setVelocity(
+        Math.cos(pushAngle) * this.speed * 3,
+        Math.sin(pushAngle) * this.speed * 3
+      );
+      return; // Don't attack while in safe zone - they're fleeing!
     }
     
-    // Move toward target (only if not in light)
+    // Move toward target (only when NOT in safe zone)
     const targetX = this.target === 'player' ? this.scene.player.x : CAMPFIRE_X;
     const targetY = this.target === 'player' ? this.scene.player.y : CAMPFIRE_Y;
     

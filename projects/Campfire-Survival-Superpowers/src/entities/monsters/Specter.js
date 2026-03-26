@@ -5,7 +5,7 @@ export default class Specter extends Monster {
     super(scene, x, y, 'specter', {
       hp: 10,
       speed: 220,
-      damage: 2,
+      damage: 20,
       target: 'player'
     });
     

@@ -110,16 +110,9 @@ export default class WaveManager {
     this.monstersAlive--;
     gameState.monstersAlive = this.monstersAlive;
     
-    // Wave continues until timer expires - killing all monsters early is bonus, not goal
-    // If all dead early, spawn more after a delay to keep pressure on
+    // Wave ends when all monsters killed - NO respawn!
     if (this.monstersAlive <= 0 && this.waveInProgress) {
-      // Spawn reinforcements after 5 seconds
-      this.scene.time.delayedCall(5000, () => {
-        if (this.waveInProgress && !this.scene.gameOver) {
-          const extraConfig = this.getExtraMonstersConfig(this.currentWave);
-          this.spawnWave(extraConfig);
-        }
-      });
+      this.endWave();
     }
   }
   
