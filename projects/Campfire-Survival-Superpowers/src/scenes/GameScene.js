@@ -49,6 +49,11 @@ export default class GameScene extends Phaser.Scene {
       this.startDawn();
     });
     
+    // Listen for SP earned
+    this.events.on('spEarned', (amount) => {
+      this.showSPPopup(amount);
+    });
+    
     // Create darkness overlay
     this.createDarkness();
     
@@ -74,6 +79,21 @@ export default class GameScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-R', () => {
       if (this.gameOver) {
         this.scene.restart();
+      }
+    });
+    
+    // Cheat code: P pressed 3 times quickly = +10 SP
+    let pPressCount = 0;
+    let pPressTimer = null;
+    this.input.keyboard.on('keydown-P', () => {
+      pPressCount++;
+      if (pPressTimer) pPressTimer.remove();
+      pPressTimer = this.time.delayedCall(800, () => { pPressCount = 0; });
+      if (pPressCount >= 3) {
+        gameState.skillPoints += 10;
+        pPressCount = 0;
+        this.showSPPopup(10);
+        console.log('CHEAT: +10 SP activated!');
       }
     });
     
@@ -305,6 +325,25 @@ export default class GameScene extends Phaser.Scene {
     
     this.input.keyboard.once('keydown-R', () => {
       this.scene.restart();
+    });
+  }
+  
+  showSPPopup(amount) {
+    const text = this.add.text(640, 200, `+${amount} SP`, {
+      fontSize: '36px',
+      fontFamily: 'Arial Black',
+      color: '#FFD700',
+      stroke: '#000',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(300);
+    
+    this.tweens.add({
+      targets: text,
+      y: 140,
+      alpha: 0,
+      duration: 2000,
+      ease: 'Cubic.easeOut',
+      onComplete: () => text.destroy()
     });
   }
 }

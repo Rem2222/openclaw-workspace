@@ -61,8 +61,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(PLAYER_SPEED * vx, PLAYER_SPEED * vy);
     }
     
-    // Attack (SPACE)
-    if (Phaser.Input.Keyboard.JustDown(this.wasd.attack) && time > this.lastAttackTime + PLAYER_ATTACK_COOLDOWN) {
+    // Attack (SPACE) - continuous when held
+    if (this.wasd.attack.isDown && time > this.lastAttackTime + PLAYER_ATTACK_COOLDOWN) {
       this.attack(time);
     }
     

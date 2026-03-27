@@ -141,7 +141,13 @@ export default class WaveManager {
     }
     const spBefore = gameState.skillPoints;
     gameState.endWave();
-    this.spEarnedThisNight += (gameState.skillPoints - spBefore);
+    const spGained = gameState.skillPoints - spBefore;
+    this.spEarnedThisNight += spGained;
+    
+    // Emit event so GameScene can show popup
+    if (spGained > 0) {
+      this.scene.events.emit('spEarned', spGained);
+    }
     
     if (this.currentWave >= this.maxWaves) {
       this.onAllWavesComplete();

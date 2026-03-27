@@ -109,10 +109,10 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
         Math.sin(pushAngle) * pushSpeed
       );
       
-      // Take light damage if very close
+      // Take light damage if very close (reduced 10x - was killing too fast)
       if (distToCampfire < lightRadius + 60 && this.lightDamageCooldown === 0) {
         this.takeDamage(1);
-        this.lightDamageCooldown = 500;
+        this.lightDamageCooldown = 5000; // 5 seconds between damage ticks (was 500ms)
       }
       
       // Update facing
