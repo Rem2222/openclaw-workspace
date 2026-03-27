@@ -5,27 +5,27 @@ export const SKILL_TREE = {
     name: 'Combat',
     color: 0xFF4444,
     skills: [
-      { id: 'attack_speed', name: 'Attack Speed', desc: '+20% attack speed', cost: 1, effect: () => { gameState.attackSpeed *= 1.2; } },
-      { id: 'damage', name: 'Damage+', desc: '+5 damage per hit', cost: 2, effect: () => { gameState.damageBonus += 5; } },
-      { id: 'crit', name: 'Critical Hit', desc: '10% chance for 2x damage', cost: 3, effect: () => { gameState.critChance += 0.1; } }
+      { id: 'attack_speed', name: 'Quick Strike', desc: '+20% attack speed', cost: 1, effect: () => { gameState.attackSpeed *= 1.2; }, perk: false },
+      { id: 'damage', name: 'Power Hit', desc: '+5 damage per hit', cost: 2, effect: () => { gameState.damageBonus += 5; }, perk: false },
+      { id: 'crit', name: 'Critical Eye', desc: '10% chance for 2x damage', cost: 3, effect: () => { gameState.critChance += 0.1; }, perk: true }
     ]
   },
   gathering: {
     name: 'Gathering',
     color: 0x44FF44,
     skills: [
-      { id: 'auto_chop', name: 'Auto Chop', desc: 'Trees chop faster', cost: 1, effect: () => { gameState.chopSpeed *= 1.3; } },
-      { id: 'more_logs', name: 'More Logs', desc: '+1 log per tree', cost: 2, effect: () => { gameState.logsPerTree += 1; } },
-      { id: 'forest_wisdom', name: 'Forest Wisdom', desc: '+1 skill point per wave', cost: 3, effect: () => { gameState.spPerWave += 1; } }
+      { id: 'auto_chop', name: 'Swift Chop', desc: 'Chop faster', cost: 1, effect: () => { gameState.chopSpeed *= 1.5; }, perk: true },
+      { id: 'more_logs', name: 'Lucky Logger', desc: '+1 log per tree', cost: 2, effect: () => { gameState.logsPerTree += 1; }, perk: false },
+      { id: 'exp_boost', name: 'Explorer', desc: '+1 EXP per wave', cost: 3, effect: () => { gameState.expPerWave += 1; }, perk: false }
     ]
   },
   survival: {
     name: 'Survival',
     color: 0x4444FF,
     skills: [
-      { id: 'campfire_hp', name: 'Campfire HP', desc: '+20 max campfire HP', cost: 1, effect: () => { gameState.maxCampfireHP += 20; } },
-      { id: 'player_hp', name: 'Player HP', desc: '+10 max player HP', cost: 2, effect: () => { gameState.maxPlayerHP += 10; } },
-      { id: 'regen', name: 'Regeneration', desc: 'Slowly recover HP', cost: 3, effect: () => { gameState.regenRate += 1; } }
+      { id: 'campfire_hp', name: 'Sturdy Fire', desc: '+20 max campfire HP', cost: 1, effect: () => { gameState.maxCampfireHP += 20; }, perk: true },
+      { id: 'player_hp', name: 'Vitality', desc: '+10 max player HP', cost: 2, effect: () => { gameState.maxPlayerHP += 10; }, perk: true },
+      { id: 'regen', name: 'Recovery', desc: 'Slowly recover HP', cost: 3, effect: () => { gameState.regenRate += 1; }, perk: true }
     ]
   }
 };
@@ -35,9 +35,6 @@ export default class SkillTree {
     this.scene = scene;
     this.isOpen = false;
     this.buttons = [];
-    
-    // Skill point gain per wave
-    this.spPerWave = 1;
     
     this.createUI();
     
@@ -64,19 +61,27 @@ export default class SkillTree {
     }).setOrigin(0.5);
     this.container.add(title);
     
-    // SP display
+    // EXP display
     const spent = gameState.unlockedSkills?.length || 0;
-    const available = gameState.skillPoints;
+    const available = gameState.experience;
     const total = spent + available;
-    const spText = available > 0 
-      ? `Skill Points: ${available} available / ${total} total` 
-      : `All points spent (${spent})`;
-    const spDisplay = this.scene.add.text(0, -185, spText, {
+    const expText = available > 0 
+      ? `EXP: ${available} available / ${total} total` 
+      : `All EXP spent (${spent} points)`;
+    const expDisplay = this.scene.add.text(0, -185, expText, {
       fontSize: '16px',
       fontFamily: 'Arial',
       color: available > 0 ? '#44FF44' : '#888888'
     }).setOrigin(0.5);
-    this.container.add(spDisplay);
+    this.container.add(expDisplay);
+    
+    // Perk indicator
+    const perkHint = this.scene.add.text(0, -160, '⚡ = Passive Perk (always active)', {
+      fontSize: '12px',
+      fontFamily: 'Arial',
+      color: '#888888'
+    }).setOrigin(0.5);
+    this.container.add(perkHint);
     
     // Close hint
     const hint = this.scene.add.text(0, 220, 'Press K to close', {
@@ -96,7 +101,7 @@ export default class SkillTree {
 
   createBranch(branchKey, branch, xOffset) {
     // Branch title
-    const branchTitle = this.scene.add.text(xOffset, -150, branch.name, {
+    const branchTitle = this.scene.add.text(xOffset, -120, branch.name, {
       fontSize: '18px',
       fontFamily: 'Arial Black',
       color: '#' + branch.color.toString(16).padStart(6, '0')
@@ -104,34 +109,46 @@ export default class SkillTree {
     this.container.add(branchTitle);
     
     // Skills
-    let yOffset = -80;
+    let yOffset = -50;
     branch.skills.forEach((skill, index) => {
       const unlocked = gameState.unlockedSkills?.includes(skill.id);
-      const canAfford = gameState.skillPoints >= skill.cost;
+      const canAfford = gameState.experience >= skill.cost;
       
       // Skill box
       const boxColor = unlocked ? branch.color : (canAfford ? 0x555555 : 0x333333);
-      const box = this.scene.add.rectangle(xOffset, yOffset, 180, 50, boxColor);
+      const box = this.scene.add.rectangle(xOffset, yOffset, 180, 60, boxColor);
       box.setStrokeStyle(2, unlocked ? 0xFFD700 : 0x666666);
       box.setInteractive({ useHandCursor: true });
       this.container.add(box);
       
-      // Skill name
+      // Perk indicator
+      const perkIcon = skill.perk ? ' ⚡' : '';
       const nameColor = unlocked ? '#FFFFFF' : '#AAAAAA';
-      const name = this.scene.add.text(xOffset, yOffset - 10, skill.name, {
+      const name = this.scene.add.text(xOffset, yOffset - 12, skill.name + perkIcon, {
         fontSize: '14px',
         fontFamily: 'Arial',
         color: nameColor
       }).setOrigin(0.5);
       this.container.add(name);
       
-      // Cost
-      const costText = this.scene.add.text(xOffset, yOffset + 12, `${skill.cost} SP`, {
-        fontSize: '12px',
+      // Description
+      const descColor = unlocked ? '#AADDAA' : '#666666';
+      const desc = this.scene.add.text(xOffset, yOffset + 2, skill.desc, {
+        fontSize: '11px',
         fontFamily: 'Arial',
-        color: unlocked ? '#FFD700' : '#888888'
+        color: descColor
       }).setOrigin(0.5);
-      this.container.add(costText);
+      this.container.add(desc);
+      
+      // Cost (only show if not unlocked)
+      if (!unlocked) {
+        const costText = this.scene.add.text(xOffset, yOffset + 20, `${skill.cost} EXP`, {
+          fontSize: '12px',
+          fontFamily: 'Arial',
+          color: canAfford ? '#FFD700' : '#FF6666'
+        }).setOrigin(0.5);
+        this.container.add(costText);
+      }
       
       // Click handler
       if (!unlocked && canAfford) {
@@ -150,9 +167,9 @@ export default class SkillTree {
     }
     
     if (gameState.unlockedSkills.includes(skill.id)) return;
-    if (gameState.skillPoints < skill.cost) return;
+    if (gameState.experience < skill.cost) return;
     
-    gameState.skillPoints -= skill.cost;
+    gameState.experience -= skill.cost;
     gameState.unlockedSkills.push(skill.id);
     skill.effect();
     
@@ -190,9 +207,7 @@ export default class SkillTree {
   }
 
   update() {
-    // Check SP per wave gain
-    if (gameState.currentWave > 0 && this.spPerWave > 0) {
-      // SP is granted in WaveManager
-    }
+    // Skill tree passive effects are applied via gameState modifiers
+    // No per-frame logic needed
   }
 }

@@ -57,43 +57,53 @@ export default class UIScene extends Phaser.Scene {
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(2);
     
-    // Phase timer / message
-    this.phaseMessage = this.add.text(640, 90, '', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#FFFFFF'
-    }).setOrigin(0.5);
-    
-    // Wave indicator
-    this.waveText = this.add.text(640, 115, '', {
-      fontSize: '20px',
+    // Phase timer / message (upper right)
+    this.phaseMessage = this.add.text(1230, 50, '', {
+      fontSize: '18px',
       fontFamily: 'Arial Black',
-      color: '#FF9500'
-    }).setOrigin(0.5);
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(1, 0.5);
     
-    // Rest timer (between waves)
-    this.restTimerText = this.add.text(640, 140, '', {
+    // Wave indicator (upper right)
+    this.waveText = this.add.text(1230, 80, '', {
+      fontSize: '22px',
+      fontFamily: 'Arial Black',
+      color: '#FF9500',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(1, 0.5);
+    
+    // Rest timer (upper right)
+    this.restTimerText = this.add.text(1230, 110, '', {
       fontSize: '16px',
       fontFamily: 'Arial',
-      color: '#FFFFFF'
-    }).setOrigin(0.5);
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 3
+    }).setOrigin(1, 0.5);
     
-    // Monsters remaining
-    this.monstersText = this.add.text(640, 162, '', {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      color: '#FF6666'
-    }).setOrigin(0.5);
-    
-    // Logs counter
-    this.logsText = this.add.text(50, 695, '🪵 Logs: 0', {
+    // Monsters remaining (upper right)
+    this.monstersText = this.add.text(1230, 140, '', {
       fontSize: '16px',
       fontFamily: 'Arial',
-      color: '#8B4513'
+      color: '#FF6666',
+      stroke: '#000000',
+      strokeThickness: 3
+    }).setOrigin(1, 0.5);
+    
+    // Logs counter (bottom left)
+    this.logsText = this.add.text(20, 680, '🪵 Logs: 0', {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      color: '#8B4513',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0, 0.5);
     
-    // Carried log indicator
-    this.carryText = this.add.text(640, 50, '', {
+    // Carried log indicator (bottom center)
+    this.carryText = this.add.text(640, 680, '', {
       fontSize: '18px',
       fontFamily: 'Arial',
       color: '#FF9500',
@@ -101,11 +111,13 @@ export default class UIScene extends Phaser.Scene {
       strokeThickness: 3
     }).setOrigin(0.5);
     
-    // Skill points
-    this.skillPointsText = this.add.text(1230, 695, '⭐ SP: 0', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#FFD700'
+    // Experience points (bottom right)
+    this.expText = this.add.text(1260, 680, '⭐ EXP: 0', {
+      fontSize: '20px',
+      fontFamily: 'Arial Black',
+      color: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 4
     }).setOrigin(1, 0.5).setDepth(100);
   }
 
@@ -188,8 +200,8 @@ export default class UIScene extends Phaser.Scene {
       this.logsText.setText(`🪵 Logs: ${gameState.logs}`);
     }
     
-    // Skill points
-    this.skillPointsText.setText(`⭐ SP: ${gameState.skillPoints}`);
+    // Experience points
+    this.expText.setText(`⭐ EXP: ${gameState.experience}`);
     
     // Carried log indicator
     const gameScene = this.scene.get('GameScene');

@@ -40,7 +40,12 @@ export default class GameScene extends Phaser.Scene {
     this.skillTree = new SkillTree(this);
     
     // Listen for monster deaths
-    this.events.on('monsterKilled', () => {
+    this.events.on('monsterKilled', (monsterMaxHP, mx, my) => {
+      // Give EXP for kill
+      const expGained = gameState.onMonsterKill(monsterMaxHP);
+      if (expGained > 0) {
+        this.showExpPopup(expGained, mx, my);
+      }
       this.waveManager.onMonsterKilled();
     });
     
@@ -49,9 +54,14 @@ export default class GameScene extends Phaser.Scene {
       this.startDawn();
     });
     
-    // Listen for SP earned
-    this.events.on('spEarned', (amount) => {
-      this.showSPPopup(amount);
+    // Listen for EXP earned (wave complete)
+    this.events.on('expEarned', (amount) => {
+      this.showExpPopup(amount);
+    });
+    
+    // Listen for crit hit
+    this.events.on('critHit', (amount, x, y) => {
+      this.showCritText(amount, x, y);
     });
     
     // Create darkness overlay
@@ -66,11 +76,11 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 6
     }).setOrigin(0.5).setDepth(100).setAlpha(0);
     
-    // Controls hint
-    this.controlsText = this.add.text(640, 695, 'WASD: Move | SPACE: Attack | E: Pick Log | Q: Drop/Feed', {
-      fontSize: '14px',
+    // Controls hint (bottom left, semi-transparent)
+    this.controlsText = this.add.text(350, 695, 'WASD/Arrows | SPACE: Attack/Chop | E: Pick | Q: Drop/Feed | K: Skills | Px3: +10 EXP', {
+      fontSize: '12px',
       fontFamily: 'Arial',
-      color: '#CCCCCC',
+      color: '#888888',
       stroke: '#000000',
       strokeThickness: 2
     }).setOrigin(0.5);
@@ -90,10 +100,10 @@ export default class GameScene extends Phaser.Scene {
       if (pPressTimer) pPressTimer.remove();
       pPressTimer = this.time.delayedCall(800, () => { pPressCount = 0; });
       if (pPressCount >= 3) {
-        gameState.skillPoints += 10;
+        gameState.experience += 10;
         pPressCount = 0;
-        this.showSPPopup(10);
-        console.log('CHEAT: +10 SP activated!');
+        this.showExpPopup(10);
+        console.log('CHEAT: +10 EXP activated!');
       }
     });
     
@@ -182,8 +192,8 @@ export default class GameScene extends Phaser.Scene {
       ease: 'Sine.easeOut'
     });
     
-    const sp = this.waveManager.spEarnedThisNight;
-    this.showPhaseText(`Night survived! +${sp} SP`, '#FFD700', 8000);
+    const exp = this.waveManager.expEarnedThisNight;
+    this.showPhaseText(`Night survived! +${exp} EXP`, '#FFD700', 8000);
     
     // Respawn trees
     this.respawnTrees();
@@ -328,20 +338,40 @@ export default class GameScene extends Phaser.Scene {
     });
   }
   
-  showSPPopup(amount) {
-    const text = this.add.text(640, 200, `+${amount} SP`, {
-      fontSize: '36px',
+  showExpPopup(amount, x = 640, y = 200) {
+    const text = this.add.text(x, y, `+${amount} EXP`, {
+      fontSize: '28px',
       fontFamily: 'Arial Black',
       color: '#FFD700',
       stroke: '#000',
-      strokeThickness: 4
+      strokeThickness: 3
     }).setOrigin(0.5).setDepth(300);
     
     this.tweens.add({
       targets: text,
-      y: 140,
+      y: y - 60,
       alpha: 0,
-      duration: 2000,
+      duration: 1500,
+      ease: 'Cubic.easeOut',
+      onComplete: () => text.destroy()
+    });
+  }
+  
+  // Show crit text when a critical hit occurs
+  showCritText(amount, x, y) {
+    const text = this.add.text(x, y - 30, `CRIT! ${amount}`, {
+      fontSize: '24px',
+      fontFamily: 'Arial Black',
+      color: '#FF4444',
+      stroke: '#000',
+      strokeThickness: 3
+    }).setOrigin(0.5).setDepth(300);
+    
+    this.tweens.add({
+      targets: text,
+      y: y - 80,
+      alpha: 0,
+      duration: 1000,
       ease: 'Cubic.easeOut',
       onComplete: () => text.destroy()
     });

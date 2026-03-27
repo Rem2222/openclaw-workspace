@@ -12,7 +12,8 @@ class GameState {
     this.waveInProgress = false;
     this.gameOver = false;
     this.score = 0;
-    this.skillPoints = 0;
+    this.experience = 0; // renamed from skillPoints
+    this.expPerKill = 0; // EXP per kill (scales with monster maxHP)
     this.skills = {};
     this.monstersAlive = 0;
     
@@ -30,7 +31,7 @@ class GameState {
     this.critChance = 0;
     this.chopSpeed = 1;
     this.logsPerTree = 1;
-    this.spPerWave = 0;
+    this.expPerWave = 1; // EXP earned per wave survived
     this.regenRate = 0;
     this.maxPlayerHP = PLAYER_MAX_HP;
     this.maxCampfireHP = CAMPFIRE_MAX_HP;
@@ -121,8 +122,15 @@ class GameState {
 
   endWave() {
     this.waveInProgress = false;
-    this.skillPoints += this.spPerWave; // Points per wave (affected by Forest Wisdom)
+    this.experience += this.expPerWave; // EXP per wave survived
     this.restStartTime = Date.now();
+  }
+  
+  // Called when a monster is killed - gives EXP based on monster's maxHP
+  onMonsterKill(monsterMaxHP) {
+    const expGained = Math.ceil(monsterMaxHP / 5); // 1 EXP per 5 HP (e.g., 15 HP = 3 EXP)
+    this.experience += expGained;
+    return expGained;
   }
   
   startRest(duration) {

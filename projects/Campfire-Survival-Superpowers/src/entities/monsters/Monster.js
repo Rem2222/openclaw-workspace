@@ -31,7 +31,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.hpBar.setName('hpBar');
   }
 
-  takeDamage(amount) {
+  takeDamage(amount, isCrit = false) {
     if (!this.alive) return;
     
     this.hp -= amount;
@@ -44,6 +44,11 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       this.hpBar.fillColor = 0xFFFF00;
     } else {
       this.hpBar.fillColor = 0xFF0000;
+    }
+    
+    // Show crit text if critical hit
+    if (isCrit) {
+      this.scene.events.emit('critHit', amount, this.x, this.y);
     }
     
     this.scene.tweens.add({
@@ -76,7 +81,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
       onComplete: () => particles.destroy()
     });
     
-    this.scene.events.emit('monsterKilled');
+    this.scene.events.emit('monsterKilled', this.maxHP, this.x, this.y);
   }
 
   getCampfireLightRadius() {

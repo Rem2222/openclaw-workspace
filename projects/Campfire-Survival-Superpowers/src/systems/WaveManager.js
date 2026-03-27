@@ -25,14 +25,14 @@ export default class WaveManager {
     this.waveStartTime = 0;
     this.nightComplete = false;
     this.wavesThisNight = 0;
-    this.spEarnedThisNight = 0;
+    this.expEarnedThisNight = 0;
   }
 
   startNight() {
     this.nightComplete = false;
     this.currentWave = 0;
     this.wavesThisNight = 0;
-    this.spEarnedThisNight = 0;
+    this.expEarnedThisNight = 0;
     this.startNextWave();
   }
 
@@ -139,14 +139,14 @@ export default class WaveManager {
       this.waveTimer.remove();
       this.waveTimer = null;
     }
-    const spBefore = gameState.skillPoints;
+    const expBefore = gameState.experience;
     gameState.endWave();
-    const spGained = gameState.skillPoints - spBefore;
-    this.spEarnedThisNight += spGained;
+    const expGained = gameState.experience - expBefore;
+    this.expEarnedThisNight += expGained;
     
     // Emit event so GameScene can show popup
-    if (spGained > 0) {
-      this.scene.events.emit('spEarned', spGained);
+    if (expGained > 0) {
+      this.scene.events.emit('expEarned', expGained);
     }
     
     if (this.currentWave >= this.maxWaves) {

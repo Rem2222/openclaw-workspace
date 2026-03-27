@@ -17,6 +17,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.isAttacking = false;
     this.carriedLog = null; // Reference to carried log
     
+    // HP bar above player's head
+    this.hpBarBg = scene.add.rectangle(x, y - 35, 50, 6, 0x333333).setOrigin(0.5);
+    this.hpBarBg.setName('playerHpBarBg');
+    this.hpBar = scene.add.rectangle(x - 25, y - 35, 50, 4, 0x00FF00).setOrigin(0, 0.5);
+    this.hpBar.setName('playerHpBar');
+    
     // Input
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.wasd = scene.input.keyboard.addKeys({
@@ -66,15 +72,28 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.attack(time);
     }
     
+    // Always update HP bar position and color based on current HP
+    if (this.hpBar && this.hpBarBg) {
+      const percent = Math.max(0, this.hp / gameState.maxPlayerHP);
+      this.hpBar.width = 50 * percent;
+      // Color based on health
+      if (percent > 0.5) {
+        this.hpBar.fillColor = 0x00FF00;
+      } else if (percent > 0.25) {
+        this.hpBar.fillColor = 0xFFFF00;
+      } else {
+        this.hpBar.fillColor = 0xFF0000;
+      }
+      // Position above player
+      this.hpBar.setPosition(this.x - 25, this.y - 35);
+      this.hpBarBg.setPosition(this.x, this.y - 35);
+    }
+    
     // Regeneration (based on regenRate from Survival skill tree)
     if (gameState.regenRate > 0 && time > this.lastRegenTime + 1000) {
       this.lastRegenTime = time;
       if (this.hp < gameState.maxPlayerHP) {
         this.hp = Math.min(gameState.maxPlayerHP, this.hp + gameState.regenRate);
-        // Update HP bar
-        if (this.scene.hpBar) {
-          this.scene.hpBar.setDisplaySize(Math.max(0, (this.hp / gameState.maxPlayerHP) * 200), 16);
-        }
       }
     }
     
@@ -152,7 +171,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     });
     
     monsters.forEach(monster => {
-      monster.takeDamage(10);
+      // Calculate damage with bonus and crit
+      let damage = 10 + gameState.damageBonus;
+      let isCrit = false;
+      if (gameState.critChance > 0 && Math.random() < gameState.critChance) {
+        damage = Math.floor(damage * gameState.critMultiplier);
+        isCrit = true;
+      }
+      monster.takeDamage(damage, isCrit);
     });
   }
   
