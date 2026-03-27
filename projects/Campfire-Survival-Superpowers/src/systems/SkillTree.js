@@ -64,6 +64,20 @@ export default class SkillTree {
     }).setOrigin(0.5);
     this.container.add(title);
     
+    // SP display
+    const spent = gameState.unlockedSkills?.length || 0;
+    const available = gameState.skillPoints;
+    const total = spent + available;
+    const spText = available > 0 
+      ? `Skill Points: ${available} available / ${total} total` 
+      : `All points spent (${spent})`;
+    const spDisplay = this.scene.add.text(0, -185, spText, {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: available > 0 ? '#44FF44' : '#888888'
+    }).setOrigin(0.5);
+    this.container.add(spDisplay);
+    
     // Close hint
     const hint = this.scene.add.text(0, 220, 'Press K to close', {
       fontSize: '14px',
