@@ -41,8 +41,8 @@ export default class SkillTree {
     
     this.createUI();
     
-    // Toggle with Tab
-    this.scene.input.keyboard.on('keydown-TAB', () => this.toggle());
+    // Toggle with K key (not TAB - it shifts browser focus)
+    this.scene.input.keyboard.on('keydown-K', () => this.toggle());
   }
 
   createUI() {
@@ -65,7 +65,7 @@ export default class SkillTree {
     this.container.add(title);
     
     // Close hint
-    const hint = this.scene.add.text(0, 220, 'Press TAB to close', {
+    const hint = this.scene.add.text(0, 220, 'Press K to close', {
       fontSize: '14px',
       fontFamily: 'Arial',
       color: '#888888'
