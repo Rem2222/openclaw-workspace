@@ -246,7 +246,7 @@ export default class GameScene extends Phaser.Scene {
     this.trees.getChildren().forEach(tree => {
       if (tree.active) {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, tree.x, tree.y);
-        if (dist < 50 && this.cursors.space.isDown) {
+        if (dist < 50 && this.player.wasd.attack.isDown) {
           tree.startChopping(time, this.player);
         } else if (dist >= 50) {
           tree.stopChopping();  // Stop if walked away
