@@ -242,9 +242,10 @@ export default class GameScene extends Phaser.Scene {
       this.player.carriedLog.update();
     }
     
-    // Player-tree chopping — requires SPACE held AND near tree
+    // Update trees (handles chop progress internally)
     this.trees.getChildren().forEach(tree => {
       if (tree.active) {
+        tree.update(time);
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, tree.x, tree.y);
         if (dist < 50 && this.player.wasd.attack.isDown) {
           tree.startChopping(time, this.player);

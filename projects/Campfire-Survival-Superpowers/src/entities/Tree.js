@@ -140,13 +140,39 @@ export default class Tree extends Phaser.GameObjects.Sprite {
     }
     
     // Big chip burst
-    for (let i = 0; i < 5; i++) {
-      this.scene.time.delayedCall(i * 40, () => this.spawnWoodChips());
+    for (let i = 0; i < 8; i++) {
+      this.scene.time.delayedCall(i * 30, () => this.spawnWoodChips());
     }
     
-    // Spawn log
+    // Floating text "+1 LOG"
+    const floatingText = this.scene.add.text(this.x, this.y - 60, '⬆ +1 LOG', {
+      fontSize: '16px',
+      color: '#FFD700',
+      stroke: '#000',
+      strokeThickness: 3
+    });
+    floatingText.setDepth(20);
+    floatingText.setOrigin(0.5);
+    this.scene.tweens.add({
+      targets: floatingText,
+      y: this.y - 100,
+      alpha: 0,
+      duration: 800,
+      ease: 'Quad.easeOut',
+      onComplete: () => floatingText.destroy()
+    });
+    
+    // Spawn log — auto-pickup if player is close
+    const dist = Phaser.Math.Distance.Between(this.scene.player.x, this.scene.player.y, this.x, this.y);
     const log = new Log(this.scene, this.x, this.y);
     this.scene.logs.add(log);
+    
+    if (dist < 60) {
+      // Auto pickup if player is close
+      this.scene.player.carriedLog = log;
+      log.isCarried = true;
+      log.setDepth(6);
+    }
     
     // Fall + fade
     this.scene.tweens.add({
