@@ -26,6 +26,9 @@ export default class Tree extends Phaser.GameObjects.Sprite {
   }
 
   startChopping(time, player) {
+    // Guard: don't reset if already chopping (prevents timer reset every frame)
+    if (this.isChopping) return;
+    
     this.isChopping = true;
     this.chopStartTime = time;
     this.lastChipTime = time;
