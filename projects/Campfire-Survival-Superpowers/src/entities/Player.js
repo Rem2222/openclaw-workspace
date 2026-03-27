@@ -12,6 +12,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setOffset(9, 12);
     
     this.lastAttackTime = 0;
+    this.lastRegenTime = 0;
     this.isAttacking = false;
     this.carriedLog = null; // Reference to carried log
     
@@ -62,6 +63,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Attack (SPACE)
     if (Phaser.Input.Keyboard.JustDown(this.wasd.attack) && time > this.lastAttackTime + PLAYER_ATTACK_COOLDOWN) {
       this.attack(time);
+    }
+    
+    // Regeneration (based on regenRate from Survival skill tree)
+    if (gameState.regenRate > 0 && time > this.lastRegenTime + 1000) {
+      this.lastRegenTime = time;
+      if (this.hp < gameState.maxPlayerHP) {
+        this.hp = Math.min(gameState.maxPlayerHP, this.hp + gameState.regenRate);
+        // Update HP bar
+        if (this.scene.hpBar) {
+          this.scene.hpBar.setDisplaySize(Math.max(0, (this.hp / gameState.maxPlayerHP) * 200), 16);
+        }
+      }
     }
     
     // Pickup log (E) — pick up nearest log (if not already carrying an active log)

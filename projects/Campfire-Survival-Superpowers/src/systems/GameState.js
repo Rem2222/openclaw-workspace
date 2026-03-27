@@ -121,7 +121,7 @@ class GameState {
 
   endWave() {
     this.waveInProgress = false;
-    this.skillPoints += 1; // 1 point per wave survived
+    this.skillPoints += this.spPerWave; // Points per wave (affected by Forest Wisdom)
     this.restStartTime = Date.now();
   }
   
