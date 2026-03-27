@@ -4,7 +4,8 @@ import Log from './Log.js';
 export default class Tree extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, type) {
     // Random type if not specified
-    const treeType = type || ['tree', 'pine', 'bush', 'rock'][Phaser.Math.Between(0, 3)];
+    const treeTypes = ['tree', 'pine', 'bush', 'rock'];
+    const treeType = type || treeTypes[Phaser.Math.Between(0, treeTypes.length - 1)];
     super(scene, x, y, treeType);
     scene.add.existing(this);
     
