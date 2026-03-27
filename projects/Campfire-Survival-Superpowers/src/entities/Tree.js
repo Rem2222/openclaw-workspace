@@ -8,6 +8,7 @@ export default class Tree extends Phaser.GameObjects.Sprite {
     super(scene, x, y, treeType);
     scene.add.existing(this);
     
+    this.setOrigin(0.5, 1); // Bottom-center — tree grows UP from spawn point
     this.setDepth(2);
     
     // Random scale variation

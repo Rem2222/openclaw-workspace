@@ -34,15 +34,6 @@ export default class BootScene extends Phaser.Scene {
     campfireGfx.generateTexture('campfire', 80, 60);
     campfireGfx.destroy();
 
-    // Tree (brown trunk + green circle top)
-    const treeGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    treeGfx.fillStyle(0x654321, 1);
-    treeGfx.fillRect(18, 30, 14, 40);
-    treeGfx.fillStyle(0x228B22, 1);
-    treeGfx.fillCircle(25, 25, 22);
-    treeGfx.generateTexture('tree', 50, 70);
-    treeGfx.destroy();
-
     // Log (small brown rectangle)
     const logGfx = this.make.graphics({ x: 0, y: 0, add: false });
     logGfx.fillStyle(0x8B4513, 1);
