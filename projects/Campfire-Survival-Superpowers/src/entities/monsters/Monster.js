@@ -8,6 +8,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
+    this.setOrigin(0.5, 0.5);
     this.setDepth(3);
     this.body.setImmovable(true);
     

@@ -108,6 +108,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Процедурный костёр - несколько кругов разных цветов
     this.campfire = this.add.graphics();
+    this.campfire.setDepth(101); // выше свечения и тьмы
     this.drawCampfire();
   }
   
@@ -125,16 +126,16 @@ export default class GameScene extends Phaser.Scene {
     // Огонь (3 слоя)
     const baseSize = 8 + intensity * 12;
     
-    // Внешний (жёлтый)
-    this.campfire.fillStyle(0xffcc00, 0.6 + intensity * 0.4);
+    // Внешний (ярко-жёлтый)
+    this.campfire.fillStyle(0xffff00, 0.8 + intensity * 0.2);
     this.campfire.fillCircle(x, y, baseSize + 6);
     
-    // Средний (оранжевый)
-    this.campfire.fillStyle(0xff6600, 0.7 + intensity * 0.3);
+    // Средний (ярко-оранжевый)
+    this.campfire.fillStyle(0xff8800, 0.9 + intensity * 0.1);
     this.campfire.fillCircle(x, y - 2, baseSize + 3);
     
     // Внутренний (белый)
-    this.campfire.fillStyle(0xffffee, 0.8);
+    this.campfire.fillStyle(0xffffff, 1);
     this.campfire.fillCircle(x, y - 4, baseSize - 2);
   }
   
@@ -465,17 +466,17 @@ export default class GameScene extends Phaser.Scene {
       this.darkness.fillRect(cx + r, Math.max(0, cy - r), CONFIG.CANVAS_WIDTH - (cx + r), Math.min(CONFIG.CANVAS_HEIGHT, cy + r) - Math.max(0, cy - r));
     }
     
-    // Свечение костра (рисуем поверх тьмы вокруг, но под костром)
+    // Свечение костра (рисуем под костром, чтобы не перекрывать его)
     this.lightGlow.clear();
-    // Внешнее свечение (большой полупрозрачный круг)
-    this.lightGlow.fillStyle(0xffaa33, 0.4);
-    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.8);
+    // Внешнее свечение (большой полупрозрачный круг) - под деревьями
+    this.lightGlow.fillStyle(0xffaa33, 0.3);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.9);
     // Среднее свечение
-    this.lightGlow.fillStyle(0xff8800, 0.5);
-    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.5);
-    // Яркий центр
-    this.lightGlow.fillStyle(0xffdd44, 0.6);
-    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.2);
+    this.lightGlow.fillStyle(0xff8800, 0.4);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.6);
+    // Ядро свечения
+    this.lightGlow.fillStyle(0xffdd44, 0.5);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.3);
   }
   
   updateUI() {
