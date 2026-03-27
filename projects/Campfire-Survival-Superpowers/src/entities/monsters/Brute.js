@@ -5,10 +5,8 @@ export default class Brute extends Monster {
     super(scene, x, y, 'brute', {
       hp: 60,
       speed: 50,
-      damage: 40,
-      target: 'campfire'
+      damage: 8,  // was 40, now 8
+      target: 'player'
     });
-    
-    this.setScale(1.2);
   }
 }

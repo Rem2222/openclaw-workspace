@@ -92,8 +92,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     
     if (nearest) {
       this.carriedLog = nearest;
-      nearest.isCarried = true;
-      nearest.body.enable = false;
+      nearest.pickup();  // Sets isCarried=true, stops auto-despawn
     }
   }
 
@@ -106,13 +105,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Check if near campfire
     const dist = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
     if (dist < 70) {
-      // Feed to campfire
+      // Feed to campfire — burn effect plays automatically
       log.feedToCampfire();
     } else {
       // Drop at current position
-      log.isCarried = false;
-      log.body.enable = true;
-      log.setPosition(this.x, this.y + 20);
+      log.drop(this.x, this.y + 20);
     }
   }
 

@@ -100,5 +100,60 @@ export default class BootScene extends Phaser.Scene {
     hpBarGfx.fillRect(2, 2, 196, 16);
     hpBarGfx.generateTexture('hp_bar', 200, 20);
     hpBarGfx.destroy();
+
+    // Pine tree (tall triangle with trunk)
+    const pineGfx = this.make.graphics({ x: 0, y: 0, add: false });
+    pineGfx.fillStyle(0x654321, 1);
+    pineGfx.fillRect(22, 55, 12, 25);
+    pineGfx.fillStyle(0x1a4d1a, 1);
+    pineGfx.fillTriangle(28, 5, 8, 60, 48, 60);
+    pineGfx.fillStyle(0x2d5a2d, 1);
+    pineGfx.fillTriangle(28, 15, 12, 55, 44, 55);
+    pineGfx.generateTexture('pine', 56, 80);
+    pineGfx.destroy();
+
+    // Bush (round green shrub)
+    const bushGfx = this.make.graphics({ x: 0, y: 0, add: false });
+    bushGfx.fillStyle(0x2d6a2d, 1);
+    bushGfx.fillCircle(20, 25, 18);
+    bushGfx.fillCircle(35, 22, 15);
+    bushGfx.fillCircle(12, 30, 12);
+    bushGfx.fillCircle(30, 32, 14);
+    bushGfx.fillStyle(0x3d8a3d, 1);
+    bushGfx.fillCircle(18, 20, 10);
+    bushGfx.fillCircle(32, 18, 8);
+    bushGfx.generateTexture('bush', 50, 45);
+    bushGfx.destroy();
+
+    // Rock (gray boulder)
+    const rockGfx = this.make.graphics({ x: 0, y: 0, add: false });
+    rockGfx.fillStyle(0x666666, 1);
+    rockGfx.fillEllipse(30, 30, 55, 40);
+    rockGfx.fillStyle(0x888888, 1);
+    rockGfx.fillEllipse(28, 28, 40, 30);
+    rockGfx.fillStyle(0x999999, 1);
+    rockGfx.fillEllipse(25, 25, 20, 15);
+    rockGfx.generateTexture('rock', 60, 45);
+    rockGfx.destroy();
+
+    // Oak tree (large round top)
+    const oakGfx = this.make.graphics({ x: 0, y: 0, add: false });
+    oakGfx.fillStyle(0x5d4037, 1);
+    oakGfx.fillRect(22, 50, 16, 30);
+    oakGfx.fillStyle(0x3e7a3e, 1);
+    oakGfx.fillCircle(30, 30, 28);
+    oakGfx.fillStyle(0x4a9a4a, 1);
+    oakGfx.fillCircle(25, 25, 18);
+    oakGfx.fillStyle(0x5aba5a, 1);
+    oakGfx.fillCircle(35, 28, 12);
+    oakGfx.generateTexture('tree', 60, 80);
+    oakGfx.destroy();
+
+    // Wood chip particle
+    const chipGfx = this.make.graphics({ x: 0, y: 0, add: false });
+    chipGfx.fillStyle(0x8B4513, 1);
+    chipGfx.fillRect(0, 0, 6, 4);
+    chipGfx.generateTexture('chip', 6, 4);
+    chipGfx.destroy();
   }
 }

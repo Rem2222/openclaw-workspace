@@ -18,11 +18,11 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     const variation = 0.85 + Math.random() * 0.30;
     this.speed = Math.round(baseSpeed * variation);
     this.damage = config.damage || 5;
-    this.target = config.target || 'player';
     
     this.alive = true;
     this.attackCooldown = 0;
     this.lightDamageCooldown = 0;
+    this.facingAngle = 0;
     
     // HP bar above monster
     this.hpBarBg = scene.add.rectangle(x, y - 25, 40, 6, 0x333333).setOrigin(0.5);
@@ -95,33 +95,45 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     
     // HARD BARRIER: Monsters cannot enter the light radius
     if (distToCampfire < lightRadius + 30) {
-      // Push monster OUT of light zone
+      // Push monster OUT of light zone with BOTH X and Y
       const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
       const pushDist = lightRadius + 35;
       const targetX = CAMPFIRE_X + Math.cos(pushAngle) * pushDist;
       const targetY = CAMPFIRE_Y + Math.sin(pushAngle) * pushDist;
       
-      this.setPosition(targetX, targetY);
-      this.setVelocity(0);
+      // Use velocity for smooth Y movement
+      const pushSpeed = 120;
+      this.body.setVelocity(
+        Math.cos(pushAngle) * pushSpeed,
+        Math.sin(pushAngle) * pushSpeed
+      );
       
       // Take light damage if very close
       if (distToCampfire < lightRadius + 60 && this.lightDamageCooldown === 0) {
-        this.takeDamage(2);
+        this.takeDamage(1);
         this.lightDamageCooldown = 500;
       }
+      
+      // Update facing
+      this.facingAngle = pushAngle;
+      this.updateFacing();
       return;
     }
     
-    // Chase player
+    // Chase player — guaranteed X AND Y velocity
     const targetX = this.scene.player.x;
     const targetY = this.scene.player.y;
     
-    // Direct chase — uses both X and Y
     const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-    this.setVelocity(
+    this.facingAngle = angle;
+    
+    // Always set BOTH velocity components
+    this.body.setVelocity(
       Math.cos(angle) * this.speed,
       Math.sin(angle) * this.speed
     );
+    
+    this.updateFacing();
     
     // Attack player when close enough
     const distToPlayer = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
@@ -141,6 +153,13 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.setAlpha(1.0);
     }
+  }
+
+  // Update sprite facing based on movement angle
+  updateFacing() {
+    // For asymmetric sprites — flip horizontally based on angle
+    // But don't flip for sprites that should rotate freely
+    // For now, just ensure body velocity reflects direction
   }
 
   attackPlayer() {

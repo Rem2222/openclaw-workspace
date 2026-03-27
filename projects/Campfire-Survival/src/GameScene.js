@@ -72,6 +72,9 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
     
+    // 2.1. Перерисовываем костёр при изменении
+    this.drawCampfire();
+    
     // 3. Update игрока
     this.updatePlayer(delta);
     
@@ -462,12 +465,17 @@ export default class GameScene extends Phaser.Scene {
       this.darkness.fillRect(cx + r, Math.max(0, cy - r), CONFIG.CANVAS_WIDTH - (cx + r), Math.min(CONFIG.CANVAS_HEIGHT, cy + r) - Math.max(0, cy - r));
     }
     
-    // Свечение костра
+    // Свечение костра (рисуем поверх тьмы вокруг, но под костром)
     this.lightGlow.clear();
-    this.lightGlow.fillStyle(0xff9933, 0.2);
-    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.6);
-    this.lightGlow.fillStyle(0xff6600, 0.15);
-    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.3);
+    // Внешнее свечение (большой полупрозрачный круг)
+    this.lightGlow.fillStyle(0xffaa33, 0.4);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.8);
+    // Среднее свечение
+    this.lightGlow.fillStyle(0xff8800, 0.5);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.5);
+    // Яркий центр
+    this.lightGlow.fillStyle(0xffdd44, 0.6);
+    this.lightGlow.fillCircle(cx, cy, lightRadius * 0.2);
   }
   
   updateUI() {
