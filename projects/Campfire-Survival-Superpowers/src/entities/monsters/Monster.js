@@ -271,7 +271,7 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     }
     
     // Visibility: glowing eyes in darkness, full body in light
-    if (distToCampfire > lightRadius) {
+    if (distToCampfire > outerRadius) {
       this.setAlpha(0.2);
     } else {
       this.setAlpha(1.0);
