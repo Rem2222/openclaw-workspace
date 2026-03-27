@@ -201,6 +201,7 @@ export default class GameScene extends Phaser.Scene {
 
   startNewDay() {
     gameState.dayNumber++;
+    gameState.onNewDay(); // Increase difficulty
     gameState.startDay();
     this.bgRect.fillColor = PHASE_COLORS.DAY;
     this.darkness.alpha = DARKNESS_ALPHA.DAY;

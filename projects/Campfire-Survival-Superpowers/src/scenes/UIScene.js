@@ -93,9 +93,9 @@ export default class UIScene extends Phaser.Scene {
       strokeThickness: 3
     }).setOrigin(1, 0.5);
     
-    // Logs counter (bottom left)
-    this.logsText = this.add.text(20, 680, '🪵 Logs: 0', {
-      fontSize: '18px',
+    // Logs counter + Woodpile (bottom left)
+    this.logsText = this.add.text(20, 680, '', {
+      fontSize: '16px',
       fontFamily: 'Arial',
       color: '#8B4513',
       stroke: '#000000',
@@ -194,19 +194,21 @@ export default class UIScene extends Phaser.Scene {
       this.monstersText.setText('');
     }
     
-    // Logs
-    if (gameState.logs !== this.lastLogs) {
-      this.lastLogs = gameState.logs;
-      this.logsText.setText(`🪵 Logs: ${gameState.logs}`);
-    }
+    // Logs + Woodpile
+    const pileCount = gameState.getPileCount ? gameState.getPileCount() : 0;
+    const maxPile = gameState.maxLogsCapacity || 3;
+    const pileText = pileCount > 0 ? ` | 🪵 Pile: ${pileCount}/${maxPile}` : '';
+    this.logsText.setText(`🪵 Logs: ${gameState.logs}${pileText}`);
     
     // Experience points
     this.expText.setText(`⭐ EXP: ${gameState.experience}`);
     
-    // Carried log indicator
+    // Carried log indicator + pile hint
     const gameScene = this.scene.get('GameScene');
     if (gameScene && gameScene.player && gameScene.player.carriedLog) {
-      this.carryText.setText('🪵 Carrying log! (Q to drop / Q near campfire to fuel)');
+      this.carryText.setText('🪵 Carrying | Q: drop/feed');
+    } else if (pileCount > 0) {
+      this.carryText.setText(`🪨 ${pileCount} in pile | Q: feed 1 to fire`);
     } else {
       this.carryText.setText('');
     }

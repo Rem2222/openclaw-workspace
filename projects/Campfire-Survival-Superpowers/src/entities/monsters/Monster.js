@@ -12,23 +12,95 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(3);
     this.body.setImmovable(true);
     
-    this.maxHP = config.hp || 20;
+    // Apply difficulty scaling from gameState
+    const difficulty = gameState.difficultyMultiplier || 1.0;
+    
+    this.maxHP = Math.round((config.hp || 20) * difficulty);
     this.hp = this.maxHP;
-    // ±15% speed variation per monster
-    const baseSpeed = config.speed || 100;
+    // ±15% speed variation per monster (speed also scales with difficulty)
+    const baseSpeed = (config.speed || 100) * difficulty;
     const variation = 0.85 + Math.random() * 0.30;
     this.speed = Math.round(baseSpeed * variation);
-    this.damage = config.damage || 5;
+    this.damage = Math.round((config.damage || 5) * difficulty);
     
     this.alive = true;
     this.attackCooldown = 0;
     this.lightDamageCooldown = 0;
     this.facingAngle = 0;
+    this.legPhase = Math.random() * Math.PI * 2; // For leg animation
     
     // HP bar above monster
     this.hpBarBg = scene.add.rectangle(x, y - 25, 40, 6, 0x333333).setOrigin(0.5);
     this.hpBar = scene.add.rectangle(x - 20, y - 25, 40, 4, 0x00FF00).setOrigin(0, 0.5);
     this.hpBar.setName('hpBar');
+    
+    // SCARY EYES — glow in darkness
+    this.eyeCount = config.eyes || 2;
+    this.eyes = [];
+    for (let i = 0; i < this.eyeCount; i++) {
+      const eyeX = x + (i - (this.eyeCount - 1) / 2) * 8;
+      const eye = scene.add.circle(eyeX, y - 5, 3, 0xFF0000);
+      eye.setBlendMode(Phaser.BlendModes.ADD);
+      eye.setDepth(4);
+      eye.setVisible(false); // Hidden in light
+      this.eyes.push(eye);
+    }
+    
+    // LEGS — creepy animated legs
+    this.legCount = config.legs || 4;
+    this.legs = [];
+    for (let i = 0; i < this.legCount; i++) {
+      const legX = x + (i - (this.legCount - 1) / 2) * 6;
+      const leg = scene.add.rectangle(legX, y + 15, 3, 15, 0x221111);
+      leg.setOrigin(0.5, 0);
+      leg.setDepth(2);
+      leg.setBlendMode(Phaser.BlendModes.NORMAL);
+      leg.setVisible(false); // Hidden in light
+      this.legs.push(leg);
+    }
+    
+    // In-light state (for toggling visibility)
+    this.inLight = false;
+  }
+
+  // Update scary parts based on light exposure
+  // Zones: 'inner' (80% bright), 'outer' (20% dim), 'dark' (outside)
+  updateScaryVisibility(zone) {
+    if (this.visibilityZone === zone) return;
+    this.visibilityZone = zone;
+    
+    // In 'inner': fully visible, no scary parts
+    // In 'outer': slightly dimmed, no scary parts
+    // In 'dark': eyes + legs visible, body hidden
+    
+    if (zone === 'dark') {
+      // Darkness mode: hide body, show eyes + legs
+      this.setVisible(false);
+      this.setAlpha(0);
+      if (this.hpBar) this.hpBar.setVisible(false);
+      if (this.hpBarBg) this.hpBarBg.setVisible(false);
+      
+      this.eyes.forEach(eye => eye.setVisible(true));
+      this.legs.forEach(leg => leg.setVisible(true));
+    } else if (zone === 'outer') {
+      // Outer zone: visible but dim
+      this.setVisible(true);
+      this.setAlpha(0.5);
+      if (this.hpBar) this.hpBar.setVisible(true);
+      if (this.hpBarBg) this.hpBarBg.setVisible(true);
+      
+      this.eyes.forEach(eye => eye.setVisible(true));
+      this.legs.forEach(leg => leg.setVisible(true));
+    } else {
+      // Inner zone: fully visible
+      this.setVisible(true);
+      this.setAlpha(1);
+      if (this.hpBar) this.hpBar.setVisible(true);
+      if (this.hpBarBg) this.hpBarBg.setVisible(true);
+      
+      this.eyes.forEach(eye => eye.setVisible(false));
+      this.legs.forEach(leg => leg.setVisible(false));
+    }
   }
 
   takeDamage(amount, isCrit = false) {
@@ -72,6 +144,10 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     if (this.hpBar) this.hpBar.destroy();
     if (this.hpBarBg) this.hpBarBg.destroy();
     
+    // Destroy scary parts
+    this.eyes.forEach(eye => eye.destroy());
+    this.legs.forEach(leg => leg.destroy());
+    
     const particles = this.scene.add.circle(this.x, this.y, 5, 0xFF6666, 0.8);
     this.scene.tweens.add({
       targets: particles,
@@ -90,6 +166,18 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     return campfire.getLightRadius();
   }
 
+  getCampfireInnerRadius() {
+    const campfire = this.scene.campfire;
+    if (!campfire) return 96;
+    return campfire.getInnerRadius();
+  }
+
+  getCampfireOuterRadius() {
+    const campfire = this.scene.campfire;
+    if (!campfire) return 120;
+    return campfire.getOuterRadius();
+  }
+
   update(time, delta) {
     if (!this.alive || !this.scene || !this.scene.player) return;
     
@@ -97,27 +185,56 @@ export default class Monster extends Phaser.Physics.Arcade.Sprite {
     this.lightDamageCooldown = Math.max(0, this.lightDamageCooldown - delta);
     
     const distToCampfire = Phaser.Math.Distance.Between(this.x, this.y, CAMPFIRE_X, CAMPFIRE_Y);
-    const lightRadius = this.getCampfireLightRadius();
+    const outerRadius = this.getCampfireOuterRadius();
+    const innerRadius = this.getCampfireInnerRadius();
     
-    // HARD BARRIER: Monsters cannot enter the light radius
-    if (distToCampfire < lightRadius + 30) {
-      // Push monster OUT of light zone with BOTH X and Y
-      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
-      const pushDist = lightRadius + 35;
-      const targetX = CAMPFIRE_X + Math.cos(pushAngle) * pushDist;
-      const targetY = CAMPFIRE_Y + Math.sin(pushAngle) * pushDist;
+    // Update scary visibility based on light exposure
+    // In inner zone (80%): visible, full brightness
+    // In outer zone (20%): visible but dim
+    // Outside outer zone: darkness (eyes + legs only)
+    let visibilityZone = 'dark';
+    if (distToCampfire < innerRadius) {
+      visibilityZone = 'inner';
+    } else if (distToCampfire < outerRadius) {
+      visibilityZone = 'outer';
+    }
+    this.updateScaryVisibility(visibilityZone);
+    
+    // Animate legs when in darkness
+    if (visibilityZone === 'dark') {
+      this.legPhase += delta * 0.01;
+      this.legs.forEach((leg, i) => {
+        const legOffset = Math.sin(this.legPhase + i * 0.8) * 5;
+        leg.setAngle(legOffset);
+        leg.y = this.y + 12;
+        leg.x = this.x + (i - (this.legCount - 1) / 2) * 6;
+      });
       
-      // Use velocity for smooth Y movement
+      // Pulse eyes in darkness
+      this.eyes.forEach((eye, i) => {
+        const pulse = 0.7 + Math.sin(time * 0.005 + i) * 0.3;
+        eye.setAlpha(pulse);
+        eye.x = this.x + (i - (this.eyeCount - 1) / 2) * 8;
+        eye.y = this.y - 5;
+      });
+    }
+    
+    // HARD BARRIER: Monsters cannot enter the INNER light zone (80%)
+    if (distToCampfire < innerRadius + 30) {
+      // Push monster OUT of inner light zone
+      const pushAngle = Phaser.Math.Angle.Between(CAMPFIRE_X, CAMPFIRE_Y, this.x, this.y);
+      const pushDist = innerRadius + 35;
+      
       const pushSpeed = 120;
       this.body.setVelocity(
         Math.cos(pushAngle) * pushSpeed,
         Math.sin(pushAngle) * pushSpeed
       );
       
-      // Take light damage if very close (reduced 10x - was killing too fast)
-      if (distToCampfire < lightRadius + 60 && this.lightDamageCooldown === 0) {
+      // Take light damage if very close (inner zone)
+      if (distToCampfire < innerRadius + 40 && this.lightDamageCooldown === 0) {
         this.takeDamage(1);
-        this.lightDamageCooldown = 5000; // 5 seconds between damage ticks (was 500ms)
+        this.lightDamageCooldown = 3000; // 3 seconds between damage
       }
       
       // Update facing

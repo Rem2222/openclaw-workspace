@@ -102,9 +102,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.tryPickupLog();
     }
     
-    // Drop log (Q) — drop or feed to campfire
-    if (Phaser.Input.Keyboard.JustDown(this.wasd.drop) && this.carriedLog) {
-      this.dropLog();
+    // Drop/Feed log (Q)
+    if (Phaser.Input.Keyboard.JustDown(this.wasd.drop)) {
+      if (this.carriedLog) {
+        this.dropLog();
+      } else if (gameState.getPileCount() > 0) {
+        // Feed from pile if not carrying anything
+        this.feedFromPile();
+      }
     }
   }
 
@@ -143,6 +148,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       // Drop at current position
       log.drop(this.x, this.y + 20);
+    }
+  }
+
+  // Feed one log from woodpile to campfire
+  feedFromPile() {
+    if (gameState.getPileCount() <= 0) return;
+    if (!this.scene.logs) return;
+    
+    // Get the last log in pile
+    const pileLogs = this.scene.logs.getChildren().filter(l => l.active && l.isInPile);
+    if (pileLogs.length > 0) {
+      const logToFeed = pileLogs[pileLogs.length - 1]; // Take most recent
+      logToFeed.feedFromPile();
     }
   }
 

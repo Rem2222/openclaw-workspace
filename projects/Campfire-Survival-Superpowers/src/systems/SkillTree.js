@@ -15,8 +15,9 @@ export const SKILL_TREE = {
     color: 0x44FF44,
     skills: [
       { id: 'auto_chop', name: 'Swift Chop', desc: 'Chop faster', cost: 1, effect: () => { gameState.chopSpeed *= 1.5; }, perk: true },
-      { id: 'more_logs', name: 'Lucky Logger', desc: '+1 log per tree', cost: 2, effect: () => { gameState.logsPerTree += 1; }, perk: false },
-      { id: 'exp_boost', name: 'Explorer', desc: '+1 EXP per wave', cost: 3, effect: () => { gameState.expPerWave += 1; }, perk: false }
+      { id: 'woodpile', name: 'Woodpile', desc: '+2 woodpile capacity', cost: 2, effect: () => { gameState.maxLogsCapacity += 2; }, perk: true },
+      { id: 'more_logs', name: 'Lucky Logger', desc: '+1 log per tree', cost: 3, effect: () => { gameState.logsPerTree += 1; }, perk: false },
+      { id: 'exp_boost', name: 'Explorer', desc: '+1 EXP per wave', cost: 4, effect: () => { gameState.expPerWave += 1; }, perk: false }
     ]
   },
   survival: {

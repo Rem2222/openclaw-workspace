@@ -5,8 +5,10 @@ export default class Crawler extends Monster {
     super(scene, x, y, 'crawler', {
       hp: 25,
       speed: 80,
-      damage: 5,  // was 25, now 5
-      target: 'player'
+      damage: 5,
+      target: 'player',
+      eyes: 2, // 2 angry eyes
+      legs: 6 // Many legs!
     });
   }
 }

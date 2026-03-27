@@ -51,6 +51,43 @@ class GameState {
     
     // Campfire fuel (managed by Campfire entity, but tracked here for UI)
     this.campfireFuel = 100;
+    
+    // Woodpile system — logs stored near campfire don't despawn
+    this.maxLogsCapacity = 3; // base capacity
+    this.logsPile = []; // array of {x, y} positions
+    
+    // Progressive difficulty — increases each day
+    this.difficultyMultiplier = 1.0; // 1.0 = base, 1.3 = +30% per day
+    this.fuelConsumptionRate = 1.0; // how fast fuel burns
+  }
+
+  // Add a log to the woodpile (returns true if successful)
+  addLogToPile(x, y) {
+    if (this.logsPile.length >= this.maxLogsCapacity) {
+      return false; // pile full
+    }
+    this.logsPile.push({ x, y, active: true });
+    return true;
+  }
+
+  // Remove a log from pile (for feeding campfire)
+  removeLogFromPile() {
+    if (this.logsPile.length > 0) {
+      return this.logsPile.pop();
+    }
+    return null;
+  }
+
+  // Get pile count
+  getPileCount() {
+    return this.logsPile.filter(l => l.active).length;
+  }
+
+  // Increase difficulty for new day
+  onNewDay() {
+    this.difficultyMultiplier += 0.15; // +15% per day
+    this.fuelConsumptionRate += 0.1; // +10% fuel burn per day
+    console.log(`Day ${this.dayNumber}: Difficulty ${this.difficultyMultiplier.toFixed(2)}x, Fuel rate ${this.fuelConsumptionRate.toFixed(2)}x`);
   }
 
   startDay() {

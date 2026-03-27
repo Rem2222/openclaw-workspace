@@ -6,7 +6,9 @@ export default class Wisp extends Monster {
       hp: 15,
       speed: 120,
       damage: 3,
-      target: 'player'
+      target: 'player',
+      eyes: 2, // 2 glowing eyes
+      legs: 0 // Floating, no legs
     });
     
     this.bobPhase = Math.random() * Math.PI * 2;
@@ -26,5 +28,13 @@ export default class Wisp extends Monster {
     this.setScale(1, 1 + bobOffset * 0.02);
     
     super.update(time, delta);
+    
+    // Update eye positions to follow bob
+    if (this.eyes && this.scene) {
+      this.eyes.forEach((eye, i) => {
+        eye.x = this.x + (i - 0.5) * 10;
+        eye.y = this.y - 8 + bobOffset * 0.5;
+      });
+    }
   }
 }

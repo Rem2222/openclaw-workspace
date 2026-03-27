@@ -16,28 +16,52 @@ export default class Campfire extends Phaser.Physics.Arcade.Sprite {
     this.maxHP = CAMPFIRE_MAX_HP;
     this.fuel = 100; // Current fuel level (0-100), determines light radius
     
-    // Light circle (visual only)
+    // Base light settings
     this.baseLightRadius = 120;
     this.maxLightRadius = 400;
-    this.lightCircle = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, this.getLightRadius(), 0xFF9500, 0.25);
-    this.lightCircle.setDepth(0);
     
-    // ERASE circle for darkness mask
-    this.campfireLight = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, this.getLightRadius() + 40, 0x000000, 0);
-    this.campfireLight.setBlendMode(Phaser.BlendModes.ERASE);
-    this.campfireLight.setDepth(11);
+    // GRADIENT LIGHT SYSTEM:
+    // Inner 80%: BRIGHT - monsters CAN'T pass (ERASE blend)
+    // Outer 20%: DIM - monsters CAN pass but are visible
+    
+    // Inner bright light (ERASE - removes darkness)
+    const innerRadius = this.getInnerRadius();
+    this.innerLight = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, innerRadius, 0x000000, 0);
+    this.innerLight.setBlendMode(Phaser.BlendModes.ERASE);
+    this.innerLight.setDepth(10); // ERASE depth
+    
+    // Outer dim light (visibility zone - semi-transparent)
+    const outerRadius = this.getLightRadius();
+    this.outerLight = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, outerRadius, 0xFFAA44, 0.08);
+    this.outerLight.setDepth(9); // Below ERASE
+    this.outerLight.setBlendMode(Phaser.BlendModes.ADD);
+    
+    // Ambient glow (visual, around campfire)
+    this.lightCircle = scene.add.circle(CAMPFIRE_X, CAMPFIRE_Y, this.getLightRadius() * 0.3, 0xFF9500, 0.15);
+    this.lightCircle.setDepth(2);
     
     // Animated glow
     this.createGlow();
     
-    // Fuel drain timer — campfire slowly dies
-    this.fuelDrainRate = 0.3; // fuel per second during day
+    // Fuel drain settings
+    this.fuelDrainRate = 0.3; // per second during day
     this.fuelDrainNightRate = 0.8; // faster at night
   }
 
   getLightRadius() {
-    const ratio = this.fuel / 100;
-    return Math.max(60, this.baseLightRadius + (this.maxLightRadius - this.baseLightRadius) * ratio);
+    // Total light radius (inner + outer)
+    const fuelRatio = this.fuel / 100;
+    return Math.max(60, this.baseLightRadius + (this.maxLightRadius - this.baseLightRadius) * fuelRatio);
+  }
+
+  getInnerRadius() {
+    // Inner bright zone = 80% of total radius
+    return this.getLightRadius() * 0.8;
+  }
+
+  getOuterRadius() {
+    // Outer dim zone = 20% of total radius
+    return this.getLightRadius();
   }
 
   createGlow() {
@@ -78,38 +102,102 @@ export default class Campfire extends Phaser.Physics.Arcade.Sprite {
   }
 
   updateVisuals() {
-    const radius = this.getLightRadius();
-    const ratio = this.fuel / 100;
+    const totalRadius = this.getLightRadius();
+    const innerRadius = this.getInnerRadius();
     
-    this.lightCircle.setRadius(radius);
-    this.lightCircle.setAlpha(ratio * 0.25 + 0.05);
-    
-    if (this.campfireLight) {
-      this.campfireLight.setRadius(radius + 40);
+    // Update inner (barrier) light
+    if (this.innerLight) {
+      this.innerLight.setRadius(innerRadius + 30); // +30 for the barrier offset
     }
     
-    // Glow intensity
-    if (this.glow) {
-      this.glow.setScale(0.5 + ratio * 0.7);
+    // Update outer (visibility) light
+    if (this.outerLight) {
+      this.outerLight.setRadius(totalRadius);
+      const fuelRatio = this.fuel / 100;
+      this.outerLight.setAlpha(fuelRatio * 0.1 + 0.02);
+    }
+    
+    // Update ambient glow
+    if (this.lightCircle) {
+      this.lightCircle.setRadius(totalRadius * 0.3);
+      this.lightCircle.setAlpha((this.fuel / 100) * 0.15 + 0.05);
     }
   }
 
   update(time, delta) {
-    // Drain fuel over time
+    // Fuel consumption (scales with difficulty)
+    const difficultyRate = gameState.fuelConsumptionRate || 1.0;
     const isNight = gameState.dayPhase === 'night';
     const drainRate = isNight ? this.fuelDrainNightRate : this.fuelDrainRate;
-    const drain = drainRate * (delta / 1000);
+    const drainAmount = drainRate * difficultyRate * (delta / 1000);
     
-    this.fuel = Math.max(0, this.fuel - drain);
-    gameState.campfireFuel = this.fuel;
+    this.fuel = Math.max(0, this.fuel - drainAmount);
     
-    // Update visuals if changed significantly
+    // Check if campfire died
+    if (this.fuel <= 0 && this.alive !== false) {
+      this.extinguish();
+    }
+    
     this.updateVisuals();
     
-    // Game over if fuel hits 0 and it's night
-    if (this.fuel <= 0 && isNight) {
-      // Don't immediately game over — give a chance, but no more light protection
-      // Light is at minimum radius
+    // Animate glow
+    if (this.glow) {
+      this.glow.setPosition(this.x, this.y - 10);
     }
+    
+    // Sync light circles with campfire position
+    if (this.innerLight) this.innerLight.setPosition(this.x, this.y);
+    if (this.outerLight) this.outerLight.setPosition(this.x, this.y);
+    if (this.lightCircle) this.lightCircle.setPosition(this.x, this.y);
+  }
+
+  extinguish() {
+    this.alive = false;
+    
+    // Fade out visual
+    this.scene.tweens.add({
+      targets: [this, this.glow, this.lightCircle],
+      alpha: 0,
+      duration: 1000,
+      onComplete: () => {
+        if (this.glow) this.glow.destroy();
+        if (this.lightCircle) this.lightCircle.destroy();
+        if (this.innerLight) this.innerLight.destroy();
+        if (this.outerLight) this.outerLight.destroy();
+      }
+    });
+    
+    // Extinguish particles
+    for (let i = 0; i < 5; i++) {
+      this.scene.time.delayedCall(i * 200, () => {
+        const smoke = this.scene.add.circle(
+          this.x + Phaser.Math.Between(-20, 20),
+          this.y - 10,
+          Phaser.Math.Between(8, 15),
+          0x444444,
+          0.4
+        );
+        smoke.setDepth(5);
+        
+        this.scene.tweens.add({
+          targets: smoke,
+          y: smoke.y - 80,
+          alpha: 0,
+          scale: 2,
+          duration: 1500,
+          onComplete: () => smoke.destroy()
+        });
+      });
+    }
+    
+    gameState.gameOver = true;
+  }
+
+  destroy() {
+    if (this.innerLight) this.innerLight.destroy();
+    if (this.outerLight) this.outerLight.destroy();
+    if (this.lightCircle) this.lightCircle.destroy();
+    if (this.glow) this.glow.destroy();
+    super.destroy();
   }
 }

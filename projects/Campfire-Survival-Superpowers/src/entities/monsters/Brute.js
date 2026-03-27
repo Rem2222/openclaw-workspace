@@ -5,8 +5,10 @@ export default class Brute extends Monster {
     super(scene, x, y, 'brute', {
       hp: 60,
       speed: 50,
-      damage: 8,  // was 40, now 8
-      target: 'player'
+      damage: 8,
+      target: 'player',
+      eyes: 2, // 2 small mean eyes
+      legs: 4 // Thick legs
     });
   }
 }
