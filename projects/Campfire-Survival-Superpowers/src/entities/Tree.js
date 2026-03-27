@@ -167,8 +167,8 @@ export default class Tree extends Phaser.GameObjects.Sprite {
     const log = new Log(this.scene, this.x, this.y);
     this.scene.logs.add(log);
     
-    if (dist < 60) {
-      // Auto pickup if player is close
+    if (dist < 60 && !this.scene.player.carriedLog) {
+      // Auto pickup if player is close AND not already carrying a log
       this.scene.player.carriedLog = log;
       log.isCarried = true;
       log.setDepth(6);

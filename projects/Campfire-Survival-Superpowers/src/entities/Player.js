@@ -64,8 +64,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.attack(time);
     }
     
-    // Pickup log (E) — pick up nearest log
-    if (Phaser.Input.Keyboard.JustDown(this.wasd.pickup) && !this.carriedLog) {
+    // Pickup log (E) — pick up nearest log (if not already carrying an active log)
+    if (Phaser.Input.Keyboard.JustDown(this.wasd.pickup) && (!this.carriedLog || !this.carriedLog.active)) {
       this.tryPickupLog();
     }
     

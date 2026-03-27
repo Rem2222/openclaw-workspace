@@ -46,6 +46,12 @@ export default class Log extends Phaser.GameObjects.Sprite {
   feedToCampfire() {
     if (!this.active) return;
     this.active = false;
+    this.isCarried = false; // Mark as not carried (in case check happens before destroy)
+    
+    // Clear player's carriedLog reference so they can pick up another log
+    if (this.scene.player) {
+      this.scene.player.carriedLog = null;
+    }
     
     const cx = this.scene.campfire ? this.scene.campfire.x : this.scene.campfireX || 640;
     const cy = this.scene.campfire ? this.scene.campfire.y : this.scene.campfireY || 360;
