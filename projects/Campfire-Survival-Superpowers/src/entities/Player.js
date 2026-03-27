@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { PLAYER_SPEED, PLAYER_ATTACK_RANGE, PLAYER_ATTACK_COOLDOWN, CAMPFIRE_X, CAMPFIRE_Y } from '../config/constants.js';
+import gameState from '../systems/GameState.js';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
