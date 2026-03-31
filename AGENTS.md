@@ -179,7 +179,8 @@ This prevents relying on outdated file analysis when LCM has fresher context.
 2. **Что сделали** — выполненные задачи
 3. **Сколько токенов** — через `session_status`
 4. **Задачи на потом** — что осталось сделать
-5. **Git бэкап** — коммит + пуш в GitHub (автоматически)
+5. **Auto-dream** — запуск цикла консолидации памяти (если ещё не было сегодня)
+6. **Git бэкап** — коммит + пуш в GitHub (автоматически)
 
 **Формат:**
 ```
@@ -387,3 +388,42 @@ This is a starting point. Add your own conventions, style, and rules as you figu
 
 **Note:** The orchestrator mode likely involves project planning, task breakdown, and execution coordination. Stick to the instructions in the PROMT file.
 
+## Knowledge Protocol (ByteRover)
+This agent uses ByteRover (`brv`) as its long-term structured memory.
+You MUST use this for gathering contexts before any work. This is a Knowledge management for AI agents. Use `brv` to store and retrieve project patterns, decisions, and architectural rules in .brv/context-tree.
+1.  **Start:** Before answering questions, run `/home/rem/.brv-cli/bin/brv query "<topic>"` to load existing patterns.
+2.  **Finish:** After completing a task, run `/home/rem/.brv-cli/bin/brv curate "<summary>"` to save knowledge.
+3.  **Don't Guess:** If you don't know anything, query it first.
+4.  **Response Format:** When using knowledge, optionally cite it or mention storage:
+    - "Based on brv contexts at `.brv/context-trees/...` and my research..."
+    - "I also stored successfully knowledge to brv context-tree."
+
+---
+
+## 🔍 Методы поиска данных
+
+**Доступно 4 метода поиска:**
+
+| Метод | Назначение | Команда |
+|-------|-----------|---------|
+| **LCM** | История чатов | `lcm_grep`, `lcm_expand_query` |
+| **memory_search** | Личная память | `memory_search`, `memory_get` |
+| **byterover** | Проектные знания | `brv query` |
+| **web_search** | Интернет | `web_search`, `web_fetch` |
+
+**После каждого ответа с поиском добавляй в скобках:**
+
+```
+(Использовал поиск: LCM, ответ найден в истории чатов)
+(Использовал поиск: memory_search, ответ найден в MEMORY.md)
+(Использовал поиск: byterover, ответ найден в .brv/context-tree)
+(Использовал поиск: web_search, ответ найден в интернете)
+```
+
+**Пример:**
+
+> Вот ответ на твой вопрос про архитектуру API.
+>
+> (Использовал поиск: memory_search, ответ найден в MEMORY.md)
+
+---

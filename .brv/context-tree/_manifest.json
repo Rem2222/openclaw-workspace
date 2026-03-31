@@ -1,0 +1,49 @@
+{
+  "active_context": [
+    {
+      "order": 3,
+      "path": "_index.md",
+      "tokens": 284,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "facts/_index.md",
+      "tokens": 227,
+      "type": "summary"
+    },
+    {
+      "order": 1,
+      "path": "facts/personal/_index.md",
+      "tokens": 142,
+      "type": "summary"
+    },
+    {
+      "importance": 50,
+      "path": "facts/context.md",
+      "tokens": 115,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "facts/personal/context.md",
+      "tokens": 48,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "facts/personal/user_profile.md",
+      "tokens": 152,
+      "type": "context"
+    }
+  ],
+  "generated_at": "2026-03-31T19:32:30.838Z",
+  "lane_tokens": {
+    "contexts": 315,
+    "stubs": 0,
+    "summaries": 653
+  },
+  "source_fingerprint": "5716ab7c30c0f9cf4e9584d688eb82a742939fd749b6647539ffa94e04067732",
+  "total_tokens": 968,
+  "version": 1
+}

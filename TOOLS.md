@@ -45,4 +45,7 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 Add whatever helps you do your job. This is your cheat sheet.
 
-
+## ByteRover (Memory)
+- **Query:** `/home/rem/.brv-cli/bin/brv query "auth patterns"` (Check existing knowledge)
+- **Curate:** `/home/rem/.brv-cli/bin/brv curate "Auth uses JWT in cookies"` (Save new knowledge)
+- **Sync:** `/home/rem/.brv-cli/bin/brv pull` / `/home/rem/.brv-cli/bin/brv push` (Sync with team - requires login)
