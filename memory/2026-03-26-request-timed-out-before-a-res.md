@@ -157,3 +157,5 @@ Sender (untrusted metadata):
 ```
 
 Модель?
+
+<!-- consolidated -->
