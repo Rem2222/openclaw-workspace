@@ -47,6 +47,7 @@ export default function Projects() {
   const [taskSessions, setTaskSessions] = useState({});
   const [highlightIssueId, setHighlightIssueId] = useState(null);
   const [sessionTaskMap, setSessionTaskMap] = useState({}); // taskKey -> sessionKey
+  const [taskResults, setTaskResults] = useState({}); // issueId -> result text
 
   useEffect(() => {
     loadIssues();
@@ -81,6 +82,16 @@ export default function Projects() {
       .then(r => r.json())
       .then(data => {
         setSessionTaskMap(data || {});
+      })
+      .catch(() => {});
+  }, []);
+
+  // Загружаем результаты задач
+  useEffect(() => {
+    fetch('/api/issues/results')
+      .then(r => r.json())
+      .then(data => {
+        setTaskResults(data || {});
       })
       .catch(() => {});
   }, []);
@@ -510,16 +521,19 @@ export default function Projects() {
                                   style={{ fontSize: '11px', padding: '4px 12px' }}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  🔹 Сессия
+                                  🔹 Сессия/Агент
                                 </Link>
                               )}
-                              {issue.status !== 'closed' && issue.project && (
+                              {issue.id && taskResults[issue.id] && (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleArchiveProject(issue.project); }}
                                   className="btn btn-ghost"
-                                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                                  style={{ fontSize: '11px', padding: '4px 12px' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    alert(taskResults[issue.id]);
+                                  }}
                                 >
-                                  Архивировать
+                                  📋 Результат
                                 </button>
                               )}
                             </div>
