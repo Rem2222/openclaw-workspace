@@ -340,8 +340,19 @@ export default function Monitor() {
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
             {(() => {
-              // Показываем ВСЕ субагенты без фильтрации по проекту
-              const subagentSessions = allSessions.filter(s => s.key?.includes('subagent'));
+              // Фильтруем subagents по проекту если выбран проект
+              let subagentSessions = allSessions.filter(s => s.key?.includes('subagent'));
+              
+              if (projectFilter) {
+                // projectTaskIds — id задач этого проекта
+                const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                // projectSessionKeys — sessionKeys которые маппятся к задачам этого проекта
+                const projectSessionKeys = Object.entries(taskSessionMap)
+                  .filter(([_, issueId]) => projectTaskIds.includes(issueId))
+                  .map(([sessionKey]) => sessionKey);
+                // Фильтруем только subagents этого проекта
+                subagentSessions = subagentSessions.filter(s => projectSessionKeys.includes(s.key));
+              }
               
               if (subagentSessions.length === 0) {
                 return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
