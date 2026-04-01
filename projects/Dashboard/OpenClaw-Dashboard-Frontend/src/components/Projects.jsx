@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 
 const STATUS_SYMBOLS = {
   open: '○',
@@ -458,13 +459,14 @@ export default function Projects() {
                             {/* Кнопки действий */}
                             <div className="detail-item" style={{ gridColumn: '1 / -1', marginTop: '8px', display: 'flex', gap: '8px' }}>
                               {issue.project && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); window.location.hash = `#/monitor?project=${encodeURIComponent(issue.project)}`; }}
+                                <Link
+                                  to={`/monitor?project=${encodeURIComponent(issue.project)}`}
                                   className="btn btn-primary"
                                   style={{ fontSize: '11px', padding: '4px 12px' }}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   📊 Монитор
-                                </button>
+                                </Link>
                               )}
                               {issue.status !== 'closed' && issue.project && (
                                 <button
