@@ -1,15 +1,67 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Subagents() {
   const [subagents, setSubagents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rawData, setRawData] = useState(null);
+  const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
 
   useEffect(() => {
     loadSubagents();
+    loadIssueTitles();
     const interval = setInterval(loadSubagents, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Загружаем titles для Beads issues
+  async function loadIssueTitles() {
+    try {
+      const res = await fetch('/api/issues');
+      const data = await res.json();
+      const issues = data.issues || [];
+      const dataMap = {};
+      issues.forEach(iss => {
+        dataMap[iss.id] = { title: iss.title, project: iss.project };
+      });
+      setIssueData(dataMap);
+    } catch (e) {
+      console.error('Failed to load issue titles:', e);
+    }
+  }
+
+  // Парсим label в human-readable название
+  function parseLabel(label) {
+    if (!label) return { icon: '🤖', text: 'Unknown', issueId: null };
+    
+    // bd:workspace-xxx -> показываем issue title или ID
+    if (label.startsWith('bd:')) {
+      const issueId = label.slice(3);
+      const info = issueData[issueId] || {};
+      const title = info.title || issueId;
+      const project = info.project;
+      // Ссылка на монитор проекта вместо GitHub
+      const url = project ? `/monitor?project=${encodeURIComponent(project)}` : null;
+      return { 
+        icon: '📋', 
+        text: title, 
+        issueId,
+        url
+      };
+    }
+    
+    // review:spec:xxx, review:quality:xxx
+    if (label.startsWith('review:')) {
+      const parts = label.split(':');
+      const type = parts[1]; // spec или quality
+      const issueId = parts[2];
+      const icon = type === 'spec' ? '🔍' : '✅';
+      return { icon, text: issueId, issueId, url: null };
+    }
+    
+    // leaf, full-memory-consolidation и другие
+    return { icon: '🤖', text: label, issueId: null };
+  }
 
   async function loadSubagents() {
     try {
@@ -80,6 +132,26 @@ export default function Subagents() {
     return `${hr}ч ${min % 60}м`;
   };
 
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '—';
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      
+      // Меньше минуты
+      if (diff < 60000) return 'только что';
+      // Меньше часа
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}м назад`;
+      // Меньше суток
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}ч назад`;
+      // Больше суток
+      return `${Math.floor(diff / 86400000)}д назад`;
+    } catch {
+      return '—';
+    }
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'active':
@@ -121,29 +193,52 @@ export default function Subagents() {
               <tr>
                 <th>ID</th>
                 <th>Задача</th>
-                <th>Статус</th>
-                <th>Длительность</th>
                 <th>Модель</th>
-                <th>Токены</th>
+                <th>Канал</th>
+                <th>Тип</th>
+                <th>Активность</th>
                 <th style={{ textAlign: 'right' }}>Действия</th>
               </tr>
             </thead>
             <tbody>
               {subagents.map((subagent) => (
                 <tr key={subagent.id} className="table-nested">
-                  <td><span className="mono">{subagent.id}</span></td>
+                  <td><span className="mono" style={{ fontSize: '11px' }}>{subagent.id?.length > 12 ? subagent.id.substring(0, 12) + '…' : subagent.id}</span></td>
                   <td>
-                    <span style={{ marginRight: '6px' }}>🔧</span>
-                    {subagent.displayName}
+                    {(() => {
+                      const parsed = parseLabel(subagent.displayName);
+                      return (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{parsed.icon}</span>
+                          {parsed.url ? (
+                            <Link to={parsed.url} style={{ color: 'var(--accent)' }}>
+                              {parsed.text}
+                            </Link>
+                          ) : (
+                            <span>{parsed.text}</span>
+                          )}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td>
-                    <span className={`badge ${getStatusBadgeClass(subagent.status)}`}>
-                      {subagent.status}
+                    <span className="badge" style={{ background: 'var(--surface)', fontSize: '11px' }}>
+                      {subagent.model}
                     </span>
                   </td>
-                  <td>{formatDuration(subagent.durationMs)}</td>
-                  <td>{subagent.model}</td>
-                  <td>{subagent.totalTokens?.toLocaleString() || '—'}</td>
+                  <td>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                      {subagent.channel || 'subagent'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge badge-warning">
+                      subagent
+                    </span>
+                  </td>
+                  <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {formatTime(subagent.updatedAt)}
+                  </td>
                   <td style={{ textAlign: 'right' }}>
                     {subagent.status === 'active' && (
                       <button

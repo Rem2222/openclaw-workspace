@@ -178,6 +178,7 @@ router.get('/:id/sessions', async (req, res) => {
 function normalizeIssue(raw) {
   // Определяем проект из title/file path
   const project = extractProject(raw.title || '', raw.file_path || '');
+  console.log('[DEBUG] extractProject:', { title: raw.title, filePath: raw.file_path, project });
 
   return {
     id: raw.id || raw.issue_id || '',
@@ -203,9 +204,13 @@ function normalizeIssue(raw) {
 }
 
 function extractProject(title, filePath) {
-  // Парсим проект из title "[Dashboard]" или file path
+  // Парсим проект из title "[Dashboard]" или "Dashboard:" или file path
   const titleMatch = title.match(/^\[(.+?)\]/);
   if (titleMatch) return titleMatch[1];
+  
+  // Также поддерживаем "Project:" формат (без скобок)
+  const colonMatch = title.match(/^([A-Za-z][A-Za-z0-9_-]+):/);
+  if (colonMatch) return colonMatch[1];
 
   const pathMatch = filePath.match(/projects\/([^\/]+)/);
   if (pathMatch) return pathMatch[1];

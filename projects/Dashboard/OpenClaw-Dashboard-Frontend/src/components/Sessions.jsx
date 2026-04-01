@@ -60,6 +60,7 @@ export default function Sessions() {
   const [deleting, setDeleting] = useState(null);
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
+  const [hideSubagents, setHideSubagents] = useState(true); // По умолчанию скрываем субов
 
   useEffect(() => {
     loadSessions();
@@ -201,7 +202,14 @@ export default function Sessions() {
   }
 
   function getSortedSessions() {
-    const sorted = [...sessions];
+    let filtered = sessions;
+    
+    // Фильтруем субов если включено
+    if (hideSubagents) {
+      filtered = sessions.filter(s => !s.isSubagent);
+    }
+    
+    const sorted = [...filtered];
     sorted.sort((a, b) => {
       let aVal, bVal;
 
@@ -254,13 +262,29 @@ export default function Sessions() {
   }
 
   // Определяем отображение количества
-  const countDisplay = rawData === null ? '-' : rawData.length;
+  const totalCount = sessions.length;
+  const subagentCount = sessions.filter(s => s.isSubagent).length;
+  const visibleCount = hideSubagents ? totalCount - subagentCount : totalCount;
+  const countDisplay = hideSubagents && subagentCount > 0 
+    ? `${visibleCount} из ${totalCount}` 
+    : `${totalCount}`;
 
   return (
     <div className="page">
       <div className="page-header">
-        <h2 className="page-title">Сессии</h2>
-        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} сессий</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="page-title">Сессии</h2>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} сессий</span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', marginLeft: 'auto' }}>
+            <input
+              type="checkbox"
+              checked={hideSubagents}
+              onChange={(e) => setHideSubagents(e.target.checked)}
+              style={{ cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Скрыть субов</span>
+          </label>
+        </div>
       </div>
 
       <div className="card">

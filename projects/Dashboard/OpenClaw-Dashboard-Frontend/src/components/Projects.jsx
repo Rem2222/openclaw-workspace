@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 const STATUS_SYMBOLS = {
   open: '○',
@@ -54,6 +54,21 @@ export default function Projects() {
       loadTaskSessions(expandedId);
     }
   }, [expandedId]);
+
+  // Считаем активные сессии по проекту
+  const projectSessionCounts = useMemo(() => {
+    const counts = {};
+    issues.forEach(issue => {
+      if (issue.project) {
+        const sessions = taskSessions[issue.id] || [];
+        const activeCount = sessions.filter(s => s.status === 'running' || s.status === 'active').length;
+        if (activeCount > 0) {
+          counts[issue.project] = (counts[issue.project] || 0) + activeCount;
+        }
+      }
+    });
+    return counts;
+  }, [issues, taskSessions]);
 
   function loadTaskSessions(issueId) {
     fetch(`/api/issues/${issueId}/sessions`)
@@ -338,13 +353,20 @@ export default function Projects() {
                       </td>
                       <td>
                         {issue.project ? (
-                          <span className="badge" style={{
-                            background: 'var(--surface)',
-                            color: 'var(--text-muted)',
-                            fontSize: '11px'
-                          }}>
-                            {issue.project}
-                          </span>
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            <span className="badge" style={{
+                              background: 'var(--surface)',
+                              color: 'var(--text-muted)',
+                              fontSize: '11px'
+                            }}>
+                              {issue.project}
+                            </span>
+                            {projectSessionCounts[issue.project] > 0 && (
+                              <span className="badge badge-success" title="Активных сессий">
+                                📊 {projectSessionCounts[issue.project]}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <span style={{ color: 'var(--text-muted)' }}>—</span>
                         )}
