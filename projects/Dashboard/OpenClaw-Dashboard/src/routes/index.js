@@ -13,6 +13,7 @@ const issuesRoutes = require('./issues');
 const commandRoutes = require('./command');
 const spawnRoutes = require('./spawn');
 const resultsRoutes = require('./results');
+const monitorRoutes = require('./monitor');
 
 router.use('/agents', agentsRoutes);
 router.use('/tasks', tasksRoutes);
@@ -26,5 +27,6 @@ router.use('/issues/results', resultsRoutes);
 router.use('/issues', issuesRoutes);
 router.use('/command', commandRoutes);
 router.use('/spawn', spawnRoutes);
+router.use('/monitor', monitorRoutes);
 
 module.exports = router;

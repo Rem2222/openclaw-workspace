@@ -3,6 +3,9 @@ import GatewaySelector from '../components/GatewaySelector';
 
 const STORAGE_KEY = 'dashboard.openSessionIn';
 
+// Settings constants
+export const HISTORY_LIMIT = 25;
+
 export default function Settings() {
   const [openSessionIn, setOpenSessionIn] = useState('sessions');
 

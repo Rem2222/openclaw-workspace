@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { HISTORY_LIMIT } from '../pages/Settings';
 
 export default function Monitor() {
   const location = useLocation();
@@ -8,13 +9,20 @@ export default function Monitor() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activities, setActivities] = useState([]);
   const [projects, setProjects] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [projectFilter, setProjectFilter] = useState(null);
   const [taskSessionMap, setTaskSessionMap] = useState({});
   const pollingRef = useRef(null);
   const sessionsLoaded = useRef(false);
+
+  // Activity feed state
+  const [activityItems, setActivityItems] = useState([]);
+  const [activityOffset, setActivityOffset] = useState(0);
+  const [activityTotal, setActivityTotal] = useState(0);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [expandedActivity, setExpandedActivity] = useState({});
+  const activityListRef = useRef(null);
 
   // Читаем project из URL при загрузке и изменении location
   useEffect(() => {
@@ -37,43 +45,64 @@ export default function Monitor() {
     filterSessions();
   }, [projectFilter, allSessions, projects, taskSessionMap]);
 
-  // Загружаем глобальную активность
+  // Загружаем активность при выборе сессии
   useEffect(() => {
-    loadGlobalActivity();
-    const interval = setInterval(loadGlobalActivity, 5000);
-    return () => clearInterval(interval);
-  }, [projectFilter, projects, taskSessionMap]);
+    if (selectedSession) {
+      loadActivity(selectedSession, 0);
+      // Polling for updates
+      pollingRef.current = setInterval(() => {
+        loadActivity(selectedSession, 0, true);
+      }, 5000);
+    }
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [selectedSession]);
 
-  function loadGlobalActivity() {
-    fetch('/api/activity?limit=50')
+  // Infinite scroll handler
+  const handleActivityScroll = useCallback(() => {
+    if (!activityListRef.current || activityLoading) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = activityListRef.current;
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    
+    // Load more when within 5 items of bottom
+    if (scrollBottom < 100 && activityItems.length < activityTotal) {
+      loadMoreActivity();
+    }
+  }, [activityLoading, activityItems.length, activityTotal]);
+
+  function loadActivity(sessionKey, offset = 0, isPolling = false) {
+    if (!projectFilter) {
+      // No project selected - show nothing
+      if (!isPolling) setActivityItems([]);
+      return;
+    }
+    
+    if (isPolling) return; // Skip polling for now, we load once
+    
+    setActivityLoading(true);
+    fetch(`/api/monitor/messages?sessionKey=${encodeURIComponent(sessionKey)}&limit=${HISTORY_LIMIT}&offset=${offset}`)
       .then(r => r.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          // Фильтруем по проекту если выбран
-          if (projectFilter) {
-            const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
-            // Показываем активность связанную с задачами проекта
-            const filtered = data.filter(act => {
-              // Если есть issueId - проверяем принадлежность к проекту
-              if (act.issueId) return projectTaskIds.includes(act.issueId);
-              // Системные события (agentId === "main" или начинается с "main") показываем всегда
-              // Это agent_started, session_created, task_completed и т.д.
-              if (act.agentId === 'main' || act.agentId?.startsWith('main:')) return true;
-              // Если есть agentId - пытаемся найти связь через taskSessionMap
-              const agentKey = `agent:main:subagent:${act.agentId}`;
-              const issueId = taskSessionMap[agentKey];
-              if (issueId) return projectTaskIds.includes(issueId);
-              // Глобальные события (без agentId) показываем всегда
-              if (!act.agentId) return true;
-              return false;
-            });
-            setActivities(filtered.slice(0, 30));
+        if (data.items) {
+          if (offset === 0) {
+            setActivityItems(data.items);
           } else {
-            setActivities(data.slice(0, 30));
+            setActivityItems(prev => [...prev, ...data.items]);
           }
+          setActivityTotal(data.total);
+          setActivityOffset(offset + data.items.length);
         }
       })
-      .catch(() => {});
+      .catch(err => console.error('Failed to load activity:', err))
+      .finally(() => setActivityLoading(false));
+  }
+
+  function loadMoreActivity() {
+    if (selectedSession && activityOffset < activityTotal && !activityLoading) {
+      loadActivity(selectedSession, activityOffset);
+    }
   }
 
   function filterSessions() {
@@ -85,7 +114,6 @@ export default function Monitor() {
       const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
       filtered = allSessions.filter(s => {
         const sessionKey = s.key;
-        // taskSessionMap: { sessionKey: "workspace-xxx" } - простая строка, не объект
         return Object.entries(taskSessionMap).some(([tk, issueId]) => 
           tk === sessionKey && projectTaskIds.includes(issueId)
         );
@@ -97,12 +125,10 @@ export default function Monitor() {
     if (!selectedSession && filtered.length > 0) {
       const active = filtered.find(s => s.status !== 'done') || filtered[0];
       setSelectedSession(active.key);
-      loadMessages(active.key);
     }
   }
 
   function loadTaskSessionMap() {
-    // Загружаем маппинг session -> task
     fetch('/api/issues/session-task-map')
       .then(r => r.json())
       .then(data => {
@@ -112,18 +138,6 @@ export default function Monitor() {
       })
       .catch(() => {});
   }
-
-  // Поллинг каждые 3 секунды
-  useEffect(() => {
-    if (selectedSession) {
-      pollingRef.current = setInterval(() => {
-        loadMessages(selectedSession);
-      }, 3000);
-    }
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, [selectedSession]);
 
   function loadSessions() {
     if (sessionsLoaded.current) return;
@@ -143,7 +157,6 @@ export default function Monitor() {
       });
   }
 
-  // Загружаем сессии один раз
   useEffect(() => {
     loadSessions();
   }, []);
@@ -153,7 +166,6 @@ export default function Monitor() {
       .then(r => r.json())
       .then(data => {
         if (data.issues) {
-          // Группируем по проекту
           const grouped = {};
           data.issues.forEach(issue => {
             const project = issue.project || 'Без проекта';
@@ -174,7 +186,7 @@ export default function Monitor() {
           setMessages(data);
         }
       })
-      .catch(err => console.error('Failed to load messages:', err));
+      .catch(err =>console.error('Failed to load messages:', err));
   }
 
   function getSessionDisplay(session) {
@@ -200,36 +212,101 @@ export default function Monitor() {
     return `${secs}с`;
   }
 
-  // Форматирование времени для активности
-function formatActivityTime(act) {
-    if (act.timestamp) {
-      return new Date(act.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  // Format timestamp
+  function formatTime(timestamp) {
+    if (!timestamp) return '--:--';
+    try {
+      return new Date(timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '--:--';
     }
-    if (act.time) return act.time;
-    return '--:--';
   }
 
-  // Форматирование текста активности
-  function formatActivityText(act) {
-    if (act.message) return act.message;
-    if (act.description) return act.description;
-    if (act.text) return act.text;
-    if (act.type) return act.type;
-    return 'activity';
+  // Get icon for activity type
+  function getActivityIcon(item) {
+    switch (item.type) {
+      case 'tool_call':
+        return '⚡';
+      case 'result':
+        return '✓';
+      case 'error':
+        return '❌';
+      case 'thinking':
+        return '💭';
+      case 'text':
+        return '💬';
+      case 'system':
+        return '📋';
+      case 'session_start':
+        return '🚀';
+      case 'model_change':
+        return '🔄';
+      default:
+        return '📌';
+    }
   }
 
-  // Иконка для типа активности
-  function getActivityIcon(act) {
-    const type = act.type || '';
-    if (type === 'task_started' || type === 'agent_started') return '🚀';
-    if (type === 'task_completed') return '✅';
-    if (type === 'task_failed') return '❌';
-    if (type === 'error') return '💥';
-    if (type === 'warning') return '⚠️';
-    if (type === 'user') return '👤';
-    if (type === 'tool') return '⚡';
-    if (type === 'spawn') return '🔄';
-    return '📌';
+  // Format activity preview
+  function formatActivityPreview(item) {
+    switch (item.type) {
+      case 'tool_call':
+        return `${item.toolName}${item.preview ? ': ' + item.preview : ''}`;
+      case 'result':
+        return `${item.toolName}${item.preview ? ': ' + item.preview : ''}`;
+      case 'error':
+        return `${item.toolName}: ОШИБКА`;
+      case 'text':
+        return item.preview || 'Текст';
+      case 'thinking':
+        return 'Думает...';
+      case 'system':
+        return item.preview || 'Система';
+      case 'session_start':
+        return `Сессия: ${item.sessionId?.slice(0, 8)}`;
+      case 'model_change':
+        return `Модель: ${item.modelId}`;
+      default:
+        return item.type;
+    }
+  }
+
+  // Toggle activity expansion
+  function toggleActivityExpand(itemId) {
+    setExpandedActivity(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  }
+
+  // Render activity item content
+  function renderActivityContent(item) {
+    const isExpanded = expandedActivity[item.id];
+    const content = item.content || item.arguments;
+    
+    if (!content) return null;
+    
+    let contentStr = typeof content === 'object' ? JSON.stringify(content, null, 2) : String(content);
+    const isLong = contentStr.length > 100;
+    
+    return (
+      <div style={{ marginTop: '4px' }}>
+        {isLong && !isExpanded ? (
+          <span style={{ color: 'var(--text-muted)', cursor: 'pointer' }} onClick={() => toggleActivityExpand(item.id)}>
+            {contentStr.slice(0, 100)}...
+            <span style={{ color: 'var(--accent)', marginLeft: '4px' }}>развернуть</span>
+          </span>
+        ) : isLong && isExpanded ? (
+          <div style={{ color: 'var(--text-muted)', cursor: 'pointer' }} onClick={() => toggleActivityExpand(item.id)}>
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '11px' }}>
+              {contentStr}
+            </pre>
+            <span style={{ color: 'var(--accent)' }}>свернуть</span>
+          </div>
+        ) : (
+          <span style={{ color: 'var(--text-muted)' }}>{contentStr}</span>
+        )}
+      </div>
+    );
   }
 
   if (loading) {
@@ -252,7 +329,13 @@ function formatActivityTime(act) {
           <label style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Проект:</label>
           <select 
             value={projectFilter || ''}
-            onChange={e => { setProjectFilter(e.target.value || null); setSelectedSession(null); setMessages([]); setActivities([]); }}
+            onChange={e => { 
+              const val = e.target.value || null;
+              setProjectFilter(val); 
+              setSelectedSession(null); 
+              setMessages([]); 
+              setActivityItems([]);
+            }}
             className="input"
             style={{ width: '180px' }}
           >
@@ -264,72 +347,187 @@ function formatActivityTime(act) {
         </div>
       </div>
 
-      {/* Main content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0 }}>
-        {/* Left: Activity + Messages */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Activity Feed */}
-          <div className="card" style={{ flex: 1, overflow: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>📋 Activity</h3>
-            <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
-              {activities.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Нет активности</div>
-              ) : (
-                activities.map((act, i) => (
-                  <div key={i} style={{ 
-                    padding: '4px 0', 
-                    borderBottom: '1px solid var(--border)',
-                    display: 'flex',
-                    gap: '8px'
-                  }}>
-                    <span style={{ color: 'var(--text-muted)', minWidth: '50px' }}>{formatActivityTime(act)}</span>
-                    <span>{getActivityIcon(act)} {formatActivityText(act)}</span>
-                  </div>
-                ))
-              )}
+      {/* Project Stats Header */}
+      {projectFilter && (
+        <div className="project-stats-header">
+          <div className="stats-grid">
+            {/* Task Progress */}
+            <div className="stat-card-new">
+              <div className="stat-card-icon">📋</div>
+              <div className="stat-card-content">
+                <div className="stat-card-label">Задачи</div>
+                <div className="stat-card-value">
+                  {(() => {
+                    const proj = projects.find(p => p.name === projectFilter);
+                    if (!proj) return '0/0';
+                    const done = proj.issues.filter(i => i.status === 'done').length;
+                    const total = proj.issues.length;
+                    return `${done}/${total}`;
+                  })()}
+                </div>
+                <div className="stat-card-progress">
+                  {(() => {
+                    const proj = projects.find(p => p.name === projectFilter);
+                    if (!proj || proj.issues.length === 0) return null;
+                    const done = proj.issues.filter(i => i.status === 'done').length;
+                    const total = proj.issues.length;
+                    const pct = Math.round((done / total) * 100);
+                    return (
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${pct}%` }}></div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Messages */}
-          <div className="card" style={{ flex: 1, overflow: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>💬 Сообщения</h3>
-            <div style={{ fontSize: '12px' }}>
-              {messages.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Выберите сессию для просмотра сообщений</div>
-              ) : (
-                messages.slice(-20).map((msg, i) => {
-                  const role = msg.message?.role;
-                  const content = msg.message?.content;
-                  const text = Array.isArray(content) 
-                    ? content.map(c => c.text || '').join('')
-                    : (typeof content === 'string' ? content : JSON.stringify(content).slice(0, 100));
-                  
-                  return (
-                    <div key={i} style={{ 
-                      padding: '6px 8px', 
-                      marginBottom: '4px',
-                      borderRadius: '4px',
-                      background: role === 'user' ? 'var(--surface)' : 'transparent',
-                      borderLeft: role === 'user' ? '2px solid var(--accent)' : 'none'
-                    }}>
-                      <span style={{ fontWeight: 'bold', color: role === 'user' ? 'var(--accent)' : 'var(--text-muted)' }}>
-                        {role === 'user' ? '👤' : '🤖'} {role}:
-                      </span>
-                      <span style={{ marginLeft: '8px' }}>
-                        {text.slice(0, 100)}{text.length > 100 ? '...' : ''}
-                      </span>
-                    </div>
-                  );
-                })
-              )}
+            {/* Time Tracker */}
+            <div className="stat-card-new">
+              <div className="stat-card-icon">⏱️</div>
+              <div className="stat-card-content">
+                <div className="stat-card-label">Время</div>
+                <div className="stat-card-value">
+                  {(() => {
+                    const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                    const projectSessionKeys = Object.entries(taskSessionMap)
+                      .filter(([_, issueId]) => projectTaskIds.includes(issueId))
+                      .map(([sessionKey]) => sessionKey);
+                    const totalMs = filteredSessions
+                      .filter(s => projectSessionKeys.includes(s.key))
+                      .reduce((sum, s) => sum + (s.duration || 0), 0);
+                    const secs = Math.floor(totalMs / 1000);
+                    const mins = Math.floor(secs / 60);
+                    const hours = Math.floor(mins / 60);
+                    if (hours > 0) return `${hours}ч ${mins % 60}м`;
+                    if (mins > 0) return `${mins}м`;
+                    return `${secs}с`;
+                  })()}
+                </div>
+                <div className="stat-card-sub">общее время</div>
+              </div>
+            </div>
+
+            {/* Subagent Stats */}
+            <div className="stat-card-new">
+              <div className="stat-card-icon">🔄</div>
+              <div className="stat-card-content">
+                <div className="stat-card-label">Subagents</div>
+                <div className="stat-card-value">
+                  {(() => {
+                    const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                    const projectSessionKeys = Object.entries(taskSessionMap)
+                      .filter(([_, issueId]) => projectTaskIds.includes(issueId))
+                      .map(([sessionKey]) => sessionKey);
+                    const subagentSessions = allSessions.filter(s => 
+                      (s.key?.includes('subagent') || s.label?.startsWith('bd:') || s.label?.includes('subagent')) &&
+                      projectSessionKeys.includes(s.key)
+                    );
+                    return subagentSessions.length;
+                  })()}
+                </div>
+                <div className="stat-card-sub">
+                  {(() => {
+                    const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                    const projectSessionKeys = Object.entries(taskSessionMap)
+                      .filter(([_, issueId]) => projectTaskIds.includes(issueId))
+                      .map(([sessionKey]) => sessionKey);
+                    const subagentSessions = allSessions.filter(s => 
+                      (s.key?.includes('subagent') || s.label?.startsWith('bd:') || s.label?.includes('subagent')) &&
+                      projectSessionKeys.includes(s.key)
+                    );
+                    const doneSessions = subagentSessions.filter(s => s.status === 'done' && s.duration);
+                    if (doneSessions.length === 0) return 'сессий';
+                    const avgMs = doneSessions.reduce((sum, s) => sum + s.duration, 0) / doneSessions.length;
+                    const avgMins = Math.floor(avgMs / 60000);
+                    const avgSecs = Math.floor((avgMs % 60000) / 1000);
+                    return `ср ${avgMins > 0 ? `${avgMins}м` : `${avgSecs}с`}`;
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Count */}
+            <div className="stat-card-new">
+              <div className="stat-card-icon">📊</div>
+              <div className="stat-card-content">
+                <div className="stat-card-label">Активность</div>
+                <div className="stat-card-value">{activityTotal}</div>
+                <div className="stat-card-sub">событий сегодня</div>
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Right: Tasks + Docs */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Main content */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0 }}>
+        {/* Left: Activity Feed */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
+          
+          {!projectFilter ? (
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              Выберите проект для просмотра активности
+            </div>
+          ) : !selectedSession ? (
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              Нет активных сессий для выбранного проекта
+            </div>
+          ) : (
+            <>
+              <div 
+                ref={activityListRef}
+                onScroll={handleActivityScroll}
+                style={{ flex: 1, overflow: 'auto', fontSize: '12px', fontFamily: 'monospace' }}
+              >
+                {activityItems.length === 0 && !activityLoading ? (
+                  <div style={{ color: 'var(--text-muted)' }}>Нет активности</div>
+                ) : (
+                  activityItems.map((item, i) => (
+                    <div 
+                      key={item.id || i} 
+                      style={{ 
+                        padding: '6px 8px', 
+                        borderBottom: '1px solid var(--border)',
+                        background: expandedActivity[item.id] ? 'var(--surface)' : 'transparent',
+                        cursor: (item.content || item.arguments) ? 'pointer' : 'default'
+                      }}
+                      onClick={() => (item.content || item.arguments) && toggleActivityExpand(item.id)}
+                    >
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <span style={{ color: 'var(--text-muted)', minWidth: '50px', flexShrink: 0 }}>
+                          {formatTime(item.timestamp)}
+                        </span>
+                        <span style={{ flexShrink: 0 }}>{getActivityIcon(item)}</span>
+                        <span style={{ flex: 1 }}>
+                          {formatActivityPreview(item)}
+                        </span>
+                      </div>
+                      {(expandedActivity[item.id] || (item.content?.length <= 100 && item.content)) && renderActivityContent(item)}
+                    </div>
+                  ))
+                )}
+                {activityLoading && (
+                  <div style={{ padding: '8px', color: 'var(--text-muted)' }}>Загрузка...</div>
+                )}
+                {!activityLoading && activityItems.length > 0 && activityItems.length < activityTotal && (
+                  <div 
+                    style={{ padding: '8px', color: 'var(--accent)', cursor: 'pointer', textAlign: 'center' }}
+                    onClick={loadMoreActivity}
+                  >
+                    Загрузить ещё ({activityTotal - activityItems.length} осталось)
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right: Tasks + Subagents */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
-          <div className="card" style={{ flex: 1, overflow: 'auto' }}>
+          <div className="card" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>📌 Задачи</h3>
             {projects.length === 0 ? (
               <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
@@ -370,7 +568,6 @@ function formatActivityTime(act) {
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
             {(() => {
-              // Subagent сессии: по ключу или по label (формат "bd:workspace-xxx")
               const isSubagent = (s) => 
                 s.key?.includes('subagent') || 
                 s.label?.startsWith('bd:') || 
@@ -379,9 +576,6 @@ function formatActivityTime(act) {
               let subagentSessions = allSessions.filter(isSubagent);
               
               if (projectFilter) {
-                // При фильтре по проекту показываем:
-                // 1. RUNNING subagents (они активны и видны глобально)
-                // 2. Subagents связанные с задачами выбранного проекта
                 const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
                 const projectSessionKeys = Object.entries(taskSessionMap)
                   .filter(([_, issueId]) => projectTaskIds.includes(issueId))
@@ -390,13 +584,11 @@ function formatActivityTime(act) {
                   s.status === 'running' || projectSessionKeys.includes(s.key)
                 );
               }
-              // Без фильтра - показываем ВСЕ subagent сессии
               
               if (subagentSessions.length === 0) {
                 return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
               }
               
-              // Сортировка: RUNNING сначала, потом DONE, внутри групп по updatedAt (новые первые)
               const sorted = [...subagentSessions].sort((a, b) => {
                 const statusOrder = { running: 0, done: 1 };
                 const statusA = statusOrder[a.status] ?? 2;
@@ -404,22 +596,18 @@ function formatActivityTime(act) {
                 if (statusA !== statusB) return statusA - statusB;
                 const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
                 const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-                return timeB - timeA; // новые первые
+                return timeB - timeA;
               });
               
-              // Функция для получения имени задачи из Beads
               const getTaskName = (session) => {
                 const sessionKey = session.key;
-                //sessionTaskMap[sessionKey] возвращает issueId (строку), не объект
                 const issueId = taskSessionMap[sessionKey];
                 if (issueId) {
-                  // Находим issue по issueId в projects
                   for (const proj of projects) {
                     const issue = proj.issues.find(i => i.id === issueId);
                     if (issue) return issue.title;
                   }
                 }
-                // Fallback: извлекаем из label (формат "bd:workspace-xxx")
                 if (session.label?.startsWith('bd:')) {
                   const id = session.label.slice(3);
                   for (const proj of projects) {
@@ -451,30 +639,6 @@ function formatActivityTime(act) {
                 </div>
               );
             })()}
-          </div>
-
-          {/* Docs / Activity Timeline */}
-          <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>📄 Лента активности</h3>
-            {activities.length === 0 ? (
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Нет активности
-              </div>
-            ) : (
-              <div style={{ fontSize: '11px' }}>
-                {activities.slice(-10).map((act, i) => (
-                  <div key={i} style={{ 
-                    padding: '3px 0', 
-                    borderBottom: '1px solid var(--border)',
-                    display: 'flex',
-                    gap: '8px'
-                  }}>
-                    <span style={{ color: 'var(--text-muted)', minWidth: '45px' }}>{formatActivityTime(act)}</span>
-                    <span>{getActivityIcon(act)} {formatActivityText(act)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
