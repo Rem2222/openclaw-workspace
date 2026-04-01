@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
+const Sessions = () => {
+  const [searchParams] = useSearchParams();
+  const highlight = searchParams.get('highlight');
+  const highlightRef = useRef(null);
+
 const SORT_ICONS = {
   asc: ' ▲',
   desc: ' ▼',
@@ -72,6 +77,15 @@ export default function Sessions() {
     const interval = setInterval(loadSessions, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Скролл к подсвеченной сессии
+  useEffect(() => {
+    if (highlight && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [highlight, sessions]);
 
   // Загружаем titles для Beads issues
   async function loadIssueTitles() {
@@ -302,9 +316,9 @@ export default function Sessions() {
   function getSortedSessions() {
     let filtered = sessions;
     
-    // Фильтруем субов если включено
+    // Фильтруем субов если включено, НО оставляем подсвеченную сессию видимой
     if (hideSubagents) {
-      filtered = sessions.filter(s => !s.isSubagent);
+      filtered = sessions.filter(s => !s.isSubagent || s.sessionKey === highlight);
     }
     
     const sorted = [...filtered];
@@ -427,8 +441,9 @@ export default function Sessions() {
             <tbody>
               {getSortedSessions().map((session) => {
                 const info = session.displayInfo;
+                const isHighlighted = highlight === session.sessionKey;
                 return (
-                  <tr key={session.id} className={session.isSubagent ? 'table-nested' : ''}>
+                  <tr key={session.id} ref={isHighlighted ? highlightRef : null} className={isHighlighted ? 'tr-selected' : (session.isSubagent ? 'table-nested' : '')}>
                     <td>
                       <span className="mono" style={{ fontSize: '11px' }}>
                         {session.id?.length > 12 ? session.id.substring(0, 12) + '…' : session.id}

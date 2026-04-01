@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-01T20:10:35Z",
+  "timestamp": "2026-04-01T20:15:03Z",
   "total": 5,
   "up": 3,
   "down": 2,
@@ -10,15 +10,15 @@
     },
     "Backend": {
       "status": "UP",
-      "response_time": 528
+      "response_time": 275
     },
     "Frontend": {
       "status": "UP",
-      "response_time": 8
+      "response_time": 5
     },
     "OpenMOSS": {
       "status": "UP",
-      "response_time": 4
+      "response_time": 3
     },
     "MissionControl": {
       "status": "DOWN",
