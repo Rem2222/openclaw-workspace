@@ -10,5 +10,6 @@
   "workspace-fde": "Added project header with 4 stat cards: Task Progress (progress bar), Time Tracker, Subagent Stats, Activity Count",
   "workspace-ccy": "Activity section already shows real chat data (tool calls, agent spawns, results) with infinite scroll and expandable details - implementation was completed in previous commit e4adf52",
   "workspace-kxi": "Fixed: Activity and Tasks sections now have max-height with vertical scroll, no more infinite stretch",
-  "workspace-jw6": "Fixed: widgets now show correct calculated data from filtered project data. Tasks: uses project.issues filtered by status. Time: calculates from endedAt-startedAt instead of missing duration field. Subagents: calculates from endedAt-startedAt for average duration. Activity: uses /api/monitor/session-activity endpoint for project-wide activity count."
+  "workspace-jw6": "Fixed: widgets now show correct calculated data from filtered project data. Tasks: uses project.issues filtered by status. Time: calculates from endedAt-startedAt instead of missing duration field. Subagents: calculates from endedAt-startedAt for average duration. Activity: uses /api/monitor/session-activity endpoint for project-wide activity count.",
+  "workspace-a29": "Fixed: Задачи and Субагенты headers now sticky, stay visible when scrolling"
 }

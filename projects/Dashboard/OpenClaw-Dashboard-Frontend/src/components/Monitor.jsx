@@ -678,6 +678,41 @@ export default function Monitor() {
               );
             })()}
           </div>
+
+          {/* Chat Section */}
+          <div className="card" style={{ flex: '0 0 auto', marginTop: '8px' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '12px' }}>💬 Чат</h3>
+            
+            {/* Message Area */}
+            <div style={{ 
+              minHeight: '80px', 
+              maxHeight: '150px',
+              overflow: 'auto',
+              padding: '8px 12px',
+              background: 'var(--elevation-1)',
+              borderRadius: 'var(--radius)',
+              marginBottom: '12px',
+              border: '1px solid var(--border-subtle)'
+            }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', paddingTop: '24px' }}>
+                Выберите сессию для начала чата
+              </div>
+            </div>
+            
+            {/* Input Area */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                className="input"
+                placeholder="Введите сообщение..."
+                disabled
+                style={{ flex: 1 }}
+              />
+              <button className="btn btn-primary" disabled style={{ padding: '8px 16px' }}>
+                Отправить
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
