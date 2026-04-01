@@ -56,6 +56,9 @@ export default function Monitor() {
             const filtered = data.filter(act => {
               // Если есть issueId - проверяем принадлежность к проекту
               if (act.issueId) return projectTaskIds.includes(act.issueId);
+              // Системные события (agentId === "main" или начинается с "main") показываем всегда
+              // Это agent_started, session_created, task_completed и т.д.
+              if (act.agentId === 'main' || act.agentId?.startsWith('main:')) return true;
               // Если есть agentId - пытаемся найти связь через taskSessionMap
               const agentKey = `agent:main:subagent:${act.agentId}`;
               const issueId = taskSessionMap[agentKey];
