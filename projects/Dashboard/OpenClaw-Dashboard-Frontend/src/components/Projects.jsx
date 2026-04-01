@@ -36,6 +36,27 @@ const STATUS_LABELS = {
   deferred: 'Отложена',
 };
 
+const TYPE_ORDER = ['Аналитика', 'ТЗ', 'Разработка', 'Тесты', 'Исправление', 'Доработка'];
+const TYPE_COLORS = {
+  'Аналитика': '#9b59b6',
+  'ТЗ': '#3498db',
+  'Разработка': '#27ae60',
+  'Тесты': '#f39c12',
+  'Исправление': '#e74c3c',
+  'Доработка': '#1abc9c',
+};
+
+function getIssueType(title) {
+  if (!title) return 'Разработка';
+  const t = title.toLowerCase();
+  if (t.includes('исследован') || t.includes('анализ') || t.includes('аналитик')) return 'Аналитика';
+  if (t.includes('тз') || t.includes('спецификац') || t.includes('требовани') || t.includes('spec')) return 'ТЗ';
+  if (t.includes('тест') || t.includes('проверить') || t.includes('проверка')) return 'Тесты';
+  if (t.includes('починить') || t.includes('исправить') || t.includes('фикс') || t.includes('bug')) return 'Исправление';
+  if (t.includes('доработать') || t.includes('улучшить') || t.includes('оптимизировать')) return 'Доработка';
+  return 'Разработка';
+}
+
 const PRIORITY_COLORS = {
   P0: 'danger',
   P1: 'warning',
@@ -65,6 +86,7 @@ export default function Projects() {
   const [sortDir, setSortDir] = useState('desc');
   const [expandedId, setExpandedId] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [groupByType, setGroupByType] = useState(false);
   const [newProject, setNewProject] = useState('');
   const [creating, setCreating] = useState(false);
   const [taskSessions, setTaskSessions] = useState({});
@@ -72,6 +94,36 @@ export default function Projects() {
   const [sessionTaskMap, setSessionTaskMap] = useState({}); // taskKey -> sessionKey
   const [taskResults, setTaskResults] = useState({}); // issueId -> result text
   const [resultModal, setResultModal] = useState({ open: false, text: '' });
+
+  // Группировка для отображения
+  const displayItems = useMemo(() => {
+    const sorted = [...issues].sort((a, b) => {
+      let aVal = a[sortField] || '';
+      let bVal = b[sortField] || '';
+      if (sortField === 'created') { aVal = a.createdRaw || ''; bVal = b.createdRaw || ''; }
+      if (sortField === 'updated') { aVal = a.updatedRaw || ''; bVal = b.updatedRaw || ''; }
+      if (typeof aVal === 'string') { aVal = aVal.toLowerCase(); bVal = bVal.toLowerCase(); }
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    if (!groupByType) {
+      return sorted.map(issue => ({ type: 'issue', data: issue }));
+    }
+    
+    const items = [];
+    let lastType = null;
+    sorted.forEach(issue => {
+      const type = getIssueType(issue.title);
+      if (type !== lastType) {
+        items.push({ type: 'header', data: type, key: 'header-' + type });
+        lastType = type;
+      }
+      items.push({ type: 'issue', data: issue, key: issue.id });
+    });
+    return items;
+  }, [issues, sortField, sortDir, groupByType]);
 
   useEffect(() => {
     loadIssues();
@@ -327,6 +379,15 @@ export default function Projects() {
           })()}</span>
         </div>
         <div className="header-actions">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <input
+              type="checkbox"
+              checked={groupByType}
+              onChange={(e) => setGroupByType(e.target.checked)}
+              style={{ cursor: 'pointer' }}
+            />
+            По типам
+          </label>
           <button onClick={() => setShowNewForm(!showNewForm)} className="btn btn-primary">
             + Новый проект
           </button>
@@ -444,7 +505,18 @@ export default function Projects() {
                 </tr>
               </thead>
               <tbody>
-                {getSortedIssues().map(issue => (
+                {displayItems.map(item => {
+                  if (item.type === 'header') {
+                    return (
+                      <tr key={item.key} style={{ background: 'var(--surface)' }}>
+                        <td colSpan={6} style={{ padding: '8px 12px', fontWeight: 500, color: TYPE_COLORS[item.data] || 'var(--text-muted)' }}>
+                          {item.data}
+                        </td>
+                      </tr>
+                    );
+                  }
+                  const issue = item.data;
+                  return (
                   <React.Fragment key={issue.id}>
                     <tr
                       onClick={() => toggleExpand(issue.id)}
@@ -616,7 +688,8 @@ export default function Projects() {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                );
+                })}
               </tbody>
             </table>
           )}

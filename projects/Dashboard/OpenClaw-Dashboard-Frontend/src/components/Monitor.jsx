@@ -13,6 +13,7 @@ export default function Monitor() {
   const [expandedRow, setExpandedRow] = useState(null);
   const [projectFilter, setProjectFilter] = useState(null);
   const [taskSessionMap, setTaskSessionMap] = useState({});
+  const [collapsedTypes, setCollapsedTypes] = useState({}); // { [type]: true } if collapsed
   const [chatMessage, setChatMessage] = useState('');
   const pollingRef = useRef(null);
   const sessionsLoaded = useRef(false);
@@ -653,17 +654,26 @@ export default function Monitor() {
                       {TYPE_ORDER.map(type => {
                         const issues = issuesByType[type];
                         if (!issues || issues.length === 0) return null;
+                        const isCollapsed = collapsedTypes[type];
                         return (
                           <div key={type} style={{ marginBottom: '12px' }}>
-                            <div style={{ 
-                              fontSize: '11px', 
-                              color: TYPE_COLORS[type] || 'var(--text-muted)', 
-                              marginBottom: '4px',
-                              fontWeight: 500
-                            }}>
-                              {type} ({issues.length})
+                            <div 
+                              onClick={() => setCollapsedTypes(prev => ({ ...prev, [type]: !prev[type] }))}
+                              style={{ 
+                                fontSize: '11px', 
+                                color: TYPE_COLORS[type] || 'var(--text-muted)', 
+                                marginBottom: '4px',
+                                fontWeight: 500,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <span>{isCollapsed ? '▶' : '▼'}</span>
+                              <span>{type} ({issues.length})</span>
                             </div>
-                            {issues.map(issue => (
+                            {!isCollapsed && issues.map(issue => (
                               <div 
                                 key={issue.id}
                                 onClick={() => window.location.href = `/projects?expand=${issue.id}`}
