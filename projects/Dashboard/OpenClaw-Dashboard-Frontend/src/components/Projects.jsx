@@ -592,6 +592,28 @@ export default function Projects() {
           )}
         </div>
       )}
+
+      {/* Result Modal */}
+      {resultModal.open && (
+        <div className="modal-overlay" onClick={() => setResultModal({ open: false, text: '' })}>
+          <div className="modal-box" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">📋 Результат</h3>
+              <button className="modal-close" onClick={() => setResultModal({ open: false, text: '' })}>
+                ✕
+              </button>
+            </div>
+            <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text)', fontSize: '14px' }}>
+              {resultModal.text}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setResultModal({ open: false, text: '' })}>
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,5 +2,6 @@
   "workspace-j9m": "Тестовая задача выполнена успешно. Кнопка Результат работает!",
   "workspace-0vv": "Fixed: proper date formatting using createdRaw/updatedRaw/closedAtRaw timestamps, sort function uses correct raw fields",
   "workspace-afm": "Fixed: Subagents and Activity sections now show all data correctly",
-  "workspace-9cm": "Fixed: system events (agent=main) now show when project selected - added check for main agent events in filter"
+  "workspace-9cm": "Fixed: system events (agent=main) now show when project selected - added check for main agent events in filter",
+  "workspace-3ad": "Fixed: sessionTaskMap and taskResults now refresh on page focus (onFocus event)"
 }
