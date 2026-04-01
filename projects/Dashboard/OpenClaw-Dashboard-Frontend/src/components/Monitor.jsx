@@ -46,8 +46,9 @@ export default function Monitor() {
       const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
       filtered = allSessions.filter(s => {
         const sessionKey = s.key;
-        return Object.entries(taskSessionMap).some(([tk, info]) => 
-          tk === sessionKey && projectTaskIds.includes(info.issueId)
+        // taskSessionMap: { sessionKey: "workspace-xxx" } - простая строка, не объект
+        return Object.entries(taskSessionMap).some(([tk, issueId]) => 
+          tk === sessionKey && projectTaskIds.includes(issueId)
         );
       });
     }
