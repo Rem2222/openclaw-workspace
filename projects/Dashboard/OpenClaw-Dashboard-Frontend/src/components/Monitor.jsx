@@ -24,6 +24,9 @@ export default function Monitor() {
   const [expandedActivity, setExpandedActivity] = useState({});
   const activityListRef = useRef(null);
 
+  // Project-wide activity count (for header stat)
+  const [projectActivityCount, setProjectActivityCount] = useState(0);
+
   // Читаем project из URL при загрузке и изменении location
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -44,6 +47,11 @@ export default function Monitor() {
   useEffect(() => {
     filterSessions();
   }, [projectFilter, allSessions, projects, taskSessionMap]);
+
+  // Load project activity count when project filter changes
+  useEffect(() => {
+    loadProjectActivityCount();
+  }, [projectFilter]);
 
   // Загружаем активность при выборе сессии
   useEffect(() => {
@@ -176,6 +184,21 @@ export default function Monitor() {
         }
       })
       .catch(() => {});
+  }
+
+  // Load project-wide activity count for header stat
+  function loadProjectActivityCount() {
+    if (!projectFilter) {
+      setProjectActivityCount(0);
+      return;
+    }
+    
+    fetch(`/api/monitor/session-activity?project=${encodeURIComponent(projectFilter)}&limit=0`)
+      .then(r => r.json())
+      .then(data => {
+        setProjectActivityCount(data.total || 0);
+      })
+      .catch(() => setProjectActivityCount(0));
   }
 
   function loadMessages(sessionKey) {
@@ -393,9 +416,18 @@ export default function Monitor() {
                     const projectSessionKeys = Object.entries(taskSessionMap)
                       .filter(([_, issueId]) => projectTaskIds.includes(issueId))
                       .map(([sessionKey]) => sessionKey);
-                    const totalMs = filteredSessions
+                    // Calculate duration from startedAt/endedAt (or Date.now() for running sessions)
+                    const totalMs = allSessions
                       .filter(s => projectSessionKeys.includes(s.key))
-                      .reduce((sum, s) => sum + (s.duration || 0), 0);
+                      .reduce((sum, s) => {
+                        if (s.endedAt && s.startedAt) {
+                          return sum + (s.endedAt - s.startedAt);
+                        }
+                        if (s.startedAt) {
+                          return sum + (Date.now() - s.startedAt);
+                        }
+                        return sum;
+                      }, 0);
                     const secs = Math.floor(totalMs / 1000);
                     const mins = Math.floor(secs / 60);
                     const hours = Math.floor(mins / 60);
@@ -436,9 +468,15 @@ export default function Monitor() {
                       (s.key?.includes('subagent') || s.label?.startsWith('bd:') || s.label?.includes('subagent')) &&
                       projectSessionKeys.includes(s.key)
                     );
-                    const doneSessions = subagentSessions.filter(s => s.status === 'done' && s.duration);
+                    const doneSessions = subagentSessions.filter(s => {
+                      if (s.status !== 'done') return false;
+                      // Check if we have valid duration
+                      return (s.endedAt && s.startedAt);
+                    });
                     if (doneSessions.length === 0) return 'сессий';
-                    const avgMs = doneSessions.reduce((sum, s) => sum + s.duration, 0) / doneSessions.length;
+                    // Calculate durations from endedAt - startedAt
+                    const totalMs = doneSessions.reduce((sum, s) => sum + (s.endedAt - s.startedAt), 0);
+                    const avgMs = totalMs / doneSessions.length;
                     const avgMins = Math.floor(avgMs / 60000);
                     const avgSecs = Math.floor((avgMs % 60000) / 1000);
                     return `ср ${avgMins > 0 ? `${avgMins}м` : `${avgSecs}с`}`;
@@ -452,8 +490,8 @@ export default function Monitor() {
               <div className="stat-card-icon">📊</div>
               <div className="stat-card-content">
                 <div className="stat-card-label">Активность</div>
-                <div className="stat-card-value">{activityTotal}</div>
-                <div className="stat-card-sub">событий сегодня</div>
+                <div className="stat-card-value">{projectActivityCount}</div>
+                <div className="stat-card-sub">событий в проекте</div>
               </div>
             </div>
           </div>
@@ -464,7 +502,7 @@ export default function Monitor() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
         {/* Left: Activity Feed */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
+          <h3 style={{ marginTop: 0, marginBottom: '8px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg)', paddingBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
           
           {!projectFilter ? (
             <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
@@ -528,7 +566,7 @@ export default function Monitor() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
           <div className="card" style={{ flex: 1, minHeight: 0, maxHeight: '50%', overflow: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>📌 Задачи</h3>
+            <h3 style={{ marginTop: 0, position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg)', paddingBottom: '8px' }}>📌 Задачи</h3>
             {projects.length === 0 ? (
               <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
             ) : (
@@ -566,7 +604,7 @@ export default function Monitor() {
 
           {/* Subagents */}
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
-            <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
+            <h3 style={{ marginTop: 0, position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg)', paddingBottom: '8px' }}>🔄 Subagents</h3>
             {(() => {
               const isSubagent = (s) => 
                 s.key?.includes('subagent') || 
