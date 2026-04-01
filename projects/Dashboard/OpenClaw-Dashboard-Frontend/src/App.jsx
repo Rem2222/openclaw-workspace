@@ -12,6 +12,7 @@ import Approvals from './components/Approvals';
 import StatusIndicator from './components/StatusIndicator';
 import Projects from './components/Projects';
 import Settings from './pages/Settings';
+import Monitor from './components/Monitor';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
               <Route path="activity" element={<ActivityFeed />} />
               <Route path="approvals" element={<Approvals />} />
               <Route path="projects" element={<Projects />} />
+              <Route path="monitor" element={<Monitor />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Routes>
