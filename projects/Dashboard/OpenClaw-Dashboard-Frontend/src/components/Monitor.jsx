@@ -461,9 +461,9 @@ export default function Monitor() {
       )}
 
       {/* Main content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
         {/* Left: Activity Feed */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
           <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
           
           {!projectFilter ? (
@@ -527,7 +527,7 @@ export default function Monitor() {
         {/* Right: Tasks + Subagents */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
-          <div className="card" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <div className="card" style={{ flex: 1, minHeight: 0, maxHeight: '50%', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>📌 Задачи</h3>
             {projects.length === 0 ? (
               <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>

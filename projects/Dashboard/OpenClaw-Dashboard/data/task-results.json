@@ -6,5 +6,7 @@
   "workspace-3ad": "Fixed: sessionTaskMap and taskResults now refresh on page focus (onFocus event)",
   "workspace-19u": "Fixed: Result button now shows in a nice modal with dark overlay instead of ugly alert()",
   "workspace-29z": "Fixed: sessionTaskMap now refreshes when returning to tab via focus/visibilitychange events. Added console.log debugging and updated manual refresh button to also reload session data.",
-  "workspace-iy2": "Fixed: Tasks section now has proper bounded layout with minHeight: 0 on flex container and Tasks card, overflow: auto for internal scroll"
+  "workspace-iy2": "Fixed: Tasks section now has proper bounded layout with minHeight: 0 on flex container and Tasks card, overflow: auto for internal scroll",
+  "workspace-fde": "Added project header with 4 stat cards: Task Progress (progress bar), Time Tracker, Subagent Stats, Activity Count",
+  "workspace-ccy": "Activity section already shows real chat data (tool calls, agent spawns, results) with infinite scroll and expandable details - implementation was completed in previous commit e4adf52"
 }
