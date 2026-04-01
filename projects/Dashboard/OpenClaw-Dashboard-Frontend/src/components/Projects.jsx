@@ -67,6 +67,7 @@ export default function Projects() {
   const [highlightIssueId, setHighlightIssueId] = useState(null);
   const [sessionTaskMap, setSessionTaskMap] = useState({}); // taskKey -> sessionKey
   const [taskResults, setTaskResults] = useState({}); // issueId -> result text
+  const [resultModal, setResultModal] = useState({ open: false, text: '' });
 
   useEffect(() => {
     loadIssues();
@@ -95,8 +96,8 @@ export default function Projects() {
     }
   }, [location.search, issues]);
 
-  // Загружаем карту сессий (при загрузке страницы)
-  useEffect(() => {
+  // Функция для загрузки карты сессий
+  const loadSessionTaskMap = React.useCallback(() => {
     fetch('/api/issues/session-task-map')
       .then(r => r.json())
       .then(data => {
@@ -105,8 +106,8 @@ export default function Projects() {
       .catch(() => {});
   }, []);
 
-  // Загружаем результаты задач
-  useEffect(() => {
+  // Функция для загрузки результатов задач
+  const loadTaskResults = React.useCallback(() => {
     fetch('/api/issues/results')
       .then(r => r.json())
       .then(data => {
@@ -114,6 +115,23 @@ export default function Projects() {
       })
       .catch(() => {});
   }, []);
+
+  // Загружаем при монтировании
+  useEffect(() => {
+    loadSessionTaskMap();
+    loadTaskResults();
+  }, [loadSessionTaskMap, loadTaskResults]);
+
+  // Обновляем при фокусе на странице (пользователь вернулся на вкладку)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadSessionTaskMap();
+      loadTaskResults();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [loadSessionTaskMap, loadTaskResults]);
 
   // Считаем активные сессии по проекту
   const projectSessionCounts = useMemo(() => {
@@ -556,7 +574,7 @@ export default function Projects() {
                                   style={{ fontSize: '11px', padding: '4px 12px' }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    alert(taskResults[issue.id]);
+                                    setResultModal({ open: true, text: taskResults[issue.id] });
                                   }}
                                 >
                                   📋 Результат
