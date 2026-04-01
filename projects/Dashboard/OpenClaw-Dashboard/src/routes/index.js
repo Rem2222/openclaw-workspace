@@ -22,9 +22,9 @@ router.use('/cron', cronRoutes);
 router.use('/activity', activityRoutes);
 router.use('/approvals', approvalsRoutes);
 router.use('/gateway', gatewayRoutes);
+router.use('/issues/results', resultsRoutes);
 router.use('/issues', issuesRoutes);
 router.use('/command', commandRoutes);
 router.use('/spawn', spawnRoutes);
-router.use('/issues/results', resultsRoutes);
 
 module.exports = router;

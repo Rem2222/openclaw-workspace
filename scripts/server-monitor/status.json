@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-04-01T19:45:10Z",
+  "timestamp": "2026-04-01T20:10:35Z",
   "total": 5,
   "up": 3,
   "down": 2,
   "servers": {
     "Ollama": {
       "status": "DOWN",
-      "response_time": 46
+      "response_time": 39
     },
     "Backend": {
       "status": "UP",
-      "response_time": 3
+      "response_time": 528
     },
     "Frontend": {
       "status": "UP",

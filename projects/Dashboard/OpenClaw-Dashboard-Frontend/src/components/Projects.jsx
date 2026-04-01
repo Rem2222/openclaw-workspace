@@ -81,7 +81,7 @@ export default function Projects() {
     fetch('/api/issues/session-task-map')
       .then(r => r.json())
       .then(data => {
-        setSessionTaskMap(data || {});
+        setSessionTaskMap(data.map || {});
       })
       .catch(() => {});
   }, []);
@@ -91,7 +91,7 @@ export default function Projects() {
     fetch('/api/issues/results')
       .then(r => r.json())
       .then(data => {
-        setTaskResults(data || {});
+        setTaskResults(data.map || data || {});
       })
       .catch(() => {});
   }, []);
