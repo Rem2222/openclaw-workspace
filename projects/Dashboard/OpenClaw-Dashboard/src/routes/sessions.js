@@ -105,11 +105,10 @@ router.delete('/:sessionKey', async (req, res) => {
 router.get('/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
-    
-    // Find the JSONL file
     const agentsDir = '/home/rem/.openclaw/agents';
     let transcriptPath = null;
     
+    // 1. Сначала проверяем — может это UUID и файл существует напрямую
     if (fs.existsSync(agentsDir)) {
       const agents = fs.readdirSync(agentsDir);
       for (const agent of agents) {
@@ -121,19 +120,65 @@ router.get('/:sessionId', async (req, res) => {
       }
     }
     
+    // 2. Если не нашли — ищем в sessions.json по ключу (sessionId может быть key)
     if (!transcriptPath) {
-      return res.status(404).json({ error: 'Session not found' });
+      const sessionsPath = '/home/rem/.openclaw/agents/main/sessions/sessions.json';
+      try {
+        const content = fs.readFileSync(sessionsPath, 'utf8');
+        const data = JSON.parse(content);
+        
+        // sessionId может быть key в sessions.json
+        const session = data[sessionId];
+        if (session && session.sessionFile) {
+          transcriptPath = session.sessionFile;
+        }
+        
+        // Или ищем сессию где key == sessionId
+        if (!transcriptPath) {
+          for (const [key, sess] of Object.entries(data)) {
+            if (key === sessionId && sess.sessionFile) {
+              transcriptPath = sess.sessionFile;
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore lookup errors
+      }
     }
     
-    // Read and parse JSONL
+    if (!transcriptPath || !fs.existsSync(transcriptPath)) {
+      return res.status(404).json({ error: 'Session transcript not found', sessionId });
+    }
+    
+    // Read and parse JSONL — извлекаем только объекты с message
     const content = fs.readFileSync(transcriptPath, 'utf8');
-    const messages = content.trim().split('\n').map(line => {
+    const lines = content.trim().split('\n');
+    const messages = [];
+    
+    for (const line of lines) {
       try {
-        return JSON.parse(line);
+        const obj = JSON.parse(line);
+        // Берем только объекты с message (это и есть сообщения)
+        if (obj.message) {
+          const msg = obj.message;
+          // content может быть строкой или массивом
+          let text = '';
+          if (typeof msg.content === 'string') {
+            text = msg.content;
+          } else if (Array.isArray(msg.content)) {
+            text = msg.content.map(c => c.text || '').join('\n');
+          }
+          messages.push({
+            role: msg.role,
+            content: text,
+            timestamp: msg.timestamp
+          });
+        }
       } catch {
-        return null;
+        // Skip malformed lines
       }
-    }).filter(Boolean);
+    }
     
     res.json(messages);
   } catch (error) {

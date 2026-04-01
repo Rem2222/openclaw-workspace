@@ -75,10 +75,11 @@ export default function Monitor() {
     loadProjectActivityCount();
   }, [projectFilter]);
 
-  // Загружаем активность при выборе сессии
+  // Загружаем активность и сообщения при выборе сессии
   useEffect(() => {
     if (selectedSession) {
       loadActivity(selectedSession, 0);
+      loadMessages(selectedSession); // Загружаем историю чата
       // Polling for updates
       pollingRef.current = setInterval(() => {
         loadActivity(selectedSession, 0, true);
@@ -788,12 +789,18 @@ export default function Monitor() {
                 </div>
               ) : messages.length > 0 ? (
                 <div style={{ fontSize: '12px' }}>
-                  {messages.map((msg, i) => (
-                    <div key={i} style={{ marginBottom: '8px', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{msg.role || 'system'}:</span>{' '}
-                      <span>{msg.content?.slice(0, 100) || '...'}{msg.content?.length > 100 ? '...' : ''}</span>
-                    </div>
-                  ))}
+                  {messages.map((msg, i) => {
+                    const content = msg.content || '';
+                    const preview = content.length > 200 ? content.slice(0, 200) + '...' : content;
+                    const roleColor = msg.role === 'user' ? 'var(--accent)' : msg.role === 'assistant' ? 'var(--success)' : 'var(--text-muted)';
+                    const roleLabel = msg.role === 'user' ? '👤 Вы' : msg.role === 'assistant' ? '🤖 Агент' : '⚙️ System';
+                    return (
+                      <div key={i} style={{ marginBottom: '8px', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                        <span style={{ color: roleColor, fontWeight: 500 }}>{roleLabel}:</span>
+                        <div style={{ marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{preview}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
