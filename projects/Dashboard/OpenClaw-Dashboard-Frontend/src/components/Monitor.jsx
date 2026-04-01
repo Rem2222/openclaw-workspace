@@ -351,19 +351,15 @@ export default function Monitor() {
           <div className="card" style={{ flex: '0 0 auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Запустите проект чтобы увидеть subagents
+              Нет данных
             </div>
           </div>
 
           {/* Docs */}
           <div className="card" style={{ flex: '0 0 auto' }}>
             <h3 style={{ marginTop: 0 }}>📄 Docs</h3>
-            <div style={{ fontSize: '12px' }}>
-              {selectedSession && (
-                <div style={{ color: 'var(--text-muted)' }}>
-                  Проект: {getSessionDisplay(filteredSessions.find(s => s.key === selectedSession))}
-                </div>
-              )}
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              Нет данных
             </div>
           </div>
         </div>
