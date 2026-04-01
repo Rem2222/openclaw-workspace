@@ -7,7 +7,8 @@ description: >
   (3) user says "let's build", "help me plan", "I want to add X", or "this is broken",
   (4) completing a feature branch — triggers test verification + merge/PR options.
   NOT for: one-liner fixes (just edit), reading code, or non-code tasks.
-  Requires exec tool and sessions_spawn.
+  Requires exec tool, sessions_spawn, and Beads (bd) for task tracking.
+  **Default agents:** GLM-5 (opencode-go/glm-5) — спрашивать при запуске проекта.
 ---
 
 # Superpowers — OpenClaw Edition
@@ -53,6 +54,7 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 - Each task = 2–5 minutes: write test → watch fail → implement → watch pass → commit
 - Save to `docs/plans/YYYY-MM-DD-<feature>.md`
 - Announce: `"I'm using the writing-plans skill to create the implementation plan."`
+- **After saving, immediately create ALL tasks in Beads:** `bd create "[PROJECT] Task N: Description | File: docs/plans/...md#task-N"`
 - After saving, offer two execution modes:
   - **Subagent-driven (current session):** `sessions_spawn` per task + two-stage review
   - **Manual execution:** User runs tasks themselves
@@ -65,14 +67,25 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 
 **See:** [references/subagent-development.md](references/subagent-development.md)
 
+**Default agent model:** `opencode-go/glm-5` (GLM-5) — спрашивать у пользователя при запуске проекта, какой агент использовать.
+
+**Beads (обязательно):**
+1. `bd ready` → показать доступные задачи
+2. `bd update <id> --claim` → начать работу
+3. После завершения: `bd update <id> --status done`
+
 **Per-task loop (OpenClaw):**
 1. `sessions_spawn` an implementer subagent with task + full plan context
+   - **Model:** opencode-go/glm-5 (или выбранный пользователем)
 2. Wait for completion announcement
 3. `sessions_spawn` a spec-reviewer subagent → must confirm code matches spec
+   - **Model:** opencode-go/glm-5
 4. `sessions_spawn` a code-quality reviewer subagent → must approve quality
+   - **Model:** opencode-go/glm-5
 5. Fix any issues, re-review if needed
-6. Mark task done, move to next
-7. Final: dispatch overall code reviewer → hand off to Phase 5
+6. Mark task done in Beads: `bd update <id> --status done`
+7. Move to next task
+8. Final: dispatch overall code reviewer → hand off to Phase 5
 
 **TDD is mandatory in every task.** See [references/tdd.md](references/tdd.md).
 
@@ -100,12 +113,15 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 
 **See:** [references/finishing-branch.md](references/finishing-branch.md)
 
+**Beads:** Убедиться что все задачи закрыты (`bd list` → все ✓).
+
 **Summary:**
 1. Verify all tests pass
-2. Determine base branch
-3. Present 4 options: merge locally / push + PR / keep / discard
-4. Execute choice
-5. Clean up
+2. Verify all Beads tasks are closed: `bd list`
+3. Determine base branch
+4. Present 4 options: merge locally / push + PR / keep / discard
+5. Execute choice
+6. Clean up
 
 ---
 
@@ -113,6 +129,18 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 
 When dispatching implementer or reviewer subagents, use `sessions_spawn`:
 
+**При запуске проекта (Phase 2/3):** Спросить у пользователя, какой агент использовать:
+> "Какую модель использовать для subagent-ов? По умолчанию GLM-5 (opencode-go/glm-5)."
+
+```
+sessions_spawn:
+  task: [Goal + Context + Files + Constraints + Verify + Task text]
+  model: opencode-go/glm-5  # или выбранная пользователем модель
+  mode: run
+  runtime: subagent
+```
+
+**Prompt template:**
 ```
 Goal: [one sentence]
 Context: [why it matters, which plan file]
@@ -142,12 +170,13 @@ Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces
 
 [Beads](https://github.com/steveyegge/beads) — distributed issue tracker for AI agents, powered by Dolt.
 
-**Важно:** Beads используется по умолчанию для управления задачами. Это заменяет txt-файлы прогресса.
+**Важно:** Beads **обязателен** для управления задачами в Superpowers. Это заменяет txt-файлы прогресса. Все задачи должны создаваться, трекаться и закрываться через `bd`.
 
 ### Why Beads?
 - Replaces txt-based task tracking (progress-*.txt)
 - Provides structured storage with `bd` CLI
 - Integrates with git (Dolt = Git for data)
+- Видим прогресс в реальном времени
 
 ### Setup
 ```bash
@@ -155,26 +184,28 @@ cd ~/.openclaw/workspace
 npx @beads/bd init
 ```
 
-### Key Commands
+### Key Commands (обязательно использовать)
 ```bash
-bd create "Task description | File: docs/plans/...md#task-1"  # Create task
-bd ready                    # Show available tasks
-bd show <id>               # View task details
-bd update <id> --claim      # Claim task (open → in_progress)
-bd close <id>              # Close task (done)
-bd list                     # List all tasks
+bd create "Task description | File: docs/plans/...md#task-1"  # Создать задачу
+bd ready                    # Показать доступные задачи
+bd show <id>               # Посмотреть детали задачи
+bd update <id> --claim      # Взять в работу (open → in_progress)
+bd update <id> --status done # Завершить задачу
+bd list                     # Список всех задач
 ```
 
 ### Integration with Superpowers
 
 **Phase 2 (Writing Plans):**
-- After creating plan file: `bd create "[TASK-1] description | File: docs/plans/...md#task-1"`
+1. Создать план в `docs/plans/YYYY-MM-DD-<feature>.md`
+2. **Сразу создать все задачи в Beads:** `bd create "[TASK-N] description | File: docs/plans/...md#task-N"`
 
 **Phase 3 (Development):**
-- `bd ready` → get next task
-- `bd update <id> --claim` → start working
-- Read task details + referenced file section
-- `bd close <id>` → done
+1. `bd ready` → получить следующую задачу
+2. `bd update <id> --claim` → начать работу
+3. Выполнить задачу (subagent или вручную)
+4. `bd update <id> --status done` → закрыть задачу
+5. Повторить для следующей задачи
 
 **What stays the same:**
 - Plan files (markdown) stay for detailed specs
@@ -182,17 +213,24 @@ bd list                     # List all tasks
 - Subagent dispatch via `sessions_spawn`
 
 **What changes:**
-- Manual txt tracking → `bd` commands
+- Manual txt tracking → **обязательно `bd` команды**
 - Task status in Beads, not files
 
 ### Example Workflow
 ```bash
-# After planning phase
-bd create "[Backend] Auth middleware | File: projects/myapp/ТЗ.md#auth"
+# After planning phase — создать ВСЕ задачи
+bd create "[Dashboard] Task 1: Layout | File: docs/plans/2026-04-01-redesign-tasks.md#task-1"
+bd create "[Dashboard] Task 2: Agents | File: docs/plans/2026-04-01-redesign-tasks.md#task-2"
 
-# During development
-bd ready              # Shows the auth task
-bd update workspace-xxx --claim
+# Перед каждой задачей — показать Beads output
+bd ready              # Shows next available task
+bd show workspace-xxx # Details with file reference
+
+# Development
+bd update workspace-xxx --claim    # Start working
 # ... implement ...
-bd close workspace-xxx
+bd update workspace-xxx --status done  # Complete
+
+# Show progress
+bd list
 ```
