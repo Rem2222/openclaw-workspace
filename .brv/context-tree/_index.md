@@ -1,37 +1,75 @@
 ---
-children_hash: 610d2d394ecd460832e3d78f24bfbb8b40ed4ebd0230a4b77c5b5fd4c23a8831
-compression_ratio: 0.9692832764505119
+children_hash: 7bc4298025cfba1eb2471ca4693f82785565772247ba119767178ef9a12f5d71
+compression_ratio: 0.4130962004850445
 condensation_order: 3
-covers: [facts/_index.md]
-covers_token_total: 293
+covers: [facts/_index.md, game_development/_index.md, infrastructure/_index.md, llm_setup/_index.md, one_c_development/_index.md]
+covers_token_total: 1237
 summary_level: d3
-token_count: 284
+token_count: 511
 type: summary
 ---
-# Facts Domain Overview
+# Context Tree Overview
 
-The facts domain serves as a centralized repository for personal information, preferences, and user-specific data that enables personalized interactions across the knowledge base.
+Knowledge base organized into 5 domains covering personal facts, game development, infrastructure, LLM setup, and 1C development.
 
-## Domain Scope
+## facts/
+Personal information and preferences for **Roman**, a 1C programmer learning vibecoding methodology.
 
-**Included:**
-- User identity and professional background
-- Learning goals and interests
-- Personal preferences and settings
+**Key Entry:** `personal/user_profile.md` — Complete profile with profession and learning objectives
 
-**Excluded:**
-- Project-specific information
-- Technical documentation
-- Code implementations
+---
 
-## Current Knowledge Structure
+## game_development/
+Bug fixes for game rendering systems.
 
-### Personal Information
-The domain currently contains profile data for **Roman**, a 1C programmer actively learning vibecoding methodology.
+**Key Fix:** Campfire Survival lighting bug (2026-03-27) — Replaced GeometryMask with 4 positioned darkness rectangles to resolve full-screen blue rendering at depth 200.
 
-**Available Entries:**
-- `personal/user_profile.md` - Complete personal profile with profession and learning objectives
-- `personal/context.md` - Domain-level overview of personal information structure
+**Pattern:** Rendering bugs resolved by simplifying geometry masking to overlay rectangles.
 
-## Usage Guidelines
-Reference this domain when personalizing responses, maintaining user context, or accessing information about professional background and learning focus areas. The domain follows a hierarchical structure with personal information organized under the `personal/` subdomain for clear categorization.
+**See:** `bug_fixes/campfire_survival_lighting_bug.md`
+
+---
+
+## infrastructure/
+Operational components for OpenClaw ecosystem.
+
+### monitoring/
+Server monitoring via `server-monitor/check-servers.py` on 15-minute cron. Monitors 5 servers. HEARTBEAT: 1 hour (changed from 5 min on 2026-03-15).
+
+**See:** `monitoring/server_monitoring_configuration.md`
+
+### telegram_bot/
+Telegram integration using Cloudflare Quick Tunnel. Architecture: Telegram API → Cloudflare Tunnel → OpenClaw webhook.
+
+**Gap:** Permanent tunnel URL required for production.
+
+**See:** `telegram_bot/openclaw_telegram_bot_configuration.md`
+
+---
+
+## llm_setup/
+Local LLM configuration and troubleshooting.
+
+**Working:** qwen2.5:7b (confirmed via direct query)
+**Unavailable:** qwen2.5:27b
+
+**Known Issues:** Subagent interface hangs; vision models unreliable through subagent.
+
+**See:** `ollama_local/ollama_local_configuration.md`
+
+---
+
+## one_c_development/
+1C:Enterprise platform development patterns.
+
+### http_response_parsing/
+**Key Methods:**
+- `ПолучитьСтрокуИзДвоичныхДанных()` — reliable body extraction
+- `ПрочитатьJSON()` — JSON parsing
+- `ZipReader` — gzip decompression
+
+**Avoid:** `HTTPОтвет.ПолучитьТелоКакСтроку()` — unreliable
+
+**Source:** AIChat EPF (`C:\Users\rem\AIChat-build\AIChat.epf`)
+
+**See:** `http_response_parsing/http_response_parsing_in_1c.md`

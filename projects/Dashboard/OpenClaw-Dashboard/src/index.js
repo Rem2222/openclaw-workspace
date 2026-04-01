@@ -20,12 +20,26 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 
+// Static files (production build)
+const staticPath = path.resolve(__dirname, '../../OpenClaw-Dashboard-Frontend/dist');
+app.use(express.static(staticPath));
+
 // API routes
 app.use('/api', routes);
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// SPA catch-all (serve index.html for non-API routes) - размещаем ПОСЛЕ API
+// Используем регулярное выражение без path-to-regexp
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/socket.io')) {
+    res.sendFile(path.join(staticPath, 'index.html'));
+  } else {
+    next();
+  }
 });
 
 // ==================== WebSocket & Real-time Updates ====================

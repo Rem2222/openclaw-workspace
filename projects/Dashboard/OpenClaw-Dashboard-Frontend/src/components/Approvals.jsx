@@ -10,10 +10,10 @@ export default function Approvals() {
   useEffect(() => {
     loadApprovals();
     
-    // Polling каждые 5 секунд (fallback)
+    // Polling every 5 seconds (fallback)
     const interval = setInterval(loadApprovals, 5000);
     
-    // Подписка на WebSocket события
+    // Subscribe to WebSocket events
     if (socket) {
       socket.on('approvals:update', handleApprovalsUpdate);
     }
@@ -28,13 +28,13 @@ export default function Approvals() {
 
   async function loadApprovals() {
     try {
-      console.log('[Approvals] Запрос к /api/approvals...');
+      console.log('[Approvals] Request to /api/approvals...');
       const start = Date.now();
       
       const res = await fetch('/api/approvals');
       const elapsed = Date.now() - start;
       
-      console.log(`[Approvals] Ответ получен за ${elapsed}ms, status: ${res.status}`);
+      console.log(`[Approvals] Response received in ${elapsed}ms, status: ${res.status}`);
       
       const data = await res.json();
       setRawData(data);
@@ -43,11 +43,11 @@ export default function Approvals() {
       console.log('[Approvals] Type:', typeof data, Array.isArray(data) ? 'IS_ARRAY' : 'NOT_ARRAY');
       
       const approvals = Array.isArray(data) ? data : [];
-      console.log(`[Approvals] Количество запросов: ${approvals.length}`);
+      console.log(`[Approvals] Count: ${approvals.length}`);
       
       setApprovals(approvals);
     } catch (error) {
-      console.error('[Approvals] Ошибка:', error);
+      console.error('[Approvals] Error:', error);
       setApprovals([]);
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ export default function Approvals() {
   }
 
   async function handleApprove(id) {
-    if (!confirm('Одобрить это действие?')) return;
+    if (!confirm('Approve this action?')) return;
     try {
       await fetch(`/api/approvals/${id}/approve`, { method: 'POST' });
       loadApprovals();
@@ -65,7 +65,7 @@ export default function Approvals() {
   }
 
   async function handleReject(id) {
-    if (!confirm('Отклонить это действие?')) return;
+    if (!confirm('Reject this action?')) return;
     try {
       await fetch(`/api/approvals/${id}/reject`, { method: 'POST' });
       loadApprovals();
@@ -74,7 +74,7 @@ export default function Approvals() {
     }
   }
 
-  // Обработчик WebSocket события
+  // WebSocket event handler
   function handleApprovalsUpdate(data) {
     console.log('[Approvals] WebSocket update:', data);
     setRawData(data.approvals);
@@ -82,61 +82,60 @@ export default function Approvals() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <div className="loading-screen">Loading...</div>;
   }
 
-  // Определяем отображение количества
+  // Display count
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Очередь подтверждений</h2>
-        <span className="text-sm text-dark-600">{countDisplay} запрос(ов)</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Approval Queue</h2>
+        <span className="badge badge-info">{countDisplay} request(s)</span>
       </div>
 
-      <div className="space-y-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {approvals.map((approval) => (
-          <div key={approval.id} className="bg-dark-800 rounded-xl p-6 border border-dark-700">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-white font-medium mb-2">{approval.action || 'Действие'}</h3>
-                <div className="space-y-1 text-sm">
-                  <p className="text-dark-400">
-                    <span className="text-dark-500">Агент:</span> {approval.agentId?.split('-')[0] || 'Unknown'}
+          <div key={approval.id} className="card">
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
+                  {approval.action || 'Action'}
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '14px' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    <span style={{ color: 'var(--text-subtle)' }}>Agent:</span> {approval.agentId?.split('-')[0] || 'Unknown'}
                   </p>
                   {approval.description && (
-                    <p className="text-dark-500">{approval.description}</p>
+                    <p style={{ color: 'var(--text-subtle)' }}>{approval.description}</p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   onClick={() => handleApprove(approval.id)}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm text-white transition-colors"
+                  className="btn btn-primary"
                 >
-                  ✓ Одобрить
+                  Approve
                 </button>
                 <button
                   onClick={() => handleReject(approval.id)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm text-white transition-colors"
+                  className="btn btn-danger"
                 >
-                  ✗ Отклонить
+                  Reject
                 </button>
               </div>
             </div>
-            <p className="text-xs text-dark-600">
-              Создано: {new Date(approval.createdAt).toLocaleString()}
+            <p className="mono" style={{ fontSize: '12px' }}>
+              Created: {new Date(approval.createdAt).toLocaleString()}
             </p>
           </div>
         ))}
         {approvals.length === 0 && (
-          <div className="text-center py-12 text-dark-600">
-            Очередь пуста
+          <div className="empty-state">
+            <span className="empty-state-icon">✓</span>
+            <span>Queue is empty</span>
           </div>
         )}
       </div>

@@ -80,10 +80,26 @@ export default function Subagents() {
     return `${hr}ч ${min % 60}м`;
   };
 
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'active':
+        return 'badge-success';
+      case 'done':
+        return 'badge-info';
+      case 'error':
+        return 'badge-danger';
+      default:
+        return 'badge-warning';
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="loading-screen">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '20px', height: '20px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <span>Загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -92,70 +108,67 @@ export default function Subagents() {
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Субагенты</h2>
-        <span className="text-sm text-dark-600">{countDisplay} субагентов</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Субагенты</h2>
+        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} субагентов</span>
       </div>
 
-      <div className="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-dark-700">
-            <tr>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">ID</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Задача</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Статус</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Длительность</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Модель</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Токены</th>
-              <th className="text-right text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Действия</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-dark-700">
-            {subagents.map((subagent) => (
-              <tr 
-                key={subagent.id} 
-                className="hover:bg-dark-700 transition-colors bg-dark-700/30"
-              >
-                <td className="px-6 py-4 text-sm text-white font-mono">{subagent.id}</td>
-                <td className="px-6 py-4 text-sm text-dark-400">
-                  🔧 {subagent.displayName}
-                </td>
-                <td className="px-6 py-4 text-sm">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    subagent.status === 'active' 
-                      ? 'bg-green-500/20 text-green-400' 
-                      : subagent.status === 'done'
-                        ? 'bg-blue-500/20 text-blue-400'
-                        : 'bg-yellow-500/20 text-yellow-400'
-                  }`}>
-                    {subagent.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-dark-400">{formatDuration(subagent.durationMs)}</td>
-                <td className="px-6 py-4 text-sm text-dark-400">{subagent.model}</td>
-                <td className="px-6 py-4 text-sm text-dark-400">{subagent.totalTokens?.toLocaleString() || '—'}</td>
-                <td className="px-6 py-4 text-sm text-right">
-                  {subagent.status === 'active' && (
-                    <button
-                      onClick={() => handleKill(subagent.id)}
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {subagents.length === 0 && (
+      <div className="card">
+        <div className="table-wrapper" style={{ marginTop: '0', overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-dark-600">
-                  Активных субагентов нет
-                </td>
+                <th>ID</th>
+                <th>Задача</th>
+                <th>Статус</th>
+                <th>Длительность</th>
+                <th>Модель</th>
+                <th>Токены</th>
+                <th style={{ textAlign: 'right' }}>Действия</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {subagents.map((subagent) => (
+                <tr key={subagent.id} className="table-nested">
+                  <td><span className="mono">{subagent.id}</span></td>
+                  <td>
+                    <span style={{ marginRight: '6px' }}>🔧</span>
+                    {subagent.displayName}
+                  </td>
+                  <td>
+                    <span className={`badge ${getStatusBadgeClass(subagent.status)}`}>
+                      {subagent.status}
+                    </span>
+                  </td>
+                  <td>{formatDuration(subagent.durationMs)}</td>
+                  <td>{subagent.model}</td>
+                  <td>{subagent.totalTokens?.toLocaleString() || '—'}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {subagent.status === 'active' && (
+                      <button
+                        onClick={() => handleKill(subagent.id)}
+                        className="btn btn-ghost"
+                        style={{ padding: '4px 8px', color: 'var(--danger)' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {subagents.length === 0 && (
+                <tr className="no-hover">
+                  <td colSpan={7}>
+                    <div className="empty-state">
+                      Активных субагентов нет
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

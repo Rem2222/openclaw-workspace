@@ -346,3 +346,4 @@ Sender (untrusted metadata):
 ```
 
 [Tue 2026-03-17 01:07 GMT+3] как оно?
+<!-- consolidated -->

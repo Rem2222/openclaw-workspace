@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
 const STATUS_COLORS = {
-  idle: 'bg-green-500',
-  busy: 'bg-blue-500',
-  paused: 'bg-yellow-500',
-  error: 'bg-red-500',
+  idle: 'success',
+  busy: 'info',
+  paused: 'warning',
+  error: 'danger',
 };
 
 const STATUS_LABELS = {
@@ -81,8 +81,11 @@ export default function Agents() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="loading-screen">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '20px', height: '20px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <span>Загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -91,62 +94,78 @@ export default function Agents() {
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Агенты</h2>
-        <span className="text-sm text-dark-600">{countDisplay} агент(ов)</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Агенты</h2>
+        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} агент(ов)</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {agents.map((agent) => (
-          <div key={agent.id} className="bg-dark-800 rounded-xl p-6 border border-dark-700">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${STATUS_COLORS[agent.status] || 'bg-gray-500'}`}></div>
-                <div>
-                  <h3 className="text-white font-medium">{agent.name || agent.id}</h3>
-                  <p className="text-xs text-dark-600">{agent.id}</p>
-                </div>
-              </div>
-              <span className="text-xs text-dark-600">{STATUS_LABELS[agent.status]}</span>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Задач:</span>
-                <span className="text-white">{agent.tasks?.length || 0}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Сессий:</span>
-                <span className="text-white">{agent.sessions?.length || 0}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {agent.status === 'paused' ? (
-                <button
-                  onClick={() => handleAction(agent.id, 'resume')}
-                  className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm text-white transition-colors"
-                >
-                  ▶️ Resume
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleAction(agent.id, 'pause')}
-                  className="flex-1 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm text-white transition-colors"
-                >
-                  ⏸️ Pause
-                </button>
+      <div className="card">
+        <div className="table-wrapper" style={{ marginTop: '0', overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Статус</th>
+                <th>Задач</th>
+                <th>Сессий</th>
+                <th style={{ textAlign: 'right' }}>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((agent) => (
+                <tr key={agent.id}>
+                  <td><span className="mono">{agent.id}</span></td>
+                  <td>{agent.name || agent.id}</td>
+                  <td>
+                    <span className={`badge badge-${STATUS_COLORS[agent.status] || 'info'}`}>
+                      <span className={`status-dot status-dot--${STATUS_COLORS[agent.status] || 'info'}`}>
+                        {STATUS_LABELS[agent.status] || agent.status}
+                      </span>
+                    </span>
+                  </td>
+                  <td>{agent.tasks?.length || 0}</td>
+                  <td>{agent.sessions?.length || 0}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      {agent.status === 'paused' ? (
+                        <button
+                          onClick={() => handleAction(agent.id, 'resume')}
+                          className="btn btn-ghost"
+                        >
+                          ▶️ Resume
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAction(agent.id, 'pause')}
+                          className="btn btn-ghost"
+                        >
+                          ⏸️ Pause
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleAction(agent.id, 'restart')}
+                        className="btn btn-ghost"
+                      >
+                        🔄 Restart
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {agents.length === 0 && (
+                <tr className="no-hover">
+                  <td colSpan={6}>
+                    <div className="empty-state">
+                      Активных агентов нет
+                    </div>
+                  </td>
+                </tr>
               )}
-              <button
-                onClick={() => handleAction(agent.id, 'restart')}
-                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors"
-              >
-                🔄 Restart
-              </button>
-            </div>
-          </div>
-        ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

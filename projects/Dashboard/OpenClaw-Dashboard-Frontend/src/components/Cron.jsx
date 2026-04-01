@@ -84,8 +84,11 @@ export default function Cron() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="loading-screen">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '20px', height: '20px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <span>Загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -94,37 +97,37 @@ export default function Cron() {
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Cron задачи</h2>
-        <span className="text-sm text-dark-600">{countDisplay} задач</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Cron задачи</h2>
+        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} задач</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
         {cronJobs.map((job) => (
-          <div key={job.id} className="bg-dark-800 rounded-xl p-6 border border-dark-700">
-            <div className="flex items-start justify-between mb-4">
+          <div key={job.id} className="card">
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 className="text-white font-medium">{job.name || job.id}</h3>
-                <p className="text-xs text-dark-600 mt-1">{job.id}</p>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--text)' }}>{job.name || job.id}</h3>
+                <span className="mono" style={{ fontSize: '11px' }}>{job.id}</span>
               </div>
-              <span className={`px-2 py-1 rounded text-xs ${job.enabled ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+              <span className={`badge badge-${job.enabled ? 'success' : 'info'}`}>
                 {job.enabled ? 'Включено' : 'Выкл'}
               </span>
             </div>
 
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Расписание:</span>
-                <span className="text-white font-mono text-xs">{job.schedule || '*'}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Расписание:</span>
+                <span className="mono">{job.schedule || '*'}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">След. запуск:</span>
-                <span className="text-white">{formatNextRun(job.nextRun)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>След. запуск:</span>
+                <span style={{ color: 'var(--text)' }}>{formatNextRun(job.nextRun)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Последний:</span>
-                <span className="text-dark-400 text-xs">
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Последний:</span>
+                <span className="mono" style={{ fontSize: '12px' }}>
                   {job.lastRun ? new Date(job.lastRun).toLocaleString() : 'Никогда'}
                 </span>
               </div>
@@ -132,14 +135,15 @@ export default function Cron() {
 
             <button
               onClick={() => handleTrigger(job.id)}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors"
+              className="btn btn-ghost"
+              style={{ width: '100%' }}
             >
               🚀 Запустить сейчас
             </button>
           </div>
         ))}
         {cronJobs.length === 0 && (
-          <div className="col-span-full text-center py-12 text-dark-600">
+          <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
             Cron задач нет
           </div>
         )}

@@ -87,8 +87,11 @@ export default function Sessions() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="loading-screen">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '20px', height: '20px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <span>Загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -97,61 +100,61 @@ export default function Sessions() {
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Сессии</h2>
-        <span className="text-sm text-dark-600">{countDisplay} сессий</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Сессии</h2>
+        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} сессий</span>
       </div>
 
-      <div className="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-dark-700">
-            <tr>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">ID</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Агент</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Тип</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Длительность</th>
-              <th className="text-left text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Запущена</th>
-              <th className="text-right text-xs font-medium text-dark-500 uppercase tracking-wider px-6 py-3">Действия</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-dark-700">
-            {sessions.map((session) => (
-              <tr 
-                key={session.id} 
-                className={`hover:bg-dark-700 transition-colors ${session.isSubagent ? 'bg-dark-700/30' : ''}`}
-              >
-                <td className="px-6 py-4 text-sm text-white font-mono">{session.id}</td>
-                <td className="px-6 py-4 text-sm text-dark-400">{session.agentId?.split('-')[0] || 'Unknown'}</td>
-                <td className="px-6 py-4 text-sm">
-                  {session.isSubagent && <span className="text-yellow-500 mr-2" title="Субагент">🔧</span>}
-                  <span className={session.isSubagent ? 'text-yellow-400' : 'text-dark-400'}>
-                    {session.type || 'agent'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-dark-400">{formatDuration(session.duration)}</td>
-                <td className="px-6 py-4 text-sm text-dark-400">
-                  {session.startedAt ? new Date(session.startedAt).toLocaleString() : '—'}
-                </td>
-                <td className="px-6 py-4 text-sm text-right">
-                  <button
-                    onClick={() => handleKill(session.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {sessions.length === 0 && (
+      <div className="card">
+        <div className="table-wrapper" style={{ marginTop: '0', overflowX: 'auto' }}>
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-dark-600">
-                  Активных сессий нет
-                </td>
+                <th>ID</th>
+                <th>Агент</th>
+                <th>Тип</th>
+                <th>Длительность</th>
+                <th>Запущена</th>
+                <th style={{ textAlign: 'right' }}>Действия</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <tr key={session.id} className={session.isSubagent ? 'table-nested' : ''}>
+                  <td><span className="mono">{session.id}</span></td>
+                  <td>{session.agentId?.split('-')[0] || 'Unknown'}</td>
+                  <td>
+                    {session.isSubagent && <span title="Субагент" style={{ marginRight: '6px' }}>🔧</span>}
+                    <span className={`badge ${session.isSubagent ? 'badge-warning' : 'badge-info'}`}>
+                      {session.type || 'agent'}
+                    </span>
+                  </td>
+                  <td>{formatDuration(session.duration)}</td>
+                  <td>{session.startedAt ? new Date(session.startedAt).toLocaleString() : '—'}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button
+                      onClick={() => handleKill(session.id)}
+                      className="btn btn-ghost"
+                      style={{ padding: '4px 8px', color: 'var(--danger)' }}
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {sessions.length === 0 && (
+                <tr className="no-hover">
+                  <td colSpan={6}>
+                    <div className="empty-state">
+                      Активных сессий нет
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

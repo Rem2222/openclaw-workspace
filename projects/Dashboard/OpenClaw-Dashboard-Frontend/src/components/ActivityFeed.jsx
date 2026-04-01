@@ -20,11 +20,11 @@ const TYPE_ICONS = {
   info: 'ℹ️',
 };
 
-const LEVEL_COLORS = {
-  error: 'text-red-400',
-  warning: 'text-yellow-400',
-  info: 'text-blue-400',
-  success: 'text-green-400',
+const LEVEL_BADGES = {
+  error: 'danger',
+  warning: 'warning',
+  info: 'info',
+  success: 'success',
 };
 
 export default function ActivityFeed() {
@@ -79,8 +79,11 @@ export default function ActivityFeed() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      <div className="loading-screen">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '20px', height: '20px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <span>Загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -89,29 +92,45 @@ export default function ActivityFeed() {
   const countDisplay = rawData === null ? '-' : rawData.length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Activity Feed</h2>
-        <span className="text-sm text-dark-600">{countDisplay} событий</span>
+    <div className="page">
+      <div className="page-header">
+        <h2 className="page-title">Activity Feed</h2>
+        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} событий</span>
       </div>
 
-      <div className="bg-dark-800 rounded-xl border border-dark-700 divide-y divide-dark-700">
+      <div className="card" style={{ padding: 0 }}>
         {activities.map((activity) => (
-          <div key={activity.id} className="p-4 hover:bg-dark-700 transition-colors">
-            <div className="flex items-start gap-4">
-              <span className="text-2xl">{TYPE_ICONS[activity.type] || '📌'}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-4">
-                  <p className={`text-sm font-medium ${LEVEL_COLORS[activity.level] || 'text-white'}`}>
-                    {activity.message || activity.description || activity.type}
-                  </p>
-                  <span className="text-xs text-dark-600 whitespace-nowrap">
+          <div 
+            key={activity.id} 
+            style={{ 
+              padding: '16px 20px', 
+              borderBottom: '1px solid var(--border-subtle)',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--elevation-4)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <span style={{ fontSize: '20px', lineHeight: 1 }}>{TYPE_ICONS[activity.type] || '📌'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
+                      {activity.message || activity.description || activity.type}
+                    </span>
+                    {activity.level && (
+                      <span className={`badge badge-${LEVEL_BADGES[activity.level] || 'info'}`} style={{ fontSize: '11px' }}>
+                        {activity.level}
+                      </span>
+                    )}
+                  </div>
+                  <span className="mono" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
                     {formatTime(activity.timestamp || activity.createdAt)}
                   </span>
                 </div>
                 {activity.agentId && (
-                  <p className="text-xs text-dark-500 mt-1">
-                    Агент: {activity.agentId.split('-')[0]}
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Агент: <span className="mono">{activity.agentId.split('-')[0]}</span>
                   </p>
                 )}
               </div>
@@ -119,7 +138,7 @@ export default function ActivityFeed() {
           </div>
         ))}
         {activities.length === 0 && (
-          <div className="p-12 text-center text-dark-600">
+          <div className="empty-state">
             Событий пока нет
           </div>
         )}

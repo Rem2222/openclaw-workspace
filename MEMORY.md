@@ -36,6 +36,59 @@ _Last updated: 2026-04-01_
 - "Ментальные заметки" не переживают перезапусков
 - Файлы — это мой единственный способ сохранить контекст между сессиями
 
+- **Оркестратор НЕ делает работу сам** — запускает субагентов и собирает результаты. Если пытается делать сам — нарушает свою роль (2026-03-19)
+
+- **Long polling vs Webhook** — мы использузуем long polling (не требует публичного URL, работает из локальной сети). Webhook быстрее, но требует туннель/VPS
+
+- **Serveo.net** — бесплатный SSH-туннель для получения публичного URL (2026-02-24): `ssh -R 80:localhost:18789 serveo.net`
+
+- **Gateway перезапуск сбрасывает модель** — после `openclaw gateway restart` модель возвращается к дефолтной. Алиас `xiaomi-openrouter` для сохранения настроек
+
+- **Cloudflare quick tunnel нестабилен** — для production нужен постоянный Cloudflare Tunnel с аккаунтом. Serveo.net стабильнее для временных нужд
+
+- **WSL2 DNS** — при ошибках `Temporary failure resolving` в WSL2: `echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf`
+
+- **Cloudflare блокирует IP 94.141.126.116** — без VPN недоступны Cerebras и другие сервисы
+
+- **mcporter 0.7.3 + Exa Search** — установлены (2026-03-14). Использовать `mcporter call 'exa.web_search_exa(query: "...")'`
+
+- **Ollama модели** — `qwen2.5:7b` (4.7 GB), `nomic-embed-text` (274 MB). Работают локально
+
+- **Pinggy tunnel** — работает для доступа к локальным сервисам извне: `ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3000 a.pinggy.io` → даёт HTTPS URL. Быстрее и надёжнее Cloudflare quick tunnel для этих целей (2026-04-01)
+- **mcporter + subagent** — Exa Search через subagent часто возвращает пустой результат без ошибки. Лучше делать напрямую
+
+- **Subagents + Vision** — vision-модели через subagent ненадёжны, результат часто пустой. Vision-задачи делать напрямую, не через subagent
+
+- **HEARTБИТ на 1 час** — с 2026-03-15 интервал увеличен с 5 минут до 1 часа
+
+- **OpenViking удалён (2026-03-21)** — требовал платные API (OpenRouter), создавал блокировку на векторной базе. Удалён полностью (1598 файлов). Заменён на LCM
+
+- **LCM (Lossless Claw)** — плагин управления памятью, заменил OpenViking. Хранит сообщения в SQLite, сжимает старые в DAG-суммаризации. Конфиг: `~/.openclaw/extensions/lossless-claw/`. Для суммаризации использует `openrouter/openai/gpt-oss-20b` по умолчанию (можно сменить через `LCM_SUMMARY_MODEL=zai/glm-5`)
+
+- **cortex-memory не подходит** — данные уходят в облако Ubundi (ЮАР), API закрытый, self-hosted невозможен. unity-knowledge-base — правильный выбор (локально, no lock-in)
+
+- **Z.AI провайдер** — GLM-5 и GLM-4.7 с reasoning, context 204K. Base URL: `https://open.bigmodel.cn/api/paas/v4`. Конфиг был предоставлен (2026-03-20). GLM-5.1 возвращает HTTP 404 в OpenClaw TUI/webchat хотя curl работает — проблема маршрутизации OpenClaw
+
+- **Telegram заблокирован в России** — SSL handshake с `api.telegram.org` таймаутит. Решения: прокси, VPN, или использовать альтернативный endpoint. Long polling работает если есть соединение
+
+- **HTTP 403 от OpenRouter** — insufficient scopes у GATEWAY_TOKEN. `/api/subagents` требует elevated permissions. Проверить ключи в OpenRouter Dashboard
+
+- **Dashboard `/api/subagents` возвращает пустой массив** — insufficient token scopes, требуется расширить права GATEWAY_TOKEN
+
+- **Campfire Survival баг GeometryMask (mem_001)** — Phaser 3 GeometryMask на depth 200 делает весь экран синим. Фикс: 4 прямоугольника тьмы вокруг светового круга БЕЗ маски
+
+- **Dev server для игр** — при "localhost отказано в подключении" перезапустить: `cd ~/.openclaw/workspace/projects/Campfire-Survival && npm run dev &`
+
+- **HEARTБИТ на 1 час (2026-03-15)** — интервал с 5 минут до 1 часа
+
+- **AIChat EPF для 1С (mem_005)** — `ТипJSON.НачалоОбъекта` НЕ СУЩЕСТВУЕТ в 1С 8.3.27. `HTTPОтвет.ПолучитьТелоКакСтроку()` не принимает параметры. Работает: `ПолучитьСтрокуИзДвоичныхДанных(ДвоичныеДанные, КодировкаТекста.UTF8)`. Возможна проблема с gzip-сжатией
+
+- **Superpowers framework** — framework скиллов для AI-агентов (brainstorming, writing-plans, TDD, subagent-driven-development). Записать в TODOS.md для изучения
+
+- **OpenClaw update** — `npm install` не работает автоматически, нужен `sudo npm i -g openclaw@latest`
+
+- **Модель по умолчанию** — `openrouter/hunter-alpha` (с 2026-03-15). Xiaomi Mimo V2 Flash доступна через OpenRouter бесплатно (алиас `xiaomi-openrouter`)
+
 ## Что я умею
 
 - Читать и редактировать файлы
@@ -87,7 +140,7 @@ _Last updated: 2026-04-01_
 
 **Прогресс:**
 - ✅ Backend: Express + socket.io, API роуты
-- ✅ Frontend: React + Vite + Tailwind, i18n (ru/en)
+- ✅ Frontend: React + Vite + Tailwind
 - ✅ Страницы: Agents, Tasks, Sessions, Cron, Activity, Approvals
 - ✅ **Субагенты:** отдельная страница, backend endpoint `/api/subagents`
 - ⚠️ Проблема: `/api/subagents` возвращает пустой массив из-за insufficient token scopes
@@ -97,7 +150,8 @@ _Last updated: 2026-04-01_
 - Backend: port 3000, polling каждые 5 сек
 - Frontend: port 5173, WebSocket real-time
 - OpenMOSS: порт 6565, Activity Feed включен
-- Переводы: 800+ ключей (ru/en)
+- **Достижимость извне (2026-04-01):** Pinggy tunnel → `http://qlwqx-185-207-139-4.a.free.pinggy.link` (работает!)
+
 
 **Запущено (2026-03-19):**
 - Тестовый субагент на 5 минут (до ~18:28)

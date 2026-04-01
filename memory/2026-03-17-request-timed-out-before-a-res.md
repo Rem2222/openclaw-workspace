@@ -248,3 +248,4 @@ assistant: <analysis>
 ## 🔍 Проверяю статус моделей
 
 ### 1. Проверяю Ollama...
+<!-- consolidated -->
