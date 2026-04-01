@@ -348,19 +348,70 @@ export default function Monitor() {
           </div>
 
           {/* Subagents */}
-          <div className="card" style={{ flex: '0 0 auto' }}>
+          <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Нет данных
-            </div>
+            {(() => {
+              const projectTaskIds = projectFilter 
+                ? (projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [])
+                : [];
+              
+              const projectSessionKeys = Object.entries(taskSessionMap)
+                .filter(([_, info]) => projectTaskIds.includes(info.issueId))
+                .map(([key]) => key);
+              
+              const subagentSessions = allSessions.filter(s => 
+                s.key?.includes('subagent') && projectSessionKeys.includes(s.key)
+              );
+              
+              if (subagentSessions.length === 0) {
+                return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
+              }
+              
+              return (
+                <div style={{ fontSize: '12px' }}>
+                  {subagentSessions.map(s => (
+                    <div key={s.key} style={{ 
+                      padding: '4px 0', 
+                      borderBottom: '1px solid var(--border)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>
+                        {getStatusIcon(s)} {getSessionDisplay(s)}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        {formatDuration(s.duration)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
-          {/* Docs */}
-          <div className="card" style={{ flex: '0 0 auto' }}>
-            <h3 style={{ marginTop: 0 }}>📄 Docs</h3>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Нет данных
-            </div>
+          {/* Docs / Activity Timeline */}
+          <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
+            <h3 style={{ marginTop: 0 }}>📄 Лента активности</h3>
+            {activities.length === 0 ? (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Нет активности для отображения
+              </div>
+            ) : (
+              <div style={{ fontSize: '11px' }}>
+                {activities.slice(-10).map((act, i) => (
+                  <div key={i} style={{ 
+                    padding: '3px 0', 
+                    borderBottom: '1px solid var(--border)',
+                    display: 'flex',
+                    gap: '8px'
+                  }}>
+                    <span style={{ color: 'var(--text-muted)', minWidth: '45px' }}>{act.time}</span>
+                    <span>{act.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
