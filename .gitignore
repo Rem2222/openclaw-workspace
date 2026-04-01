@@ -29,3 +29,8 @@ node_modules/
 
 # Large repos (too big for backup)
 Star-Office-UI/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
