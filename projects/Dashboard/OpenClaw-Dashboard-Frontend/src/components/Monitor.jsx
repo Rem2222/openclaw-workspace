@@ -25,6 +25,27 @@ export default function Monitor() {
   const [expandedActivity, setExpandedActivity] = useState({});
   const activityListRef = useRef(null);
 
+  // Функция для определения типа задачи по названию
+  function getIssueType(title) {
+    const t = (title || '').toLowerCase();
+    if (t.includes('исследован') || t.includes('анализ') || t.includes('аналитик')) return 'Аналитика';
+    if (t.includes('тз') || t.includes('спецификац') || t.includes('требовани') || t.includes('spec')) return 'ТЗ';
+    if (t.includes('тест') || t.includes('проверить') || t.includes('проверка')) return 'Тесты';
+    if (t.includes('починить') || t.includes('исправить') || t.includes('фикс') || t.includes('bug')) return 'Исправление';
+    if (t.includes('доработать') || t.includes('улучшить') || t.includes('оптимизировать')) return 'Доработка';
+    return 'Разработка';
+  }
+  
+  const TYPE_ORDER = ['Аналитика', 'ТЗ', 'Разработка', 'Тесты', 'Исправление', 'Доработка'];
+  const TYPE_COLORS = {
+    'Аналитика': '#9b59b6',
+    'ТЗ': '#3498db',
+    'Разработка': '#27ae60',
+    'Тесты': '#f39c12',
+    'Исправление': '#e74c3c',
+    'Доработка': '#1abc9c',
+  };
+
   // Project-wide activity count (for header stat)
   const [projectActivityCount, setProjectActivityCount] = useState(0);
 
@@ -432,9 +453,21 @@ export default function Monitor() {
                       .map(([sessionKey]) => sessionKey);
                     
                     // Session time = sum of (endedAt - startedAt) for project sessions
-                    const sessionTimeMs = allSessions
-                      .filter(s => projectSessionKeys.includes(s.key) && s.endedAt && s.startedAt)
-                      .reduce((sum, s) => sum + (s.endedAt - s.startedAt), 0);
+                    const projectSessions = allSessions
+                      .filter(s => projectSessionKeys.includes(s.key) && s.endedAt && s.startedAt);
+                    const sessionTimeMs = projectSessions.reduce((sum, s) => sum + (s.endedAt - s.startedAt), 0);
+                    
+                    // Today's session time (sessions that ended today)
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    const todayTimeMs = projectSessions
+                      .filter(s => s.endedAt >= todayStart.getTime())
+                      .reduce((sum, s) => {
+                        // If session started today, count from start of day or session start (whichever later)
+                        const start = Math.max(s.startedAt, todayStart.getTime());
+                        const end = Math.min(s.endedAt, Date.now());
+                        return sum + Math.max(0, end - start);
+                      }, 0);
                     
                     // Total time = from first task created to now
                     const firstTaskCreated = proj.issues.reduce((earliest, issue) => {
@@ -451,6 +484,12 @@ export default function Monitor() {
                       if (mins > 0) return `${mins}м`;
                       return `${secs}с`;
                     };
+                    
+                    // If > 1 day total, show 3 values
+                    const ONE_DAY = 86400000;
+                    if (totalTimeMs > ONE_DAY) {
+                      return `${fmtMs(todayTimeMs)} / ${fmtMs(sessionTimeMs)} / ${fmtMs(totalTimeMs)}`;
+                    }
                     
                     return `${fmtMs(sessionTimeMs)} / ${fmtMs(totalTimeMs)}`;
                   })()}
@@ -590,35 +629,61 @@ export default function Monitor() {
               {projects.length === 0 ? (
                 <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
               ) : (
-                (projectFilter ? projects.filter(p => p.name === projectFilter) : projects).map(proj => (
-                  <div key={proj.name} style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      {proj.name}
-                    </div>
-                    {proj.issues.map(issue => (
-                      <div 
-                        key={issue.id}
-                        onClick={() => window.location.href = `/projects?expand=${issue.id}`}
-                        style={{ 
-                          padding: '6px 8px',
-                          marginBottom: '2px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          background: expandedRow === issue.id ? 'var(--surface)' : 'transparent',
-                          borderLeft: `2px solid ${
-                            issue.status === 'closed' ? 'var(--success)' :
-                            issue.status === 'in_progress' ? 'var(--warning)' : 'var(--border)'
-                          }`
-                        }}
-                      >
-                        <span style={{ fontSize: '12px' }}>
-                          {issue.status === 'closed' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
-                          {issue.title}
-                        </span>
+                (projectFilter ? projects.filter(p => p.name === projectFilter) : projects).map(proj => {
+                  // Group issues by type
+                  const issuesByType = {};
+                  proj.issues.forEach(issue => {
+                    const type = getIssueType(issue.title);
+                    if (!issuesByType[type]) issuesByType[type] = [];
+                    issuesByType[type].push(issue);
+                  });
+                  
+                  return (
+                    <div key={proj.name}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        {proj.name}
                       </div>
-                    ))}
-                  </div>
-                ))
+                      {TYPE_ORDER.map(type => {
+                        const issues = issuesByType[type];
+                        if (!issues || issues.length === 0) return null;
+                        return (
+                          <div key={type} style={{ marginBottom: '12px' }}>
+                            <div style={{ 
+                              fontSize: '11px', 
+                              color: TYPE_COLORS[type] || 'var(--text-muted)', 
+                              marginBottom: '4px',
+                              fontWeight: 500
+                            }}>
+                              {type} ({issues.length})
+                            </div>
+                            {issues.map(issue => (
+                              <div 
+                                key={issue.id}
+                                onClick={() => window.location.href = `/projects?expand=${issue.id}`}
+                                style={{ 
+                                  padding: '6px 8px',
+                                  marginBottom: '2px',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  background: expandedRow === issue.id ? 'var(--surface)' : 'transparent',
+                                  borderLeft: `2px solid ${
+                                    issue.status === 'closed' ? 'var(--success)' :
+                                    issue.status === 'in_progress' ? 'var(--warning)' : 'var(--border)'
+                                  }`
+                                }}
+                              >
+                                <span style={{ fontSize: '12px' }}>
+                                  {issue.status === 'closed' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
+                                  {issue.title}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
