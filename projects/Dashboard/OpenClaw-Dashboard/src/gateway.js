@@ -307,6 +307,34 @@ class GatewayClient {
     return this.invokeTool('subagents', action, args);
   }
 
+  // ==================== Sessions ====================
+
+  /**
+   * Заспавнить новую сессию
+   * @param {object} params - Параметры сессии
+   * @param {string} params.task - Промпт/задача для сессии
+   * @param {string} params.label - Метка сессии
+   * @param {string} [params.model='opencode-go/glm-5'] - Модель
+   * @param {string} [params.mode='session'] - Режим (session или run)
+   * @returns {Promise} - Ответ от Gateway
+   */
+  async spawnSession(params = {}) {
+    const {
+      task,
+      label,
+      model = 'opencode-go/glm-5',
+      mode = 'session'
+    } = params;
+
+    return this.invokeTool('sessions_spawn', mode, {
+      task,
+      label,
+      model,
+      mode,
+      cleanup: 'keep'
+    });
+  }
+
   // ==================== Process ====================
 
   /**

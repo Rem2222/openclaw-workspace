@@ -41,8 +41,6 @@ export default function Projects() {
   const [expandedId, setExpandedId] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newProject, setNewProject] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [newPriority, setNewPriority] = useState('2');
   const [creating, setCreating] = useState(false);
   const [taskSessions, setTaskSessions] = useState({});
 
@@ -67,23 +65,24 @@ export default function Projects() {
   }
 
   function handleCreateProject() {
-    if (!newProject.trim() || !newTitle.trim()) return;
+    if (!newProject.trim()) return;
     setCreating(true);
 
-    const cmd = `bd create "[${newProject}] ${newTitle}" --priority ${newPriority} --type task`;
-    fetch('/api/command', {
+    // Запускаем новую сессию Superpowers
+    fetch('/api/spawn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: cmd })
+      body: JSON.stringify({ projectName: newProject })
     })
       .then(r => r.json())
       .then(data => {
         if (data.ok) {
           setNewProject('');
-          setNewTitle('');
-          setNewPriority('2');
           setShowNewForm(false);
-          loadIssues();
+          // Перенаправить на Монитор после небольшой задержки
+          setTimeout(() => {
+            window.location.hash = '#/monitor';
+          }, 1000);
         }
       })
       .catch(err => {
@@ -234,43 +233,29 @@ export default function Projects() {
       {showNewForm && (
         <div className="card" style={{ marginBottom: '16px' }}>
           <h3 style={{ marginTop: 0 }}>Новый проект</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '12px', alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'end' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Проект</label>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Название проекта</label>
               <input
                 type="text"
                 value={newProject}
                 onChange={e => setNewProject(e.target.value)}
-                placeholder="Dashboard"
+                placeholder="Campfire Survival"
                 className="input"
                 style={{ width: '100%' }}
+                onKeyDown={e => e.key === 'Enter' && handleCreateProject()}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Название задачи</label>
-              <input
-                type="text"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
-                placeholder="Task description"
-                className="input"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Приор.</label>
-              <select value={newPriority} onChange={e => setNewPriority(e.target.value)} className="input">
-                <option value="0">P0</option>
-                <option value="1">P1</option>
-                <option value="2">P2</option>
-                <option value="3">P3</option>
-              </select>
+              <button onClick={handleCreateProject} className="btn btn-primary" disabled={creating || !newProject.trim()}>
+                {creating ? 'Запускаю...' : 'Запустить'}
+              </button>
             </div>
           </div>
-          <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-            <button onClick={handleCreateProject} className="btn btn-primary" disabled={creating}>
-              {creating ? 'Создаю...' : 'Создать'}
-            </button>
+          <p style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            Агент Superpowers запустится и задаст вопросы о проекте
+          </p>
+          <div style={{ marginTop: '8px' }}>
             <button onClick={() => setShowNewForm(false)} className="btn btn-ghost">Отмена</button>
           </div>
         </div>
