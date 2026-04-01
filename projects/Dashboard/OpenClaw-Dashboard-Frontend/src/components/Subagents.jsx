@@ -14,6 +14,9 @@ export default function Subagents() {
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
+  const [projectFilter, setProjectFilter] = useState(() => {
+    return localStorage.getItem('dashboard.projectFilter') || 'all';
+  });
   const [searchParams] = useSearchParams();
   const highlight = searchParams.get('highlight');
   const highlightRef = useRef(null);
@@ -33,6 +36,11 @@ export default function Subagents() {
     const interval = setInterval(loadSubagents, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Сохраняем projectFilter в localStorage при изменении
+  useEffect(() => {
+    localStorage.setItem('dashboard.projectFilter', projectFilter);
+  }, [projectFilter]);
 
   // Загружаем titles для Beads issues
   async function loadIssueTitles() {
@@ -104,22 +112,26 @@ export default function Subagents() {
       const dataAsArray = Array.isArray(rawData) ? rawData : [];
       
       // Трансформируем данные
-      const agents = dataAsArray.map(sa => ({
-        id: sa.sessionKey || sa.runId || `subagent_${Date.now()}`,
-        agentId: 'subagent',
-        type: 'subagent',
-        displayName: sa.label || `Subagent ${sa.runId?.slice(0, 8)}`,
-        channel: sa.channel || 'unknown',
-        model: sa.model,
-        status: sa.status, // active, recent, done
-        runtime: sa.runtime,
-        totalTokens: sa.totalTokens,
-        updatedAt: sa.endedAt || sa.startedAt,
-        durationMs: sa.runtimeMs,
-        startedAt: sa.startedAt,
-        endedAt: sa.endedAt,
-        isSubagent: true
-      }));
+      const agents = dataAsArray.map(sa => {
+        const parsed = parseLabel(sa.label || '');
+        return {
+          id: sa.sessionKey || sa.runId || `subagent_${Date.now()}`,
+          agentId: 'subagent',
+          type: 'subagent',
+          displayName: sa.label || `Subagent ${sa.runId?.slice(0, 8)}`,
+          channel: sa.channel || 'unknown',
+          model: sa.model,
+          status: sa.status, // active, recent, done
+          runtime: sa.runtime,
+          totalTokens: sa.totalTokens,
+          updatedAt: sa.endedAt || sa.startedAt,
+          durationMs: sa.runtimeMs,
+          startedAt: sa.startedAt,
+          endedAt: sa.endedAt,
+          isSubagent: true,
+          project: parsed.project || null
+        };
+      });
       
       console.log('[Subagents] Transformed data:', agents);
       console.log(`[Subagents] Количество субагентов: ${agents.length}`);
@@ -172,6 +184,14 @@ export default function Subagents() {
     }
   };
 
+  function getProjects() {
+    const projects = new Set();
+    subagents.forEach(sa => {
+      if (sa.project) projects.add(sa.project);
+    });
+    return Array.from(projects).sort();
+  }
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'active':
@@ -200,7 +220,13 @@ export default function Subagents() {
   }
 
   function getSortedSubagents() {
-    const sorted = [...subagents];
+    let filtered = subagents;
+    // Фильтр по проекту
+    if (projectFilter !== 'all') {
+      filtered = subagents.filter(sa => sa.project === projectFilter);
+    }
+    
+    const sorted = [...filtered];
     sorted.sort((a, b) => {
       let aVal, bVal;
 
@@ -256,6 +282,21 @@ export default function Subagents() {
       <div className="page-header">
         <h2 className="page-title">Субагенты</h2>
         <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{countDisplay} субагентов</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <select
+          value={projectFilter}
+          onChange={e => setProjectFilter(e.target.value)}
+          className="input"
+          style={{ width: 'auto', minWidth: '120px' }}
+        >
+          <option value="all">Все проекты</option>
+          {getProjects().map(p => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+        <button onClick={() => { loadSubagents(); }} className="btn btn-ghost" title="Обновить">↻</button>
       </div>
 
       <div className="card">
