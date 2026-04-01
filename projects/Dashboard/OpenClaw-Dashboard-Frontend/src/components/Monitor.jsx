@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export default function Monitor() {
+  const location = useLocation();
   const [allSessions, setAllSessions] = useState([]);
   const [filteredSessions, setFilteredSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -14,15 +16,14 @@ export default function Monitor() {
   const pollingRef = useRef(null);
   const sessionsLoaded = useRef(false);
 
-  // Читаем project из URL
+  // Читаем project из URL при загрузке и изменении location
   useEffect(() => {
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1] || '');
+    const params = new URLSearchParams(location.search);
     const project = params.get('project');
     if (project) {
       setProjectFilter(decodeURIComponent(project));
     }
-  }, []);
+  }, [location.search]);
 
   // Загружаем при монтировании
   useEffect(() => {
@@ -230,18 +231,6 @@ export default function Monitor() {
               <option key={p.name} value={p.name}>{p.name}</option>
             ))}
           </select>
-          <select 
-            value={selectedSession || ''}
-            onChange={e => { setSelectedSession(e.target.value); setMessages([]); setActivities([]); }}
-            className="input"
-            style={{ width: '280px' }}
-          >
-            {filteredSessions.map(s => (
-              <option key={s.key} value={s.key}>
-                {getStatusIcon(s)} {getSessionDisplay(s)} ({formatDuration(s.duration)})
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
@@ -254,7 +243,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>📋 Activity</h3>
             <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
               {activities.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Нет активности</div>
+                <div style={{ color: 'var(--text-muted)' }}>Требует интеграции с логами</div>
               ) : (
                 activities.map((act, i) => (
                   <div key={i} style={{ 
@@ -276,7 +265,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>💬 Сообщения</h3>
             <div style={{ fontSize: '12px' }}>
               {messages.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Нет сообщений</div>
+                <div style={{ color: 'var(--text-muted)' }}>Требует интеграции с логами</div>
               ) : (
                 messages.slice(-20).map((msg, i) => {
                   const role = msg.message?.role;
@@ -351,17 +340,8 @@ export default function Monitor() {
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
             {(() => {
-              const projectTaskIds = projectFilter 
-                ? (projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [])
-                : [];
-              
-              const projectSessionKeys = Object.entries(taskSessionMap)
-                .filter(([_, info]) => projectTaskIds.includes(info.issueId))
-                .map(([key]) => key);
-              
-              const subagentSessions = allSessions.filter(s => 
-                s.key?.includes('subagent') && projectSessionKeys.includes(s.key)
-              );
+              // Показываем ВСЕ субагенты без фильтрации по проекту
+              const subagentSessions = allSessions.filter(s => s.key?.includes('subagent'));
               
               if (subagentSessions.length === 0) {
                 return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
@@ -380,8 +360,8 @@ export default function Monitor() {
                       <span>
                         {getStatusIcon(s)} {getSessionDisplay(s)}
                       </span>
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        {formatDuration(s.duration)}
+                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                        {s.model || '—'} {formatDuration(s.duration) ? `· ${formatDuration(s.duration)}` : ''}
                       </span>
                     </div>
                   ))}
@@ -395,7 +375,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>📄 Лента активности</h3>
             {activities.length === 0 ? (
               <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Нет активности для отображения
+                Требует интеграции с логами
               </div>
             ) : (
               <div style={{ fontSize: '11px' }}>

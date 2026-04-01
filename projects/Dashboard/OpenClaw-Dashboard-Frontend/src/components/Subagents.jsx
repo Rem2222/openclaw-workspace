@@ -307,11 +307,19 @@ export default function Subagents() {
                     {(() => {
                       const parsed = parseLabel(subagent.displayName);
                       const issueId = parsed.issueId;
+                      if (issueId && parsed.project) {
+                        return (
+                          <Link to={`/monitor?project=${encodeURIComponent(parsed.project)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>📁</span>
+                            <span>{parsed.project}</span>
+                          </Link>
+                        );
+                      }
                       if (issueId) {
                         return (
                           <Link to={`/projects?highlight=${encodeURIComponent(issueId)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span>📁</span>
-                            <span>{parsed.project || issueId}</span>
+                            <span>📋</span>
+                            <span>{issueId}</span>
                           </Link>
                         );
                       }
