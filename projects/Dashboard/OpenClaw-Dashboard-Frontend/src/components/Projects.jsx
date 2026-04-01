@@ -234,9 +234,12 @@ export default function Projects() {
       let bVal = b[sortField] || '';
 
       // Для дат сравниваем по raw значениям
-      if (sortField === 'created' || sortField === 'updated') {
+      if (sortField === 'created') {
         aVal = a.createdRaw || '';
         bVal = b.createdRaw || '';
+      } else if (sortField === 'updated') {
+        aVal = a.updatedRaw || '';
+        bVal = b.updatedRaw || '';
       }
 
       if (typeof aVal === 'string') {
@@ -453,7 +456,7 @@ export default function Projects() {
                         </span>
                       </td>
                       <td className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {issue.created || '—'}
+                        {formatDateTime(issue.createdRaw) || '—'}
                       </td>
                     </tr>
                     {expandedId === issue.id && (
@@ -479,14 +482,14 @@ export default function Projects() {
                             <div className="detail-item">
                               <span className="detail-label">Updated:</span>
                               <span className="mono" style={{ fontSize: '11px' }}>
-                                {formatDateTime(issue.updated) || '—'}
+                                {formatDateTime(issue.updatedRaw) || '—'}
                               </span>
                             </div>
                             {issue.closedAt && (
                               <div className="detail-item">
                                 <span className="detail-label">Closed:</span>
                                 <span className="mono" style={{ fontSize: '11px' }}>
-                                  {formatDateTime(issue.closedAt)}
+                                  {formatDateTime(issue.closedAtRaw)}
                                 </span>
                               </div>
                             )}
