@@ -4,6 +4,7 @@ export default function Sessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rawData, setRawData] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     loadSessions();
@@ -40,6 +41,7 @@ export default function Sessions() {
         const isSubagent = session.key?.includes(':subagent:') || false;
         
         return {
+          key: session.key,  // Сохраняем оригинальный key для удаления
           id: session.sessionId || session.key,  // Используем sessionId или key
           agentId: agentId,  // Извлекаем из key
           type: isSubagent ? 'subagent' : (session.kind || 'agent'),  // Выделяем субагентов
@@ -72,6 +74,25 @@ export default function Sessions() {
       loadSessions();
     } catch (error) {
       console.error('Failed to kill session:', error);
+      alert('Ошибка при завершении сессии: ' + error.message);
+    }
+  }
+
+  async function handleDelete(sessionKey) {
+    if (!confirm('Удалить эту сессию? Это действие необратимо.')) return;
+    setDeleting(sessionKey);
+    try {
+      const res = await fetch(`/api/sessions/${encodeURIComponent(sessionKey)}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Ошибка удаления');
+      }
+      loadSessions();
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      alert('Ошибка при удалении сессии: ' + error.message);
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -136,9 +157,19 @@ export default function Sessions() {
                     <button
                       onClick={() => handleKill(session.id)}
                       className="btn btn-ghost"
-                      style={{ padding: '4px 8px', color: 'var(--danger)' }}
+                      style={{ padding: '4px 8px', color: 'var(--danger)', marginRight: '4px' }}
+                      title="Завершить сессию"
                     >
                       ✕
+                    </button>
+                    <button
+                      onClick={() => handleDelete(session.key)}
+                      className="btn btn-danger"
+                      style={{ padding: '4px 8px', fontSize: '13px' }}
+                      disabled={deleting === session.key}
+                      title="Удалить сессию"
+                    >
+                      {deleting === session.key ? '...' : '🗑️'}
                     </button>
                   </td>
                 </tr>

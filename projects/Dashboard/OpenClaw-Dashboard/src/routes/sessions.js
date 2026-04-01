@@ -54,6 +54,45 @@ router.get('/', async (req, res) => {
   }
 });
 
+// DELETE /api/sessions/:sessionKey — удалить сессию
+router.delete('/:sessionKey', async (req, res) => {
+  try {
+    const { sessionKey } = req.params;
+    const sessionsPath = '/home/rem/.openclaw/agents/main/sessions/sessions.json';
+    
+    // Читаем sessions.json
+    const content = fs.readFileSync(sessionsPath, 'utf8');
+    const data = JSON.parse(content);
+    
+    // Проверяем существование сессии
+    if (!data[sessionKey]) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    const session = data[sessionKey];
+    const sessionFile = session.sessionFile;
+    
+    // Удаляем ключ из объекта
+    delete data[sessionKey];
+    
+    // Сохраняем обновлённый sessions.json
+    fs.writeFileSync(sessionsPath, JSON.stringify(data, null, 2), 'utf8');
+    
+    // Переименовываем .jsonl файл (soft delete)
+    if (sessionFile && fs.existsSync(sessionFile)) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const deletedPath = `${sessionFile}.deleted.${timestamp}`;
+      fs.renameSync(sessionFile, deletedPath);
+    }
+    
+    console.log(`[sessions route] Deleted session: ${sessionKey}`);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[sessions route] Error deleting session:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/sessions/:sessionId — детали сессии (JSONL транскрипт)
 router.get('/:sessionId', async (req, res) => {
   try {
