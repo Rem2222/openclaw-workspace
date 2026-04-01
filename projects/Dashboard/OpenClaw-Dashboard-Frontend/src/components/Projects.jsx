@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const STATUS_SYMBOLS = {
   open: '○',
@@ -334,9 +334,8 @@ export default function Projects() {
               </thead>
               <tbody>
                 {getSortedIssues().map(issue => (
-                  <>
+                  <React.Fragment key={issue.id}>
                     <tr
-                      key={issue.id}
                       onClick={() => toggleExpand(issue.id)}
                       className={expandedId === issue.id ? 'tr-selected' : ''}
                       style={{ cursor: 'pointer' }}
@@ -481,7 +480,7 @@ export default function Projects() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

@@ -347,7 +347,7 @@ export default function Monitor() {
             <div style={{ fontSize: '12px' }}>
               {selectedSession && (
                 <div style={{ color: 'var(--text-muted)' }}>
-                  Проект: {getSessionDisplay(sessions.find(s => s.key === selectedSession))}
+                  Проект: {getSessionDisplay(allSessions.find(s => s.key === selectedSession))}
                 </div>
               )}
             </div>
