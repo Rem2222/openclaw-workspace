@@ -13,6 +13,7 @@ export default function Monitor() {
   const [expandedRow, setExpandedRow] = useState(null);
   const [projectFilter, setProjectFilter] = useState(null);
   const [taskSessionMap, setTaskSessionMap] = useState({});
+  const [chatMessage, setChatMessage] = useState('');
   const pollingRef = useRef(null);
   const sessionsLoaded = useRef(false);
 
@@ -79,6 +80,16 @@ export default function Monitor() {
       loadMoreActivity();
     }
   }, [activityLoading, activityItems.length, activityTotal]);
+
+  function handleSendMessage() {
+    if (!chatMessage.trim() || !selectedSession) return;
+    
+    // TODO: Implement actual message sending via backend API
+    // For now, just show the message in console and clear input
+    console.log(`[Chat] Send to ${selectedSession}:`, chatMessage);
+    alert(`Сообщение отправлено в сессию:\n\n${chatMessage}\n\n(Функционал в разработке — сообщение пока не доставлено)`);
+    setChatMessage('');
+  }
 
   function loadActivity(sessionKey, offset = 0, isPolling = false) {
     if (!projectFilter) {
@@ -693,7 +704,7 @@ export default function Monitor() {
 
           {/* Chat Section */}
           <div className="card" style={{ flex: '0 0 auto', marginTop: 'auto' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '12px' }}>💬 Чат</h3>
+            <h3 style={{ marginTop: 0, marginBottom: '12px' }}>💬 Чат {selectedSession && <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>({getSessionDisplay(allSessions.find(s => s.key === selectedSession) || {})})</span>}</h3>
             
             {/* Message Area */}
             <div style={{ 
@@ -706,9 +717,24 @@ export default function Monitor() {
               marginBottom: '12px',
               border: '1px solid var(--border-subtle)'
             }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', paddingTop: '24px' }}>
-                Выберите сессию для начала чата
-              </div>
+              {!selectedSession ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', paddingTop: '24px' }}>
+                  Выберите сессию для начала чата
+                </div>
+              ) : messages.length > 0 ? (
+                <div style={{ fontSize: '12px' }}>
+                  {messages.map((msg, i) => (
+                    <div key={i} style={{ marginBottom: '8px', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                      <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{msg.role || 'system'}:</span>{' '}
+                      <span>{msg.content?.slice(0, 100) || '...'}{msg.content?.length > 100 ? '...' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                  Сессия выбрана. История сообщений загружается...
+                </div>
+              )}
             </div>
             
             {/* Input Area */}
@@ -717,10 +743,18 @@ export default function Monitor() {
                 type="text"
                 className="input"
                 placeholder="Введите сообщение..."
-                disabled
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                disabled={!selectedSession}
                 style={{ flex: 1 }}
               />
-              <button className="btn btn-primary" disabled style={{ padding: '8px 16px' }}>
+              <button 
+                className="btn btn-primary" 
+                disabled={!selectedSession || !chatMessage.trim()}
+                onClick={handleSendMessage}
+                style={{ padding: '8px 16px' }}
+              >
                 Отправить
               </button>
             </div>
