@@ -565,7 +565,7 @@ export default function Monitor() {
         {/* Right: Tasks + Subagents */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
-          <div className="card" style={{ flex: 1, minHeight: 0, maxHeight: '50%', overflow: 'auto' }}>
+          <div className="card" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
             <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📌 Задачи</h3>
             {projects.length === 0 ? (
               <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
@@ -680,7 +680,7 @@ export default function Monitor() {
           </div>
 
           {/* Chat Section */}
-          <div className="card" style={{ flex: '0 0 auto', marginTop: '8px' }}>
+          <div className="card" style={{ flex: '0 0 auto', marginTop: 'auto' }}>
             <h3 style={{ marginTop: 0, marginBottom: '12px' }}>💬 Чат</h3>
             
             {/* Message Area */}
