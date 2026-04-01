@@ -1,6 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return '—';
+  try {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    
+    // Сегодня — только время, не сегодня — дата
+    if (dateStr === todayStr) {
+      return timeStr;
+    }
+    return dateStr;
+  } catch {
+    return '—';
+  }
+};
+
 const STATUS_SYMBOLS = {
   open: '○',
   in_progress: '◐',
@@ -460,14 +479,14 @@ export default function Projects() {
                             <div className="detail-item">
                               <span className="detail-label">Updated:</span>
                               <span className="mono" style={{ fontSize: '11px' }}>
-                                {issue.updated || '—'}
+                                {formatDateTime(issue.updated) || '—'}
                               </span>
                             </div>
                             {issue.closedAt && (
                               <div className="detail-item">
                                 <span className="detail-label">Closed:</span>
                                 <span className="mono" style={{ fontSize: '11px' }}>
-                                  {issue.closedAt}
+                                  {formatDateTime(issue.closedAt)}
                                 </span>
                               </div>
                             )}
@@ -516,9 +535,10 @@ export default function Projects() {
                               )}
                               {issue.id &&Object.values(sessionTaskMap).includes(issue.id) && (() => {
                                 const sessionKey = Object.entries(sessionTaskMap).find(([_, taskId]) => taskId === issue.id)?.[0];
+                                const targetPage = localStorage.getItem('dashboard.openSessionIn') || 'sessions';
                                 return sessionKey ? (
                                   <Link
-                                    to={`/sessions?highlight=${encodeURIComponent(sessionKey)}`}
+                                    to={`/${targetPage}?highlight=${encodeURIComponent(sessionKey)}`}
                                     className="btn btn-ghost"
                                     style={{ fontSize: '11px', padding: '4px 12px' }}
                                     onClick={(e) => e.stopPropagation()}

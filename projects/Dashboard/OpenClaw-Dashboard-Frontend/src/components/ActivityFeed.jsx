@@ -66,15 +66,23 @@ export default function ActivityFeed() {
     }
   }
 
-  const formatTime = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diff = now - time;
-    
-    if (diff < 60000) return 'Только что';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} мин назад`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} ч назад`;
-    return time.toLocaleDateString();
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return '—';
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      
+      // Сегодня — только время, не сегодня — дата
+      if (dateStr === todayStr) {
+        return timeStr;
+      }
+      return dateStr;
+    } catch {
+      return '—';
+    }
   };
 
   if (loading) {
@@ -125,7 +133,7 @@ export default function ActivityFeed() {
                     )}
                   </div>
                   <span className="mono" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-                    {formatTime(activity.timestamp || activity.createdAt)}
+                    {formatDateTime(activity.timestamp || activity.createdAt)}
                   </span>
                 </div>
                 {activity.agentId && (

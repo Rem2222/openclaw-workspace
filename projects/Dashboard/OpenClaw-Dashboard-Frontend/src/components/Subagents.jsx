@@ -153,21 +153,20 @@ export default function Subagents() {
     return `${hr}ч ${min % 60}м`;
   };
 
-  const formatTime = (timestamp) => {
+  const formatDateTime = (timestamp) => {
     if (!timestamp) return '—';
     try {
       const date = new Date(timestamp);
       const now = new Date();
-      const diff = now - date;
+      const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
       
-      // Меньше минуты
-      if (diff < 60000) return 'только что';
-      // Меньше часа
-      if (diff < 3600000) return `${Math.floor(diff / 60000)}м назад`;
-      // Меньше суток
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}ч назад`;
-      // Больше суток
-      return `${Math.floor(diff / 86400000)}д назад`;
+      // Сегодня — только время, не сегодня — дата
+      if (dateStr === todayStr) {
+        return timeStr;
+      }
+      return dateStr;
     } catch {
       return '—';
     }
@@ -356,7 +355,7 @@ export default function Subagents() {
                     </span>
                   </td>
                   <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    {formatTime(subagent.updatedAt)}
+                    {formatDateTime(subagent.updatedAt)}
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     {subagent.status === 'active' && (
