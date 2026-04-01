@@ -518,6 +518,24 @@ MIT
 
 ---
 
+## 🎨 Дизайн-референс (nekocode.app)
+
+Для редизайна интерфейса используется CSS из https://nekocode.app
+
+**Файл стилей:** `OpenClaw-Dashboard-Frontend/src/styles/nekocode-landing.css`
+
+**Документация:** `OpenClaw-Dashboard-Frontend/src/styles/README.md`
+
+**Содержимое:**
+- CSS-переменные (dark/light темы, Catppuccin Mocha/Latte)
+- Готовые компоненты: sidebar, nav, buttons, cards, modals, tables, auth screens
+- Шрифт: JetBrains Mono
+- Иконки: Lucide Icons
+
+**Планы по редизайну:** см. `План_разработки.md` — Этап X: Редизайн интерфейса
+
+---
+
 ## 👤 Автор
 
 **Rem** — OpenClaw Dashboard Project

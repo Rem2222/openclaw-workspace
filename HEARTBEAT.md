@@ -107,6 +107,23 @@ openclaw subagents list --recent 30 | grep -q "running" && echo "⚠️ Есть
 - **Итоговая сводка** — темы, задачи, токены
 - **Проверка работы memory** — тестовый запрос к memory и ожидание результата
 - **Git бэкап** — коммит + пуш в GitHub
+- **🔄 Проверка обновлений**:
+```bash
+# 1. npm global (OpenClaw, mcporter, node-llama-cpp)
+echo "=== npm global ===" && npm outdated -g --depth=0 2>/dev/null | grep -v "(empty)" | tail -n +2 || echo "нет npm"
+
+# 2. lossless-claw (LCM)
+echo "=== LCM ===" && npm show @martian-engineering/lossless-claw version 2>/dev/null
+
+# 3. clawhub skills (все скиллы из ~/.openclaw/workspace/skills/)
+echo "=== clawhub skills ===" && cd ~/.openclaw/workspace && npx clawhub update --workdir . --dir skills --all --no-input 2>&1 | grep -E "(updated|skipped|local changes)" | head -20
+
+# 4. git repos (если есть)
+for d in ~/.openclaw/workspace/skills/*/; do
+  [ -d "$d/.git" ] && echo -n "$(basename $d): " && cd "$d" && git status -sb 2>/dev/null | head -1
+done
+```
+Показать списком: что устарело и какие версии доступны.
 
 ---
 
