@@ -57,7 +57,10 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
-  const [projectFilter, setProjectFilter] = useState('all');
+  const [projectFilter, setProjectFilter] = useState(() => {
+    // Восстанавливаем из localStorage
+    return localStorage.getItem('dashboard.projectFilter') || 'all';
+  });
   const [sortField, setSortField] = useState('created');
   const [sortDir, setSortDir] = useState('desc');
   const [expandedId, setExpandedId] = useState(null);
@@ -73,6 +76,11 @@ export default function Projects() {
   useEffect(() => {
     loadIssues();
   }, [filter, projectFilter]);
+
+  // Сохраняем projectFilter в localStorage при изменении
+  useEffect(() => {
+    localStorage.setItem('dashboard.projectFilter', projectFilter);
+  }, [projectFilter]);
 
   useEffect(() => {
     // Загружаем сессии для раскрытых задач
