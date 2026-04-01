@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
-const Sessions = () => {
-  const [searchParams] = useSearchParams();
-  const highlight = searchParams.get('highlight');
-  const highlightRef = useRef(null);
-
 const SORT_ICONS = {
   asc: ' ▲',
   desc: ' ▼',
@@ -60,6 +55,10 @@ function getSessionDisplayName(session) {
 }
 
 export default function Sessions() {
+  const [searchParams] = useSearchParams();
+  const highlight = searchParams.get('highlight');
+  const highlightRef = useRef(null);
+
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rawData, setRawData] = useState(null);
@@ -70,14 +69,6 @@ export default function Sessions() {
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
   const [sessionTaskMap, setSessionTaskMap] = useState({}); // sessionKey -> issueId
 
-  useEffect(() => {
-    loadSessions();
-    loadIssueTitles();
-    loadSessionTaskMap();
-    const interval = setInterval(loadSessions, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Скролл к подсвеченной сессии
   useEffect(() => {
     if (highlight && highlightRef.current) {
@@ -86,6 +77,14 @@ export default function Sessions() {
       }, 100);
     }
   }, [highlight, sessions]);
+
+  useEffect(() => {
+    loadSessions();
+    loadIssueTitles();
+    loadSessionTaskMap();
+    const interval = setInterval(loadSessions, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Загружаем titles для Beads issues
   async function loadIssueTitles() {
@@ -316,7 +315,7 @@ export default function Sessions() {
   function getSortedSessions() {
     let filtered = sessions;
     
-    // Фильтруем субов если включено, НО оставляем подсвеченную сессию видимой
+    // Фильтруем субов если включено, НО оставляем подсвеченную сессию
     if (hideSubagents) {
       filtered = sessions.filter(s => !s.isSubagent || s.sessionKey === highlight);
     }
