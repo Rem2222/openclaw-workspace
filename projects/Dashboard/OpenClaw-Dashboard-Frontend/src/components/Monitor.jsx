@@ -37,6 +37,42 @@ export default function Monitor() {
     filterSessions();
   }, [projectFilter, allSessions, projects, taskSessionMap]);
 
+  // Загружаем глобальную активность
+  useEffect(() => {
+    loadGlobalActivity();
+    const interval = setInterval(loadGlobalActivity, 5000);
+    return () => clearInterval(interval);
+  }, [projectFilter, projects, taskSessionMap]);
+
+  function loadGlobalActivity() {
+    fetch('/api/activity?limit=50')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Фильтруем по проекту если выбран
+          if (projectFilter) {
+            const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+            // Показываем активность связанную с задачами проекта
+            const filtered = data.filter(act => {
+              // Если есть issueId - проверяем принадлежность к проекту
+              if (act.issueId) return projectTaskIds.includes(act.issueId);
+              // Если есть agentId - пытаемся найти связь через taskSessionMap
+              const agentKey = `agent:main:subagent:${act.agentId}`;
+              const issueId = taskSessionMap[agentKey];
+              if (issueId) return projectTaskIds.includes(issueId);
+              // Глобальные события (без agentId) показываем всегда
+              if (!act.agentId) return true;
+              return false;
+            });
+            setActivities(filtered.slice(0, 30));
+          } else {
+            setActivities(data.slice(0, 30));
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
   function filterSessions() {
     if (allSessions.length === 0) return;
     if (!projects || projects.length === 0) return;
@@ -133,52 +169,9 @@ export default function Monitor() {
       .then(data => {
         if (Array.isArray(data)) {
           setMessages(data);
-          // Извлекаем activities из сообщений
-          extractActivities(data);
         }
       })
       .catch(err => console.error('Failed to load messages:', err));
-  }
-
-  function extractActivities(msgs) {
-    const acts = [];
-    msgs.forEach(msg => {
-      const role = msg.message?.role;
-      const content = msg.message?.content;
-      
-      if (role === 'user' && typeof content === 'string') {
-        acts.push({
-          time: new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          type: 'user',
-          text: content.slice(0, 60) + (content.length > 60 ? '...' : '')
-        });
-      } else if (role === 'assistant') {
-        // Tool calls
-        if (msg.message?.toolCalls) {
-          msg.message.toolCalls.forEach(tc => {
-            acts.push({
-              time: new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-              type: 'tool',
-              text: `⚡ ${tc.function?.name || 'tool'}`
-            });
-          });
-        }
-        // Subagent spawns
-        if (msg.message?.content) {
-          const text = Array.isArray(msg.message.content) 
-            ? msg.message.content.map(c => c.text || '').join('')
-            : msg.message.content;
-          if (text.includes('spawn') || text.includes('subagent') || text.includes('запускаю')) {
-            acts.push({
-              time: new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-              type: 'spawn',
-              text: '🔄 ' + (text.slice(0, 50) + '...')
-            });
-          }
-        }
-      }
-    });
-    setActivities(acts.slice(-50)); // Последние 50
   }
 
   function getSessionDisplay(session) {
@@ -202,6 +195,38 @@ export default function Monitor() {
     if (hours > 0) return `${hours}ч ${mins % 60}м`;
     if (mins > 0) return `${mins}м`;
     return `${secs}с`;
+  }
+
+  // Форматирование времени для активности
+function formatActivityTime(act) {
+    if (act.timestamp) {
+      return new Date(act.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+    if (act.time) return act.time;
+    return '--:--';
+  }
+
+  // Форматирование текста активности
+  function formatActivityText(act) {
+    if (act.message) return act.message;
+    if (act.description) return act.description;
+    if (act.text) return act.text;
+    if (act.type) return act.type;
+    return 'activity';
+  }
+
+  // Иконка для типа активности
+  function getActivityIcon(act) {
+    const type = act.type || '';
+    if (type === 'task_started' || type === 'agent_started') return '🚀';
+    if (type === 'task_completed') return '✅';
+    if (type === 'task_failed') return '❌';
+    if (type === 'error') return '💥';
+    if (type === 'warning') return '⚠️';
+    if (type === 'user') return '👤';
+    if (type === 'tool') return '⚡';
+    if (type === 'spawn') return '🔄';
+    return '📌';
   }
 
   if (loading) {
@@ -245,7 +270,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>📋 Activity</h3>
             <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
               {activities.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Требует интеграции с логами</div>
+                <div style={{ color: 'var(--text-muted)' }}>Нет активности</div>
               ) : (
                 activities.map((act, i) => (
                   <div key={i} style={{ 
@@ -254,8 +279,8 @@ export default function Monitor() {
                     display: 'flex',
                     gap: '8px'
                   }}>
-                    <span style={{ color: 'var(--text-muted)', minWidth: '50px' }}>{act.time}</span>
-                    <span>{act.text}</span>
+                    <span style={{ color: 'var(--text-muted)', minWidth: '50px' }}>{formatActivityTime(act)}</span>
+                    <span>{getActivityIcon(act)} {formatActivityText(act)}</span>
                   </div>
                 ))
               )}
@@ -267,7 +292,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>💬 Сообщения</h3>
             <div style={{ fontSize: '12px' }}>
               {messages.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Требует интеграции с логами</div>
+                <div style={{ color: 'var(--text-muted)' }}>Выберите сессию для просмотра сообщений</div>
               ) : (
                 messages.slice(-20).map((msg, i) => {
                   const role = msg.message?.role;
@@ -342,21 +367,27 @@ export default function Monitor() {
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
             <h3 style={{ marginTop: 0 }}>🔄 Subagents</h3>
             {(() => {
-              // Фильтруем subagents по проекту если выбран проект
-              let subagentSessions = allSessions.filter(s => s.key?.includes('subagent'));
+              // Subagent сессии: по ключу или по label (формат "bd:workspace-xxx")
+              const isSubagent = (s) => 
+                s.key?.includes('subagent') || 
+                s.label?.startsWith('bd:') || 
+                s.label?.includes('subagent');
+              
+              let subagentSessions = allSessions.filter(isSubagent);
               
               if (projectFilter) {
-                // projectTaskIds — id задач этого проекта
+                // При фильтре по проекту показываем:
+                // 1. RUNNING subagents (они активны и видны глобально)
+                // 2. Subagents связанные с задачами выбранного проекта
                 const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
-                // projectSessionKeys — sessionKeys которые маппятся к задачам этого проекта
                 const projectSessionKeys = Object.entries(taskSessionMap)
                   .filter(([_, issueId]) => projectTaskIds.includes(issueId))
                   .map(([sessionKey]) => sessionKey);
-                // Фильтруем: running subagents показываем всегда (глобальны), остальные — только если привязаны к проекту
                 subagentSessions = subagentSessions.filter(s => 
                   s.status === 'running' || projectSessionKeys.includes(s.key)
                 );
               }
+              // Без фильтра - показываем ВСЕ subagent сессии
               
               if (subagentSessions.length === 0) {
                 return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
@@ -376,7 +407,7 @@ export default function Monitor() {
               // Функция для получения имени задачи из Beads
               const getTaskName = (session) => {
                 const sessionKey = session.key;
-                // sessionTaskMap[sessionKey] возвращает issueId (строку), не объект
+                //sessionTaskMap[sessionKey] возвращает issueId (строку), не объект
                 const issueId = taskSessionMap[sessionKey];
                 if (issueId) {
                   // Находим issue по issueId в projects
@@ -424,7 +455,7 @@ export default function Monitor() {
             <h3 style={{ marginTop: 0 }}>📄 Лента активности</h3>
             {activities.length === 0 ? (
               <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Требует интеграции с логами
+                Нет активности
               </div>
             ) : (
               <div style={{ fontSize: '11px' }}>
@@ -435,8 +466,8 @@ export default function Monitor() {
                     display: 'flex',
                     gap: '8px'
                   }}>
-                    <span style={{ color: 'var(--text-muted)', minWidth: '45px' }}>{act.time}</span>
-                    <span>{act.text}</span>
+                    <span style={{ color: 'var(--text-muted)', minWidth: '45px' }}>{formatActivityTime(act)}</span>
+                    <span>{getActivityIcon(act)} {formatActivityText(act)}</span>
                   </div>
                 ))}
               </div>
