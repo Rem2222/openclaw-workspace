@@ -135,3 +135,62 @@ Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces
 - **Systematic over ad-hoc** — follow the process especially under time pressure
 - **Evidence over claims** — verify before declaring success
 - **Frequent commits** — after each green test
+
+---
+
+## Beads Integration (Optional)
+
+[Beads](https://github.com/steveyegge/beads) — distributed issue tracker for AI agents, powered by Dolt.
+
+### Why Beads?
+- Replaces txt-based task tracking (progress-*.txt)
+- Provides structured storage with `bd` CLI
+- Integrates with git (Dolt = Git for data)
+
+### Setup
+```bash
+cd ~/.openclaw/workspace
+npx @beads/bd init
+```
+
+### Key Commands
+```bash
+bd create "Task description | File: docs/plans/...md#task-1"  # Create task
+bd ready                    # Show available tasks
+bd show <id>               # View task details
+bd update <id> --claim      # Claim task (open → in_progress)
+bd close <id>              # Close task (done)
+bd list                     # List all tasks
+```
+
+### Integration with Superpowers
+
+**Phase 2 (Writing Plans):**
+- After creating plan file: `bd create "[TASK-1] description | File: docs/plans/...md#task-1"`
+
+**Phase 3 (Development):**
+- `bd ready` → get next task
+- `bd update <id> --claim` → start working
+- Read task details + referenced file section
+- `bd close <id>` → done
+
+**What stays the same:**
+- Plan files (markdown) stay for detailed specs
+- TDD process unchanged
+- Subagent dispatch via `sessions_spawn`
+
+**What changes:**
+- Manual txt tracking → `bd` commands
+- Task status in Beads, not files
+
+### Example Workflow
+```bash
+# After planning phase
+bd create "[Backend] Auth middleware | File: projects/myapp/ТЗ.md#auth"
+
+# During development
+bd ready              # Shows the auth task
+bd update workspace-xxx --claim
+# ... implement ...
+bd close workspace-xxx
+```
