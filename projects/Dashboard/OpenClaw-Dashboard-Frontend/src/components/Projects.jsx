@@ -435,14 +435,23 @@ export default function Projects() {
                               </div>
                             )}
                             {/* Кнопки действий */}
-                            <div className="detail-item" style={{ gridColumn: '1 / -1', marginTop: '8px' }}>
+                            <div className="detail-item" style={{ gridColumn: '1 / -1', marginTop: '8px', display: 'flex', gap: '8px' }}>
+                              {issue.project && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); window.location.hash = `#/monitor?project=${encodeURIComponent(issue.project)}`; }}
+                                  className="btn btn-primary"
+                                  style={{ fontSize: '11px', padding: '4px 12px' }}
+                                >
+                                  📊 Монитор
+                                </button>
+                              )}
                               {issue.status !== 'closed' && issue.project && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleArchiveProject(issue.project); }}
                                   className="btn btn-ghost"
                                   style={{ fontSize: '11px', padding: '4px 8px' }}
                                 >
-                                  Архивировать проект
+                                  Архивировать
                                 </button>
                               )}
                             </div>

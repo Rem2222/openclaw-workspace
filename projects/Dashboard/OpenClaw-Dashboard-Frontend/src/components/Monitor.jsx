@@ -1,24 +1,75 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function Monitor() {
-  const [sessions, setSessions] = useState([]);
+  const [allSessions, setAllSessions] = useState([]);
+  const [filteredSessions, setFilteredSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([]);
   const [projects, setProjects] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [projectFilter, setProjectFilter] = useState(null);
+  const [taskSessionMap, setTaskSessionMap] = useState({});
   const pollingRef = useRef(null);
+  const sessionsLoaded = useRef(false);
 
-  // Загружаем сессии при монтировании
+  // Читаем project из URL
   useEffect(() => {
-    loadSessions();
-    loadProjects();
-    
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1] || '');
+    const project = params.get('project');
+    if (project) {
+      setProjectFilter(decodeURIComponent(project));
+    }
   }, []);
+
+  // Загружаем при монтировании
+  useEffect(() => {
+    loadProjects();
+    loadTaskSessionMap();
+    sessionsLoaded.current = false;
+  }, []);
+
+  // Фильтруем сессии когда меняется фильтр или данные
+  useEffect(() => {
+    filterSessions();
+  }, [projectFilter, allSessions, projects, taskSessionMap]);
+
+  function filterSessions() {
+    if (allSessions.length === 0) return;
+    
+    let filtered = allSessions;
+    if (projectFilter) {
+      const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+      filtered = allSessions.filter(s => {
+        const sessionKey = s.key;
+        return Object.entries(taskSessionMap).some(([tk, info]) => 
+          tk === sessionKey && projectTaskIds.includes(info.issueId)
+        );
+      });
+    }
+    setFilteredSessions(filtered);
+    
+    // Выбираем первую активную если нет выбранной
+    if (!selectedSession && filtered.length > 0) {
+      const active = filtered.find(s => s.status !== 'done') || filtered[0];
+      setSelectedSession(active.key);
+      loadMessages(active.key);
+    }
+  }
+
+  function loadTaskSessionMap() {
+    // Загружаем маппинг session -> task
+    fetch('/api/issues/session-task-map')
+      .then(r => r.json())
+      .then(data => {
+        if (data.map) {
+          setTaskSessionMap(data.map);
+        }
+      })
+      .catch(() => {});
+  }
 
   // Поллинг каждые 3 секунды
   useEffect(() => {
@@ -33,25 +84,27 @@ export default function Monitor() {
   }, [selectedSession]);
 
   function loadSessions() {
+    if (sessionsLoaded.current) return;
+    sessionsLoaded.current = true;
+    
     fetch('/api/sessions')
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setSessions(data);
-          // Выбираем первую активную если нет выбранной
-          if (!selectedSession && data.length > 0) {
-            const active = data.find(s => s.status !== 'done') || data[0];
-            setSelectedSession(active.key);
-            loadMessages(active.key);
-          }
+          setAllSessions(data);
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch(err => {
         console.error('Failed to load sessions:', err);
         setLoading(false);
       });
   }
+
+  // Загружаем сессии один раз
+  useEffect(() => {
+    loadSessions();
+  }, []);
 
   function loadProjects() {
     fetch('/api/issues?filter=all')
@@ -156,14 +209,21 @@ export default function Monitor() {
     <div className="page" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Монитор проекта</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1>Монитор{projectFilter ? `: ${projectFilter}` : ' проекта'}</h1>
+          {projectFilter && (
+            <a href="#/projects" className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 8px' }}>
+              ← К проектам
+            </a>
+          )}
+        </div>
         <select 
           value={selectedSession || ''}
           onChange={e => { setSelectedSession(e.target.value); setMessages([]); setActivities([]); }}
           className="input"
           style={{ width: '300px' }}
         >
-          {sessions.map(s => (
+          {filteredSessions.map(s => (
             <option key={s.key} value={s.key}>
               {getStatusIcon(s)} {getSessionDisplay(s)} ({formatDuration(s.duration)})
             </option>

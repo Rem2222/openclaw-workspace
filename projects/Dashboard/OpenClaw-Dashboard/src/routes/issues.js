@@ -76,6 +76,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/issues/session-task-map — получить все привязки session -> task
+router.get('/session-task-map', async (req, res) => {
+  try {
+    const map = loadSessionTaskMap();
+    res.json({ map });
+  } catch (error) {
+    console.error('[Issues API] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/issues/:id — один issue
 router.get('/:id', async (req, res) => {
   try {
@@ -158,16 +169,6 @@ router.get('/:id/sessions', async (req, res) => {
     } catch {}
 
     res.json({ sessions });
-  } catch (error) {
-    console.error('[Issues API] Error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// GET /api/sessions-task-map — получить все привязки
-router.get('/../sessions-task-map', async (req, res) => {
-  try {
-    res.json(loadSessionTaskMap());
   } catch (error) {
     console.error('[Issues API] Error:', error.message);
     res.status(500).json({ error: error.message });
