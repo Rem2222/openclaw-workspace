@@ -66,6 +66,9 @@ export default function Sessions() {
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
   const [hideSubagents, setHideSubagents] = useState(true); // По умолчанию скрываем субов
+  const [projectFilter, setProjectFilter] = useState(() => {
+    return localStorage.getItem('dashboard.projectFilter') || 'all';
+  });
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
   const [sessionTaskMap, setSessionTaskMap] = useState({}); // sessionKey -> issueId
 
@@ -85,6 +88,11 @@ export default function Sessions() {
     const interval = setInterval(loadSessions, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Сохраняем projectFilter в localStorage при изменении
+  useEffect(() => {
+    localStorage.setItem('dashboard.projectFilter', projectFilter);
+  }, [projectFilter]);
 
   // Загружаем titles для Beads issues
   async function loadIssueTitles() {
@@ -310,12 +318,30 @@ export default function Sessions() {
     return sortDir === 'asc' ? SORT_ICONS.asc : SORT_ICONS.desc;
   }
 
+  function getProjects() {
+    const projects = new Set();
+    Object.values(issueData).forEach(info => {
+      if (info.project) projects.add(info.project);
+    });
+    return Array.from(projects).sort();
+  }
+
   function getSortedSessions() {
     let filtered = sessions;
     
     // Фильтруем субов если включено, НО оставляем подсвеченную сессию
     if (hideSubagents) {
       filtered = sessions.filter(s => !s.isSubagent || s.key === highlight);
+    }
+    
+    // Фильтр по проекту
+    if (projectFilter !== 'all') {
+      filtered = filtered.filter(s => {
+        const issueId = sessionTaskMap[s.key];
+        if (!issueId) return false;
+        const issue = issueData[issueId];
+        return issue && issue.project === projectFilter;
+      });
     }
     
     const sorted = [...filtered];
@@ -393,6 +419,17 @@ export default function Sessions() {
             />
             <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Скрыть субов</span>
           </label>
+          <select
+            value={projectFilter}
+            onChange={e => setProjectFilter(e.target.value)}
+            className="input"
+            style={{ width: 'auto', minWidth: '120px' }}
+          >
+            <option value="all">Все проекты</option>
+            {getProjects().map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
       </div>
 
