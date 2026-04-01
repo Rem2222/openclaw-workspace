@@ -122,15 +122,30 @@ export default function Projects() {
     loadTaskResults();
   }, [loadSessionTaskMap, loadTaskResults]);
 
-  // Обновляем при фокусе на странице (пользователь вернулся на вкладку)
+  // Обновляем при фокусе на странице или изменении видимости (пользователь вернулся на вкладку)
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[Projects] visibilitychange: visible, refreshing sessionTaskMap');
+        loadSessionTaskMap();
+        loadTaskResults();
+      }
+    };
+
     const handleFocus = () => {
+      console.log('[Projects] focus event, refreshing sessionTaskMap');
       loadSessionTaskMap();
       loadTaskResults();
     };
 
+    // visibilitychange срабатывает надёжнее при возврате на вкладку
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [loadSessionTaskMap, loadTaskResults]);
 
   // Считаем активные сессии по проекту
@@ -322,7 +337,7 @@ export default function Projects() {
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          <button onClick={loadIssues} className="btn btn-ghost" title="Обновить">↻</button>
+          <button onClick={() => { loadIssues(); loadSessionTaskMap(); loadTaskResults(); }} className="btn btn-ghost" title="Обновить">↻</button>
         </div>
       </div>
 
