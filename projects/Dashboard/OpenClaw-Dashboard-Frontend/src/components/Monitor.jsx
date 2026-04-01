@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { HISTORY_LIMIT } from '../pages/Settings';
 
 export default function Monitor() {
@@ -598,7 +598,7 @@ export default function Monitor() {
                     {proj.issues.map(issue => (
                       <div 
                         key={issue.id}
-                        onClick={() => setExpandedRow(expandedRow === issue.id ? null : issue.id)}
+                        onClick={() => window.location.href = `/projects?expand=${issue.id}`}
                         style={{ 
                           padding: '6px 8px',
                           marginBottom: '2px',

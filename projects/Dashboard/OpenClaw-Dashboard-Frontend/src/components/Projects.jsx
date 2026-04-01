@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 const formatDateTime = (timestamp) => {
   if (!timestamp) return '—';
@@ -52,6 +52,7 @@ const SORT_ICONS = {
 
 export default function Projects() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,17 +81,20 @@ export default function Projects() {
     }
   }, [expandedId]);
 
-  // Обработка highlight параметра из URL
+  // Обработка highlight и expand параметров из URL (навигация из Монитора)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const highlight = params.get('highlight');
-    if (highlight) {
-      setHighlightIssueId(highlight);
+    const expand = params.get('expand');
+    const targetId = highlight || expand;
+    
+    if (targetId) {
+      if (highlight) setHighlightIssueId(highlight);
       // Автоматически раскрываем строку с этим issueId
       if (issues.length > 0) {
-        const issue = issues.find(i => i.id === highlight);
-        if (issue && expandedId !== highlight) {
-          setExpandedId(highlight);
+        const issue = issues.find(i => i.id === targetId);
+        if (issue && expandedId !== targetId) {
+          setExpandedId(targetId);
         }
       }
     }
