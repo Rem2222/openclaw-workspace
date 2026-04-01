@@ -78,13 +78,17 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 1. `sessions_spawn` an implementer subagent with task + full plan context
    - **label:** `bd:<BD_ISSUE_ID>` — например `bd:workspace-bzd`
    - **Model:** opencode-go/glm-5 (или выбранный пользователем)
+   - **После спавна — зарегистрировать сессию:** `POST /api/issues/sessions` с `{ sessionKey: "<childSessionKey>", issueId: "<BD_ISSUE_ID>" }`
+   - Использовать `host="gateway", port=3000` для Dashboard API
 2. Wait for completion announcement
 3. `sessions_spawn` a spec-reviewer subagent → must confirm code matches spec
    - **label:** `review:spec:<BD_ISSUE_ID>`
    - **Model:** opencode-go/glm-5
+   - **После спавна — зарегистрировать сессию:** `POST /api/issues/sessions` с `{ sessionKey: "<childSessionKey>", issueId: "<BD_ISSUE_ID>" }`
 4. `sessions_spawn` a code-quality reviewer subagent → must approve quality
    - **label:** `review:quality:<BD_ISSUE_ID>`
    - **Model:** opencode-go/glm-5
+   - **После спавна — зарегистрировать сессию:** `POST /api/issues/sessions` с `{ sessionKey: "<childSessionKey>", issueId: "<BD_ISSUE_ID>" }`
 5. Fix any issues, re-review if needed
 6. Mark task done in Beads: `bd update <id> --status done`
 7. Move to next task
@@ -154,6 +158,31 @@ Task text: [paste full task from plan]
 ```
 
 Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces results automatically.
+
+### Register Session API (Post-Spawn)
+
+После каждого `sessions_spawn` нужно **обязательно** зарегистрировать сессию в Dashboard API:
+
+```bash
+# Sessions_spawn возвращает childSessionKey
+# Извлечь issueId из label (например "bd:workspace-dl6" → "workspace-dl6")
+
+curl -X POST http://localhost:3000/api/issues/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"sessionKey": "<childSessionKey>", "issueId": "<issueId>"}'
+```
+
+**Зачем:** Dashboard Monitor показывает субагентов по проектам. Регистрация связывает сессию с issue.
+
+**Пример:**
+```
+# Label: bd:workspace-dl6
+# childSessionKey: agent:main:subagent:e9ca4837-...
+
+curl -X POST http://localhost:3000/api/issues/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"sessionKey": "agent:main:subagent:e9ca4837-cb6c-411b-a838-a1b8c2a8a0e0", "issueId": "workspace-dl6"}'
+```
 
 ---
 
