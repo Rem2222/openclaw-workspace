@@ -78,10 +78,28 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
-  const [projectFilter, setProjectFilter] = useState(() => {
-    // Восстанавливаем из localStorage
-    return localStorage.getItem('dashboard.projectFilter') || 'all';
-  });
+  // Инициализация projectFilter: приоритет - localStorage, затем URL param, затем 'all'
+  const getInitialProjectFilter = () => {
+    // 1. Проверяем localStorage
+    const stored = localStorage.getItem('dashboard.projectFilter');
+    console.log('[Projects] getInitialProjectFilter: localStorage value =', stored);
+    if (stored && stored !== 'all') {
+      console.log('[Projects] Restoring projectFilter from localStorage:', stored);
+      return stored;
+    }
+    // 2. Если localStorage пуст, проверяем URL параметр (только для инициализации)
+    const urlProject = searchParams.get('project');
+    console.log('[Projects] getInitialProjectFilter: URL project =', urlProject);
+    if (urlProject) {
+      console.log('[Projects] Using projectFilter from URL:', urlProject);
+      return decodeURIComponent(urlProject);
+    }
+    // 3. По умолчанию - все проекты
+    console.log('[Projects] getInitialProjectFilter: using default "all"');
+    return 'all';
+  };
+  
+  const [projectFilter, setProjectFilter] = useState(getInitialProjectFilter);
   const [sortField, setSortField] = useState('created');
   const [sortDir, setSortDir] = useState('desc');
   const [expandedId, setExpandedId] = useState(null);
@@ -131,6 +149,7 @@ export default function Projects() {
 
   // Сохраняем projectFilter в localStorage при изменении
   useEffect(() => {
+    console.log('[Projects] Saving projectFilter to localStorage:', projectFilter);
     localStorage.setItem('dashboard.projectFilter', projectFilter);
   }, [projectFilter]);
 

@@ -14,6 +14,7 @@ const commandRoutes = require('./command');
 const spawnRoutes = require('./spawn');
 const resultsRoutes = require('./results');
 const monitorRoutes = require('./monitor');
+const chatRoutes = require('./chat');
 
 router.use('/agents', agentsRoutes);
 router.use('/tasks', tasksRoutes);
@@ -28,5 +29,6 @@ router.use('/issues', issuesRoutes);
 router.use('/command', commandRoutes);
 router.use('/spawn', spawnRoutes);
 router.use('/monitor', monitorRoutes);
+router.use('/chat', chatRoutes);
 
 module.exports = router;

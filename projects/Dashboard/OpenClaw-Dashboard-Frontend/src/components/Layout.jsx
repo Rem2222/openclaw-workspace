@@ -127,7 +127,7 @@ export default function Layout() {
                         animation: 'pulse 2s infinite'
                       }}></span>
                     )}
-                    {count}
+                    {item.path !== '/projects' && item.path !== '/approvals' && count}
                   </span>
                 )}
               </Link>
