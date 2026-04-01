@@ -383,7 +383,7 @@ export default function Monitor() {
                   {(() => {
                     const proj = projects.find(p => p.name === projectFilter);
                     if (!proj) return '0/0';
-                    const done = proj.issues.filter(i => i.status === 'done').length;
+                    const done = proj.issues.filter(i => i.status === 'closed').length;
                     const total = proj.issues.length;
                     return `${done}/${total}`;
                   })()}
@@ -392,7 +392,7 @@ export default function Monitor() {
                   {(() => {
                     const proj = projects.find(p => p.name === projectFilter);
                     if (!proj || proj.issues.length === 0) return null;
-                    const done = proj.issues.filter(i => i.status === 'done').length;
+                    const done = proj.issues.filter(i => i.status === 'closed').length;
                     const total = proj.issues.length;
                     const pct = Math.round((done / total) * 100);
                     return (
@@ -586,13 +586,13 @@ export default function Monitor() {
                         cursor: 'pointer',
                         background: expandedRow === issue.id ? 'var(--surface)' : 'transparent',
                         borderLeft: `2px solid ${
-                          issue.status === 'done' ? 'var(--success)' :
+                          issue.status === 'closed' ? 'var(--success)' :
                           issue.status === 'in_progress' ? 'var(--warning)' : 'var(--border)'
                         }`
                       }}
                     >
                       <span style={{ fontSize: '12px' }}>
-                        {issue.status === 'done' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
+                        {issue.status === 'closed' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
                         {issue.title}
                       </span>
                     </div>
