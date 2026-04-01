@@ -361,20 +361,20 @@ export default function Monitor() {
               // Функция для получения имени задачи из Beads
               const getTaskName = (session) => {
                 const sessionKey = session.key;
-                // Ищем маппинг sessionKey -> issueId в taskSessionMap
-                const mapping = taskSessionMap[sessionKey];
-                if (mapping?.issueId) {
+                // sessionTaskMap[sessionKey] возвращает issueId (строку), не объект
+                const issueId = taskSessionMap[sessionKey];
+                if (issueId) {
                   // Находим issue по issueId в projects
                   for (const proj of projects) {
-                    const issue = proj.issues.find(i => i.id === mapping.issueId);
+                    const issue = proj.issues.find(i => i.id === issueId);
                     if (issue) return issue.title;
                   }
                 }
-                // Пробуем извлечь из label (формат "bd:workspace-xxx")
+                // Fallback: извлекаем из label (формат "bd:workspace-xxx")
                 if (session.label?.startsWith('bd:')) {
-                  const issueKey = session.label.slice(3); // убираем "bd:"
+                  const id = session.label.slice(3);
                   for (const proj of projects) {
-                    const issue = proj.issues.find(i => i.id === issueKey || i.key === issueKey);
+                    const issue = proj.issues.find(i => i.id === id);
                     if (issue) return issue.title;
                   }
                 }
