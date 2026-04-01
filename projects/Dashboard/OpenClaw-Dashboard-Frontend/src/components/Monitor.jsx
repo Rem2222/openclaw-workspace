@@ -39,6 +39,7 @@ export default function Monitor() {
 
   function filterSessions() {
     if (allSessions.length === 0) return;
+    if (!projects || projects.length === 0) return;
     
     let filtered = allSessions;
     if (projectFilter) {
@@ -350,8 +351,10 @@ export default function Monitor() {
                 const projectSessionKeys = Object.entries(taskSessionMap)
                   .filter(([_, issueId]) => projectTaskIds.includes(issueId))
                   .map(([sessionKey]) => sessionKey);
-                // Фильтруем только subagents этого проекта
-                subagentSessions = subagentSessions.filter(s => projectSessionKeys.includes(s.key));
+                // Фильтруем: running subagents показываем всегда (глобальны), остальные — только если привязаны к проекту
+                subagentSessions = subagentSessions.filter(s => 
+                  s.status === 'running' || projectSessionKeys.includes(s.key)
+                );
               }
               
               if (subagentSessions.length === 0) {
