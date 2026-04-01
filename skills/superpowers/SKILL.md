@@ -54,7 +54,7 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 - Each task = 2–5 minutes: write test → watch fail → implement → watch pass → commit
 - Save to `docs/plans/YYYY-MM-DD-<feature>.md`
 - Announce: `"I'm using the writing-plans skill to create the implementation plan."`
-- **After saving, immediately create ALL tasks in Beads:** `bd create "[PROJECT] Task N: Description | File: docs/plans/...md#task-N"`
+- **After saving, immediately create ALL tasks in Beads:** `bd create "[PROJECT] Task N: Short title" -d "Full description with implementation details including what needs to be done, file paths, technical approach | File: docs/plans/...md#task-N"`
 - After saving, offer two execution modes:
   - **Subagent-driven (current session):** `sessions_spawn` per task + two-stage review
   - **Manual execution:** User runs tasks themselves
@@ -253,7 +253,7 @@ npx @beads/bd init
 
 ### Key Commands (обязательно использовать)
 ```bash
-bd create "[Dashboard] Task description | File: docs/plans/...md#task-1"  # Создать задачу
+bd create "[Dashboard] Task description" -d "Что конкретно сделать, файлы, подход | File: docs/plans/...md#task-1"  # Создать задачу с описанием
 bd ready                    # Показать доступные задачи
 bd show <id>               # Посмотреть детали задачи
 bd update <id> --claim      # Взять в работу (open → in_progress)
@@ -265,7 +265,7 @@ bd list                     # Список всех задач
 
 **Phase 2 (Writing Plans):**
 1. Создать план в `docs/plans/YYYY-MM-DD-<feature>.md`
-2. **Сразу создать все задачи в Beads:** `bd create "[Dashboard] Task N: description | File: docs/plans/...md#task-N"`
+2. **Сразу создать все задачи в Beads:** `bd create "[Dashboard] Task N: description" -d "Подробное описание: что сделать, файлы, подход | File: docs/plans/...md#task-N"`
 
 **Phase 3 (Development):**
 1. `bd ready` → получить следующую задачу
@@ -286,8 +286,8 @@ bd list                     # Список всех задач
 ### Example Workflow
 ```bash
 # After planning phase — создать ВСЕ задачи
-bd create "[Dashboard] Task 1: Layout | File: docs/plans/2026-04-01-redesign-tasks.md#task-1"
-bd create "[Dashboard] Task 2: Agents | File: docs/plans/2026-04-01-redesign-tasks.md#task-2"
+bd create "[Dashboard] Task 1: Layout" -d "Стилизовать Layout.jsx по макету: sidebar, header, контент. Файл: src/components/Layout.jsx | File: docs/plans/2026-04-01-redesign-tasks.md#task-1"
+bd create "[Dashboard] Task 2: Agents" -d "Страница Agents: таблица с агентами, фильтры, сортировка. Файл: src/pages/Agents.jsx | File: docs/plans/2026-04-01-redesign-tasks.md#task-2"
 
 # Перед каждой задачей — показать Beads output
 bd ready              # Shows next available task
