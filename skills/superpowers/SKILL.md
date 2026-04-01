@@ -76,11 +76,14 @@ Every coding task follows this pipeline. "Too simple to need a design" is always
 
 **Per-task loop (OpenClaw):**
 1. `sessions_spawn` an implementer subagent with task + full plan context
+   - **label:** `bd:<BD_ISSUE_ID>` — например `bd:workspace-bzd`
    - **Model:** opencode-go/glm-5 (или выбранный пользователем)
 2. Wait for completion announcement
 3. `sessions_spawn` a spec-reviewer subagent → must confirm code matches spec
+   - **label:** `review:spec:<BD_ISSUE_ID>`
    - **Model:** opencode-go/glm-5
 4. `sessions_spawn` a code-quality reviewer subagent → must approve quality
+   - **label:** `review:quality:<BD_ISSUE_ID>`
    - **Model:** opencode-go/glm-5
 5. Fix any issues, re-review if needed
 6. Mark task done in Beads: `bd update <id> --status done`

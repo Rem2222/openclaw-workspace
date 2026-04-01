@@ -30,7 +30,7 @@ const SORT_ICONS = {
   none: '',
 };
 
-export default function Issues() {
+export default function Projects() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,10 +39,76 @@ export default function Issues() {
   const [sortField, setSortField] = useState('created');
   const [sortDir, setSortDir] = useState('desc');
   const [expandedId, setExpandedId] = useState(null);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newProject, setNewProject] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newPriority, setNewPriority] = useState('2');
+  const [creating, setCreating] = useState(false);
+  const [taskSessions, setTaskSessions] = useState({});
 
   useEffect(() => {
     loadIssues();
   }, [filter, projectFilter]);
+
+  useEffect(() => {
+    // Загружаем сессии для раскрытых задач
+    if (expandedId) {
+      loadTaskSessions(expandedId);
+    }
+  }, [expandedId]);
+
+  function loadTaskSessions(issueId) {
+    fetch(`/api/issues/${issueId}/sessions`)
+      .then(r => r.json())
+      .then(data => {
+        setTaskSessions(prev => ({ ...prev, [issueId]: data.sessions || [] }));
+      })
+      .catch(() => {});
+  }
+
+  function handleCreateProject() {
+    if (!newProject.trim() || !newTitle.trim()) return;
+    setCreating(true);
+
+    const cmd = `bd create "[${newProject}] ${newTitle}" --priority ${newPriority} --type task`;
+    fetch('/api/command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: cmd })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          setNewProject('');
+          setNewTitle('');
+          setNewPriority('2');
+          setShowNewForm(false);
+          loadIssues();
+        }
+      })
+      .catch(err => {
+        console.error('Create failed:', err);
+      })
+      .finally(() => setCreating(false));
+  }
+
+  function handleArchiveProject(project) {
+    if (!confirm(`Архивировать все задачи проекта "${project}"?`)) return;
+
+    // Закрываем все задачи проекта
+    const projectIssues = issues.filter(i => i.project === project && i.status !== 'closed');
+    let closed = 0;
+    projectIssues.forEach(issue => {
+      fetch(`/api/command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: `bd update ${issue.id} --status closed` })
+      }).then(() => {
+        closed++;
+        if (closed === projectIssues.length) loadIssues();
+      });
+    });
+  }
 
   function loadIssues() {
     let cancelled = false;
@@ -136,6 +202,9 @@ export default function Issues() {
           <span className="badge badge-info">{issues.length}</span>
         </div>
         <div className="header-actions">
+          <button onClick={() => setShowNewForm(!showNewForm)} className="btn btn-primary">
+            + Новый проект
+          </button>
           <select
             value={filter}
             onChange={e => setFilter(e.target.value)}
@@ -161,6 +230,51 @@ export default function Issues() {
           <button onClick={loadIssues} className="btn btn-ghost" title="Обновить">↻</button>
         </div>
       </div>
+
+      {showNewForm && (
+        <div className="card" style={{ marginBottom: '16px' }}>
+          <h3 style={{ marginTop: 0 }}>Новый проект</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '12px', alignItems: 'end' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Проект</label>
+              <input
+                type="text"
+                value={newProject}
+                onChange={e => setNewProject(e.target.value)}
+                placeholder="Dashboard"
+                className="input"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Название задачи</label>
+              <input
+                type="text"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                placeholder="Task description"
+                className="input"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Приор.</label>
+              <select value={newPriority} onChange={e => setNewPriority(e.target.value)} className="input">
+                <option value="0">P0</option>
+                <option value="1">P1</option>
+                <option value="2">P2</option>
+                <option value="3">P3</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+            <button onClick={handleCreateProject} className="btn btn-primary" disabled={creating}>
+              {creating ? 'Создаю...' : 'Создать'}
+            </button>
+            <button onClick={() => setShowNewForm(false)} className="btn btn-ghost">Отмена</button>
+          </div>
+        </div>
+      )}
 
       {loading && (
         <div className="card">
@@ -322,6 +436,31 @@ export default function Issues() {
                                 </p>
                               </div>
                             )}
+                            {/* Сессии для этой задачи */}
+                            {(taskSessions[issue.id] || []).length > 0 && (
+                              <div className="detail-item" style={{ gridColumn: '1 / -1' }}>
+                                <span className="detail-label">Активные сессии:</span>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                  {taskSessions[issue.id].map(s => (
+                                    <span key={s.key} className="badge badge-success" style={{ cursor: 'pointer' }}>
+                                      ↗ {s.displayName || s.key}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {/* Кнопки действий */}
+                            <div className="detail-item" style={{ gridColumn: '1 / -1', marginTop: '8px' }}>
+                              {issue.status !== 'closed' && issue.project && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleArchiveProject(issue.project); }}
+                                  className="btn btn-ghost"
+                                  style={{ fontSize: '11px', padding: '4px 8px' }}
+                                >
+                                  Архивировать проект
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>

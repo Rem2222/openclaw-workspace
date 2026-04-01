@@ -25,16 +25,19 @@ TASK: [paste full task text from plan doc]
 For each task in the plan:
 
 1. **Dispatch implementer sub-agent** via `sessions_spawn`
+   - **label:** `bd:<BD_ISSUE_ID>` — например `bd:workspace-bzd`
    - Include: full task text, plan file path, TDD constraint, **BD_ISSUE_ID**
    - Wait for completion announcement
    - **On complete:** Subagent должен сам сделать `bd update <BD_ISSUE_ID> --status done`
 
 2. **Dispatch spec-reviewer sub-agent** via `sessions_spawn`
+   - **label:** `review:spec:<BD_ISSUE_ID>`
    - Include: what was implemented, plan requirements, git diff
    - Must confirm: code matches spec exactly
    - If gaps found → dispatch implementer again to fix
 
 3. **Dispatch code-quality reviewer sub-agent** via `sessions_spawn`
+   - **label:** `review:quality:<BD_ISSUE_ID>`
    - Include: git diff, description of implementation
    - Must approve: clean code, no dead code, DRY, YAGNI
    - If issues found → dispatch implementer to fix, re-review

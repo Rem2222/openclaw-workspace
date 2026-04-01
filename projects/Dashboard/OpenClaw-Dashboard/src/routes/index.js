@@ -10,6 +10,7 @@ const activityRoutes = require('./activity');
 const approvalsRoutes = require('./approvals');
 const gatewayRoutes = require('./gateway');
 const issuesRoutes = require('./issues');
+const commandRoutes = require('./command');
 
 router.use('/agents', agentsRoutes);
 router.use('/tasks', tasksRoutes);
@@ -20,5 +21,6 @@ router.use('/activity', activityRoutes);
 router.use('/approvals', approvalsRoutes);
 router.use('/gateway', gatewayRoutes);
 router.use('/issues', issuesRoutes);
+router.use('/command', commandRoutes);
 
 module.exports = router;

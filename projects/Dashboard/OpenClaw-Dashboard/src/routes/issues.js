@@ -1,8 +1,32 @@
 const express = require('express');
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 
 const WORKSPACE = '/home/rem/.openclaw/workspace';
+const SESSION_TASK_FILE = path.join(__dirname, '../../data/session-task.json');
+
+// Убеждаемся что директория существует
+const dataDir = path.dirname(SESSION_TASK_FILE);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Загрузка маппинга session → task
+function loadSessionTaskMap() {
+  try {
+    if (fs.existsSync(SESSION_TASK_FILE)) {
+      return JSON.parse(fs.readFileSync(SESSION_TASK_FILE, 'utf8'));
+    }
+  } catch {}
+  return {};
+}
+
+// Сохранение маппинга
+function saveSessionTaskMap(map) {
+  fs.writeFileSync(SESSION_TASK_FILE, JSON.stringify(map, null, 2));
+}
 
 // GET /api/issues — список issues из Beads
 router.get('/', async (req, res) => {
@@ -66,6 +90,84 @@ router.get('/:id', async (req, res) => {
     }
 
     res.json(normalizeIssue(issues[0]));
+  } catch (error) {
+    console.error('[Issues API] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/issues/sessions — привязать сессию к задаче
+router.post('/sessions', async (req, res) => {
+  try {
+    const { sessionKey, issueId } = req.body;
+    if (!sessionKey || !issueId) {
+      return res.status(400).json({ error: 'sessionKey and issueId required' });
+    }
+
+    const map = loadSessionTaskMap();
+    map[sessionKey] = issueId;
+    saveSessionTaskMap(map);
+
+    res.json({ ok: true, sessionKey, issueId });
+  } catch (error) {
+    console.error('[Issues API] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/issues/sessions/:sessionKey — удалить привязку
+router.delete('/sessions/:sessionKey', async (req, res) => {
+  try {
+    const map = loadSessionTaskMap();
+    delete map[req.params.sessionKey];
+    saveSessionTaskMap(map);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[Issues API] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/issues/:id/sessions — получить активные сессии для задачи
+router.get('/:id/sessions', async (req, res) => {
+  try {
+    const issueId = req.params.id;
+    const map = loadSessionTaskMap();
+
+    // Найти все sessionKey, привязанные к этой задаче
+    const sessionKeys = Object.entries(map)
+      .filter(([, v]) => v === issueId)
+      .map(([k]) => k);
+
+    // Получить информацию о сессиях из OpenClaw
+    let sessions = [];
+    try {
+      const sessionsRes = await fetch('http://localhost:18789/api/sessions');
+      const allSessions = await sessionsRes.json();
+      sessions = allSessions
+        .filter(s => sessionKeys.includes(s.key))
+        .map(s => ({
+          key: s.key,
+          displayName: s.displayName,
+          model: s.model,
+          status: s.status,
+          duration: s.duration,
+          startedAt: s.startedAt,
+          updatedAt: s.updatedAt,
+        }));
+    } catch {}
+
+    res.json({ sessions });
+  } catch (error) {
+    console.error('[Issues API] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/sessions-task-map — получить все привязки
+router.get('/../sessions-task-map', async (req, res) => {
+  try {
+    res.json(loadSessionTaskMap());
   } catch (error) {
     console.error('[Issues API] Error:', error.message);
     res.status(500).json({ error: error.message });
