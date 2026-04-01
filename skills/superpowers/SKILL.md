@@ -155,6 +155,12 @@ Files: [exact paths]
 Constraints: [what NOT to do — no scope creep, TDD only]
 Verify: [how to confirm success — tests pass, specific command]
 Task text: [paste full task from plan]
+
+## After completion — SAVE RESULT to API (REQUIRED)
+When task is complete, save result:
+curl -X POST http://localhost:3000/api/issues/results \
+  -H "Content-Type: application/json" \
+  -d "{\"issueId\":\"<BD_ISSUE_ID>\",\"result\":\"<brief 1-2 sentence result>\"}"
 ```
 
 Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces results automatically.
