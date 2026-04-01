@@ -317,7 +317,7 @@ export default function Sessions() {
     
     // Фильтруем субов если включено, НО оставляем подсвеченную сессию
     if (hideSubagents) {
-      filtered = sessions.filter(s => !s.isSubagent || s.sessionKey === highlight);
+      filtered = sessions.filter(s => !s.isSubagent || s.key === highlight);
     }
     
     const sorted = [...filtered];
@@ -440,7 +440,7 @@ export default function Sessions() {
             <tbody>
               {getSortedSessions().map((session) => {
                 const info = session.displayInfo;
-                const isHighlighted = highlight === session.sessionKey;
+                const isHighlighted = highlight === session.key;
                 return (
                   <tr key={session.id} ref={isHighlighted ? highlightRef : null} className={isHighlighted ? 'tr-selected' : (session.isSubagent ? 'table-nested' : '')}>
                     <td>
