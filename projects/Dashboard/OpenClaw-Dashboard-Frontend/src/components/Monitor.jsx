@@ -412,31 +412,38 @@ export default function Monitor() {
                 <div className="stat-card-label">Время</div>
                 <div className="stat-card-value">
                   {(() => {
-                    const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                    const proj = projects.find(p => p.name === projectFilter);
+                    if (!proj || proj.issues.length === 0) return '—';
+                    
+                    const projectTaskIds = proj.issues.map(i => i.id);
                     const projectSessionKeys = Object.entries(taskSessionMap)
                       .filter(([_, issueId]) => projectTaskIds.includes(issueId))
                       .map(([sessionKey]) => sessionKey);
-                    // Calculate duration from startedAt/endedAt (or Date.now() for running sessions)
-                    const totalMs = allSessions
-                      .filter(s => projectSessionKeys.includes(s.key))
-                      .reduce((sum, s) => {
-                        if (s.endedAt && s.startedAt) {
-                          return sum + (s.endedAt - s.startedAt);
-                        }
-                        if (s.startedAt) {
-                          return sum + (Date.now() - s.startedAt);
-                        }
-                        return sum;
-                      }, 0);
-                    const secs = Math.floor(totalMs / 1000);
-                    const mins = Math.floor(secs / 60);
-                    const hours = Math.floor(mins / 60);
-                    if (hours > 0) return `${hours}ч ${mins % 60}м`;
-                    if (mins > 0) return `${mins}м`;
-                    return `${secs}с`;
+                    
+                    // Session time = sum of (endedAt - startedAt) for project sessions
+                    const sessionTimeMs = allSessions
+                      .filter(s => projectSessionKeys.includes(s.key) && s.endedAt && s.startedAt)
+                      .reduce((sum, s) => sum + (s.endedAt - s.startedAt), 0);
+                    
+                    // Total time = from first task created to now
+                    const firstTaskCreated = proj.issues.reduce((earliest, issue) => {
+                      const created = new Date(issue.createdRaw || issue.created).getTime();
+                      return created < earliest ? created : earliest;
+                    }, Date.now());
+                    const totalTimeMs = Date.now() - firstTaskCreated;
+                    
+                    const fmtMs = (ms) => {
+                      const secs = Math.floor(ms / 1000);
+                      const mins = Math.floor(secs / 60);
+                      const hours = Math.floor(mins / 60);
+                      if (hours > 0) return `${hours}ч ${mins % 60}м`;
+                      if (mins > 0) return `${mins}м`;
+                      return `${secs}с`;
+                    };
+                    
+                    return `${fmtMs(sessionTimeMs)} / ${fmtMs(totalTimeMs)}`;
                   })()}
                 </div>
-                <div className="stat-card-sub">общее время</div>
               </div>
             </div>
 
@@ -479,7 +486,8 @@ export default function Monitor() {
                     const avgMs = totalMs / doneSessions.length;
                     const avgMins = Math.floor(avgMs / 60000);
                     const avgSecs = Math.floor((avgMs % 60000) / 1000);
-                    return `ср ${avgMins > 0 ? `${avgMins}м` : `${avgSecs}с`}`;
+                    if (avgMins > 0) return `в среднем ${avgMins} ${avgMins === 1 ? 'минута' : avgMins < 5 ? 'минуты' : 'минут'}`;
+                    return `в среднем ${avgSecs} ${avgSecs === 1 ? 'секунда' : avgSecs < 5 ? 'секунды' : 'секунд'}`;
                   })()}
                 </div>
               </div>
