@@ -261,6 +261,7 @@ export default function Subagents() {
                     Задача{getSortIcon('task')}
                   </button>
                 </th>
+                <th>Проект</th>
                 <th>
                   <button className="sort-btn" onClick={() => handleSort('model')}>
                     Модель{getSortIcon('model')}
@@ -302,6 +303,21 @@ export default function Subagents() {
                     })()}
                   </td>
                   <td>
+                    {(() => {
+                      const parsed = parseLabel(subagent.displayName);
+                      const project = parsed.issueId ? issueData[parsed.issueId]?.project : null;
+                      if (project) {
+                        return (
+                          <Link to={`/monitor?project=${encodeURIComponent(project)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>📁</span>
+                            <span>{project}</span>
+                          </Link>
+                        );
+                      }
+                      return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+                    })()}
+                  </td>
+                  <td>
                     <span className="badge" style={{ background: 'var(--surface)', fontSize: '11px' }}>
                       {subagent.model}
                     </span>
@@ -334,7 +350,7 @@ export default function Subagents() {
               ))}
               {subagents.length === 0 && (
                 <tr className="no-hover">
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <div className="empty-state">
                       Активных субагентов нет
                     </div>
