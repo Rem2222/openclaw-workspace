@@ -111,6 +111,11 @@ export default function Layout() {
                 <span>{item.label}</span>
                 {count !== null && (
                   <span style={{ marginLeft: 'auto', fontSize: '12px', opacity: 0.7 }}>
+                    {item.path === '/projects' && count.open > 0 && (
+                      <span style={{ marginRight: '6px' }}>
+                        {count.open}/{count.total}
+                      </span>
+                    )}
                     {item.path === '/approvals' && count > 0 && (
                       <span style={{ 
                         display: 'inline-block', 
