@@ -159,18 +159,30 @@ Task text: [paste full task from plan]
 
 Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces results automatically.
 
-### Register Session API (Post-Spawn)
+### Register Session API (Post-Spawn) — **ОБЯЗАТЕЛЬНО**
 
-После каждого `sessions_spawn` нужно **обязательно** зарегистрировать сессию в Dashboard API:
+После каждого `sessions_spawn` нужно **СРАЗУ** зарегистрировать сессию в Dashboard API:
 
 ```bash
-# Sessions_spawn возвращает childSessionKey
-# Извлечь issueId из label (например "bd:workspace-dl6" → "workspace-dl6")
+# 1. sessions_spawn возвращает { childSessionKey: "agent:main:subagent:xxx" }
+# 2. Извлечь issueId из label: "bd:workspace-dl6" → "workspace-dl6"
+# 3. СРАЗУ вызвать регистрацию (не ждать завершения!)
 
 curl -X POST http://localhost:3000/api/issues/sessions \
   -H "Content-Type: application/json" \
   -d '{"sessionKey": "<childSessionKey>", "issueId": "<issueId>"}'
 ```
+
+**典型流程:**
+```
+1. sessions_spawn(label: "bd:workspace-1ac", ...)
+   → returns { childSessionKey: "agent:main:subagent:b45ff9cb-..." }
+2. curl -X POST http://localhost:3000/api/issues/sessions \
+     -d '{"sessionKey": "agent:main:subagent:b45ff9cb-...", "issueId": "workspace-1ac"}'
+3. Subagent работает → Monitor показывает его в реальном времени
+```
+
+**⚠️ ВАЖНО:** Регистрация должна быть СРАЗУ после spawn, пока subagent работает. Не после завершения!
 
 **Зачем:** Dashboard Monitor показывает субагентов по проектам. Регистрация связывает сессию с issue.
 
