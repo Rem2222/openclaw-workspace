@@ -218,7 +218,7 @@ npx @beads/bd init
 
 ### Key Commands (обязательно использовать)
 ```bash
-bd create "Task description | File: docs/plans/...md#task-1"  # Создать задачу
+bd create "[Dashboard] Task description | File: docs/plans/...md#task-1"  # Создать задачу
 bd ready                    # Показать доступные задачи
 bd show <id>               # Посмотреть детали задачи
 bd update <id> --claim      # Взять в работу (open → in_progress)
@@ -230,7 +230,7 @@ bd list                     # Список всех задач
 
 **Phase 2 (Writing Plans):**
 1. Создать план в `docs/plans/YYYY-MM-DD-<feature>.md`
-2. **Сразу создать все задачи в Beads:** `bd create "[TASK-N] description | File: docs/plans/...md#task-N"`
+2. **Сразу создать все задачи в Beads:** `bd create "[Dashboard] Task N: description | File: docs/plans/...md#task-N"`
 
 **Phase 3 (Development):**
 1. `bd ready` → получить следующую задачу
