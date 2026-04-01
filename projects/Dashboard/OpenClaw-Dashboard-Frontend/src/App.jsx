@@ -10,7 +10,8 @@ import Cron from './components/Cron';
 import ActivityFeed from './components/ActivityFeed';
 import Approvals from './components/Approvals';
 import StatusIndicator from './components/StatusIndicator';
-import Issues from './components/Issues';
+import Projects from './components/Projects';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -27,7 +28,8 @@ function App() {
               <Route path="cron" element={<Cron />} />
               <Route path="activity" element={<ActivityFeed />} />
               <Route path="approvals" element={<Approvals />} />
-              <Route path="issues" element={<Issues />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           </Routes>
           <StatusIndicator />

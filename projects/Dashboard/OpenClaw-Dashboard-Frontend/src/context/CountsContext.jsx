@@ -11,6 +11,7 @@ export function CountsProvider({ children }) {
     cron: null,
     activity: null,
     approvals: null,
+    issues: null,
   });
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export function CountsProvider({ children }) {
     try {
       console.log('[Counts] Загрузка количества объектов...');
       
-      const [agentsRes, tasksRes, sessionsRes, subagentsRes, cronRes, activityRes, approvalsRes] = await Promise.all([
+      const [agentsRes, tasksRes, sessionsRes, subagentsRes, cronRes, activityRes, approvalsRes, issuesRes] = await Promise.all([
         fetch('/api/agents'),
         fetch('/api/tasks'),
         fetch('/api/sessions'),
@@ -31,9 +32,10 @@ export function CountsProvider({ children }) {
         fetch('/api/cron'),
         fetch('/api/activity?limit=100'),
         fetch('/api/approvals'),
+        fetch('/api/issues?filter=open'),
       ]);
       
-      const [agents, tasks, sessions, subagents, cron, activity, approvals] = await Promise.all([
+      const [agents, tasks, sessions, subagents, cron, activity, approvals, issues] = await Promise.all([
         agentsRes.json(),
         tasksRes.json(),
         sessionsRes.json(),
@@ -41,6 +43,7 @@ export function CountsProvider({ children }) {
         cronRes.json(),
         activityRes.json(),
         approvalsRes.json(),
+        issuesRes.json(),
       ]);
       
       setCounts({
@@ -51,6 +54,7 @@ export function CountsProvider({ children }) {
         cron: Array.isArray(cron) ? cron.length : 0,
         activity: Array.isArray(activity) ? activity.length : 0,
         approvals: Array.isArray(approvals) ? approvals.length : 0,
+        issues: issues.total || 0,
       });
       
       console.log('[Counts] Загружены:', counts);
