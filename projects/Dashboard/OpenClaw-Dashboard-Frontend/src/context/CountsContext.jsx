@@ -56,7 +56,7 @@ export function CountsProvider({ children }) {
         cron: Array.isArray(cron) ? cron.length : 0,
         activity: Array.isArray(activity) ? activity.length : 0,
         approvals: Array.isArray(approvals) ? approvals.length : 0,
-        issues: { open: issuesOpen.total || 0, total: issuesTotal.total || 0 },
+        issues: { open: issuesOpen.filtered || 0, total: issuesTotal.total || 0 },
       });
       
       console.log('[Counts] Загружены:', counts);
