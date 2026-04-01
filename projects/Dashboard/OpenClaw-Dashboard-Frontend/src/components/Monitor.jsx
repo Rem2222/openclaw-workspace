@@ -217,18 +217,32 @@ export default function Monitor() {
             </a>
           )}
         </div>
-        <select 
-          value={selectedSession || ''}
-          onChange={e => { setSelectedSession(e.target.value); setMessages([]); setActivities([]); }}
-          className="input"
-          style={{ width: '300px' }}
-        >
-          {filteredSessions.map(s => (
-            <option key={s.key} value={s.key}>
-              {getStatusIcon(s)} {getSessionDisplay(s)} ({formatDuration(s.duration)})
-            </option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Проект:</label>
+          <select 
+            value={projectFilter || ''}
+            onChange={e => { setProjectFilter(e.target.value || null); setSelectedSession(null); setMessages([]); setActivities([]); }}
+            className="input"
+            style={{ width: '180px' }}
+          >
+            <option value="">Все проекты</option>
+            {projects.map(p => (
+              <option key={p.name} value={p.name}>{p.name}</option>
+            ))}
+          </select>
+          <select 
+            value={selectedSession || ''}
+            onChange={e => { setSelectedSession(e.target.value); setMessages([]); setActivities([]); }}
+            className="input"
+            style={{ width: '280px' }}
+          >
+            {filteredSessions.map(s => (
+              <option key={s.key} value={s.key}>
+                {getStatusIcon(s)} {getSessionDisplay(s)} ({formatDuration(s.duration)})
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Main content */}
