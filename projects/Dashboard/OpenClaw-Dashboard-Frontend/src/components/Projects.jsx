@@ -313,7 +313,10 @@ export default function Projects() {
       <div className="page-header">
         <div className="header-left">
           <h1>Проекты</h1>
-          <span className="badge badge-info">{issues.length}</span>
+          <span className="badge badge-info">{(() => {
+            const uniqueProjects = [...new Set(issues.map(i => i.project).filter(Boolean))].length;
+            return `${uniqueProjects} проект${uniqueProjects % 10 === 1 && uniqueProjects % 100 !== 11 ? '' : uniqueProjects % 10 >= 2 && uniqueProjects % 10 <= 4 && (uniqueProjects % 100 < 10 || uniqueProjects % 100 >= 20) ? 'а' : 'ов'} / ${issues.length} задач`;
+          })()}</span>
         </div>
         <div className="header-actions">
           <button onClick={() => setShowNewForm(!showNewForm)} className="btn btn-primary">
