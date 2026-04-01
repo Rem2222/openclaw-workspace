@@ -138,9 +138,11 @@ Run `sessions_spawn` with the task as a detailed prompt. The sub-agent announces
 
 ---
 
-## Beads Integration (Optional)
+## Beads Integration
 
 [Beads](https://github.com/steveyegge/beads) — distributed issue tracker for AI agents, powered by Dolt.
+
+**Важно:** Beads используется по умолчанию для управления задачами. Это заменяет txt-файлы прогресса.
 
 ### Why Beads?
 - Replaces txt-based task tracking (progress-*.txt)
