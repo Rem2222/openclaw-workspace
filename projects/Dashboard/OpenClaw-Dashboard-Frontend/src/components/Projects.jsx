@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const STATUS_SYMBOLS = {
   open: '○',
@@ -32,6 +32,7 @@ const SORT_ICONS = {
 };
 
 export default function Projects() {
+  const location = useLocation();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,6 +45,8 @@ export default function Projects() {
   const [newProject, setNewProject] = useState('');
   const [creating, setCreating] = useState(false);
   const [taskSessions, setTaskSessions] = useState({});
+  const [highlightIssueId, setHighlightIssueId] = useState(null);
+  const [sessionTaskMap, setSessionTaskMap] = useState({}); // taskKey -> sessionKey
 
   useEffect(() => {
     loadIssues();
@@ -55,6 +58,32 @@ export default function Projects() {
       loadTaskSessions(expandedId);
     }
   }, [expandedId]);
+
+  // Обработка highlight параметра из URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const highlight = params.get('highlight');
+    if (highlight) {
+      setHighlightIssueId(highlight);
+      // Автоматически раскрываем строку с этим issueId
+      if (issues.length > 0) {
+        const issue = issues.find(i => i.id === highlight);
+        if (issue && expandedId !== highlight) {
+          setExpandedId(highlight);
+        }
+      }
+    }
+  }, [location.search, issues]);
+
+  // Загружаем карту сессий (при загрузке страницы)
+  useEffect(() => {
+    fetch('/api/issues/session-task-map')
+      .then(r => r.json())
+      .then(data => {
+        setSessionTaskMap(data || {});
+      })
+      .catch(() => {});
+  }, []);
 
   // Считаем активные сессии по проекту
   const projectSessionCounts = useMemo(() => {
@@ -339,7 +368,13 @@ export default function Projects() {
                     <tr
                       onClick={() => toggleExpand(issue.id)}
                       className={expandedId === issue.id ? 'tr-selected' : ''}
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        ...(highlightIssueId === issue.id ? {
+                          boxShadow: 'inset 0 0 0 2px var(--accent)',
+                          background: 'var(--highlight-bg, rgba(var(--accent-rgb, 100, 150, 200), 0.08))'
+                        } : {})
+                      }}
                     >
                       <td>
                         <span style={{ color: 'var(--accent)' }}>
@@ -466,6 +501,16 @@ export default function Projects() {
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   📊 Монитор
+                                </Link>
+                              )}
+                              {issue.id && sessionTaskMap[issue.id] && (
+                                <Link
+                                  to={`/sessions?highlight=${encodeURIComponent(sessionTaskMap[issue.id])}`}
+                                  className="btn btn-ghost"
+                                  style={{ fontSize: '11px', padding: '4px 12px' }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  🔹 Сессия
                                 </Link>
                               )}
                               {issue.status !== 'closed' && issue.project && (

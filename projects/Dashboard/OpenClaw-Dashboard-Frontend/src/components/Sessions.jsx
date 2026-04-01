@@ -97,13 +97,14 @@ export default function Sessions() {
       const info = issueData[issueId] || {};
       const title = info.title || issueId;
       const project = info.project;
-      // Ссылка на монитор проекта вместо GitHub
-      const url = project ? `/monitor?project=${encodeURIComponent(project)}` : null;
+      // Ссылка на страницу проектов с подсветкой issueId
+      const url = `/projects?highlight=${encodeURIComponent(issueId)}`;
       return { 
         icon: '📋', 
         text: title, 
         issueId,
-        url
+        url,
+        project
       };
     }
     
@@ -414,12 +415,12 @@ export default function Sessions() {
                     <td>
                       {(() => {
                         const parsed = parseLabel(session.displayName);
-                        const project = parsed.issueId ? issueData[parsed.issueId]?.project : null;
-                        if (project) {
+                        const issueId = parsed.issueId;
+                        if (issueId) {
                           return (
-                            <Link to={`/monitor?project=${encodeURIComponent(project)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Link to={`/projects?highlight=${encodeURIComponent(issueId)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span>📁</span>
-                              <span>{project}</span>
+                              <span>{parsed.project || issueId}</span>
                             </Link>
                           );
                         }
