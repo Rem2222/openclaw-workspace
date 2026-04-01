@@ -63,10 +63,12 @@ export default function Sessions() {
   const [sortDir, setSortDir] = useState('desc');
   const [hideSubagents, setHideSubagents] = useState(true); // По умолчанию скрываем субов
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
+  const [sessionTaskMap, setSessionTaskMap] = useState({}); // sessionKey -> issueId
 
   useEffect(() => {
     loadSessions();
     loadIssueTitles();
+    loadSessionTaskMap();
     const interval = setInterval(loadSessions, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -85,6 +87,30 @@ export default function Sessions() {
     } catch (e) {
       console.error('Failed to load issue titles:', e);
     }
+  }
+
+  // Загружаем маппинг session -> task
+  async function loadSessionTaskMap() {
+    try {
+      const res = await fetch('/api/issues/session-task-map');
+      const data = await res.json();
+      setSessionTaskMap(data.map || {});
+    } catch (e) {
+      console.error('Failed to load session-task-map:', e);
+    }
+  }
+
+  // Получить issueId для сессии
+  function getSessionIssueId(sessionKey, displayName) {
+    // Сначала проверяем session-task-map
+    if (sessionTaskMap[sessionKey]) {
+      return sessionTaskMap[sessionKey];
+    }
+    // Потом парсим displayName если это bd:xxx
+    if (displayName && displayName.startsWith('bd:')) {
+      return displayName.slice(3);
+    }
+    return null;
   }
 
   // Парсим label в human-readable название
@@ -152,13 +178,32 @@ export default function Sessions() {
         // Получаем человекочитаемое название
         const displayInfo = getSessionDisplayName(session);
         
+        // Извлекаем канал: из session.channel, session.origin.provider, или из ключа
+        let channel = session.channel;
+        if (!channel && session.origin?.provider) {
+          channel = session.origin.provider;
+        }
+        if (!channel && keyParts[2]) {
+          // Из ключа: agent:main:telegram:... -> telegram
+          channel = keyParts[2];
+        }
+        // Если это TUI сессия (agent:main:tui-xxx)
+        if (!channel && keyParts[2]?.startsWith('tui-')) {
+          channel = 'tui';
+        }
+        // Fallback
+        if (!channel) {
+          channel = '—';
+        }
+        
         return {
           key: session.key,  // Сохраняем оригинальный key для удаления
           id: session.sessionId || session.key,  // Используем sessionId или key
           agentId: agentId,  // Извлекаем из key
           type: isSubagent ? 'subagent' : (session.kind || 'agent'),  // Выделяем субагентов
-          displayName: session.displayName,
-          channel: session.channel || '—',
+          displayName: session.displayName || session.label,
+          label: session.label,  // Для субагентов
+          channel: channel,
           model: session.model || '—',
           isSubagent: isSubagent,  // Флаг для UI
           updatedAt: session.updatedAt,
@@ -414,13 +459,23 @@ export default function Sessions() {
                     </td>
                     <td>
                       {(() => {
-                        const parsed = parseLabel(session.displayName);
-                        const issueId = parsed.issueId;
+                        // Для сессий: сначала проверяем session-task-map, потом displayName/label
+                        const issueId = getSessionIssueId(session.key, session.label || session.displayName);
+                        if (issueId && issueData[issueId]) {
+                          const issue = issueData[issueId];
+                          return (
+                            <Link to={`/monitor?project=${encodeURIComponent(issue.project)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>📁</span>
+                              <span>{issue.project || issue.title}</span>
+                            </Link>
+                          );
+                        }
+                        // Если есть issueId но нет данных в issueData
                         if (issueId) {
                           return (
                             <Link to={`/projects?highlight=${encodeURIComponent(issueId)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span>📁</span>
-                              <span>{parsed.project || issueId}</span>
+                              <span>📋</span>
+                              <span>{issueId}</span>
                             </Link>
                           );
                         }

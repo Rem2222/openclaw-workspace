@@ -29,6 +29,14 @@ function readSessionsFromFile() {
       status: session.status,
       startedAt: session.startedAt,
       endedAt: session.endedAt,
+      // Канал из origin.provider или явно заданный channel
+      channel: session.channel || session.origin?.provider || null,
+      // Origin для детальной информации
+      origin: session.origin,
+      // Label для субагентов
+      label: session.label || session.subagentRole || null,
+      // DisplayName если есть
+      displayName: session.displayName || session.label || null,
     }));
     
     // Сортируем по updatedAt desc
