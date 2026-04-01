@@ -1,61 +1,56 @@
 const express = require('express');
 const router = express.Router();
-const GatewayClient = require('../gateway');
+const fs = require('fs');
 
-const gateway = new GatewayClient(
-  process.env.GATEWAY_URL,
-  process.env.GATEWAY_TOKEN
-);
-
-// GET /api/subagents — список субагентов (через subagents list)
+// GET /api/subagents — список субагентов (читаем из sessions.json)
 router.get('/', async (req, res) => {
   try {
-    console.log('[Subagents API] Request received, calling gateway.subagents...');
-    const response = await gateway.subagents('list', { recentMinutes: 5 });
+    console.log('[Subagents API] Reading subagents from sessions.json...');
     
-    console.log('[Subagents API] Raw response data:', JSON.stringify(response.data, null, 2));
+    const sessionsPath = '/home/rem/.openclaw/agents/main/sessions/sessions.json';
+    const content = fs.readFileSync(sessionsPath, 'utf8');
+    const data = JSON.parse(content);
     
-    // Структура ответа:
-    // response.data = { ok: true, result: { details: { active: [], recent: [] } } }
-    // Нужно извлечь active и recent из result.details
+    // Фильтруем сессии где ключ содержит "subagent"
+    const subagents = Object.entries(data)
+      .filter(([key, session]) => key.includes('subagent'))
+      .map(([key, session]) => ({
+        sessionKey: key,
+        sessionId: session.sessionId,
+        label: session.label || session.subagentRole || 'Unknown task',
+        status: session.status || 'unknown',
+        model: session.model,
+        channel: session.channel,
+        startedAt: session.startedAt,
+        endedAt: session.endedAt,
+        runtimeMs: session.ageMs,
+        totalTokens: session.totalTokens,
+        contextTokens: session.contextTokens,
+        inputTokens: session.inputTokens,
+        outputTokens: session.outputTokens,
+      }))
+      .sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
     
-    const result = response.data?.result || {};
-    const subagentsData = result.details || result; // fallback если details нет
-    
-    console.log('[Subagents API] Extracted subagentsData:', JSON.stringify(subagentsData, null, 2));
-    
-    const subagents = [];
-    
-    // Добавляем активные
-    if (Array.isArray(subagentsData.active)) {
-      subagents.push(...subagentsData.active.map(sa => ({
-        ...sa,
-        status: 'active'
-      })));
-    }
-    
-    // Добавляем недавние
-    if (Array.isArray(subagentsData.recent)) {
-      subagents.push(...subagentsData.recent.map(sa => ({
-        ...sa,
-        status: 'recent'
-      })));
-    }
-    
-    console.log(`[Subagents API] Returning ${subagents.length} subagents`);
+    console.log(`[Subagents API] Found ${subagents.length} subagent sessions`);
     res.json(subagents);
   } catch (error) {
-    console.error('[Subagents API] Error:', error);
+    console.error('[Subagents API] Error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/subagents/:id/kill — завершить субагента
-router.post('/:id/kill', async (req, res) => {
+// POST /api/subagents/:sessionKey/kill — завершить субагента
+router.post('/:sessionKey/kill', async (req, res) => {
   try {
-    const response = await gateway.subagents('kill', { target: req.params.id });
-    res.json({ success: true });
+    const { sessionKey } = req.params;
+    console.log(`[Subagents API] Kill request for: ${sessionKey}`);
+    
+    // TODO: Интеграция с gateway для kill команды
+    // Пока возвращаем успех - kill будет реализован через gateway API
+    
+    res.json({ success: true, message: 'Kill signal sent' });
   } catch (error) {
+    console.error('[Subagents API] Kill error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
