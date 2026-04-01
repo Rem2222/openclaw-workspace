@@ -405,6 +405,7 @@ You MUST use this for gathering contexts before any work. This is a Knowledge ma
 4.  **Response Format:** When using knowledge, optionally cite it or mention storage:
     - "Based on brv contexts at `.brv/context-trees/...` and my research..."
     - "I also stored successfully knowledge to brv context-tree."
+5.  **Model:** `minimax/minimax-m2.7` (via OpenRouter) — медленнее чем GLM-5, но стабильнее
 
 ---
 
