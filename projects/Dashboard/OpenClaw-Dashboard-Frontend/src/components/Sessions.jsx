@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const SORT_ICONS = {
   asc: ' ▲',
@@ -61,12 +62,63 @@ export default function Sessions() {
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
   const [hideSubagents, setHideSubagents] = useState(true); // По умолчанию скрываем субов
+  const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
 
   useEffect(() => {
     loadSessions();
+    loadIssueTitles();
     const interval = setInterval(loadSessions, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Загружаем titles для Beads issues
+  async function loadIssueTitles() {
+    try {
+      const res = await fetch('/api/issues');
+      const data = await res.json();
+      const issues = data.issues || [];
+      const dataMap = {};
+      issues.forEach(iss => {
+        dataMap[iss.id] = { title: iss.title, project: iss.project };
+      });
+      setIssueData(dataMap);
+    } catch (e) {
+      console.error('Failed to load issue titles:', e);
+    }
+  }
+
+  // Парсим label в human-readable название
+  function parseLabel(label) {
+    if (!label) return { icon: '🤖', text: 'Unknown', issueId: null };
+    
+    // bd:workspace-xxx -> показываем issue title или ID
+    if (label.startsWith('bd:')) {
+      const issueId = label.slice(3);
+      const info = issueData[issueId] || {};
+      const title = info.title || issueId;
+      const project = info.project;
+      // Ссылка на монитор проекта вместо GitHub
+      const url = project ? `/monitor?project=${encodeURIComponent(project)}` : null;
+      return { 
+        icon: '📋', 
+        text: title, 
+        issueId,
+        url
+      };
+    }
+    
+    // review:spec:xxx, review:quality:xxx
+    if (label.startsWith('review:')) {
+      const parts = label.split(':');
+      const type = parts[1]; // spec или quality
+      const issueId = parts[2];
+      const icon = type === 'spec' ? '🔍' : '✅';
+      return { icon, text: issueId, issueId, url: null };
+    }
+    
+    // leaf, full-memory-consolidation и другие
+    return { icon: '🤖', text: label, issueId: null };
+  }
 
   async function loadSessions() {
     try {
@@ -312,6 +364,7 @@ export default function Sessions() {
                     Канал{getSortIcon('channel')}
                 </button>
                 </th>
+                <th>Проект</th>
                 <th>
                   <button className="sort-btn" onClick={() => handleSort('status')}>
                     Статус{getSortIcon('status')}
@@ -359,6 +412,21 @@ export default function Sessions() {
                       </span>
                     </td>
                     <td>
+                      {(() => {
+                        const parsed = parseLabel(session.displayName);
+                        const project = parsed.issueId ? issueData[parsed.issueId]?.project : null;
+                        if (project) {
+                          return (
+                            <Link to={`/monitor?project=${encodeURIComponent(project)}`} style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>📁</span>
+                              <span>{project}</span>
+                            </Link>
+                          );
+                        }
+                        return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+                      })()}
+                    </td>
+                    <td>
                       <span className={`badge ${session.isSubagent ? 'badge-warning' : 'badge-info'}`}>
                         {session.type}
                       </span>
@@ -390,7 +458,7 @@ export default function Sessions() {
               })}
               {sessions.length === 0 && (
                 <tr className="no-hover">
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <div className="empty-state">
                       Активных сессий нет
                     </div>

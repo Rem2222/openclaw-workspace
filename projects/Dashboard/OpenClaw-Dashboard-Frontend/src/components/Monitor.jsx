@@ -301,7 +301,7 @@ export default function Monitor() {
             {projects.length === 0 ? (
               <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
             ) : (
-              projects.map(proj => (
+              (projectFilter ? projects.filter(p => p.name === projectFilter) : projects).map(proj => (
                 <div key={proj.name} style={{ marginBottom: '12px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                     {proj.name}
@@ -347,7 +347,7 @@ export default function Monitor() {
             <div style={{ fontSize: '12px' }}>
               {selectedSession && (
                 <div style={{ color: 'var(--text-muted)' }}>
-                  Проект: {getSessionDisplay(allSessions.find(s => s.key === selectedSession))}
+                  Проект: {getSessionDisplay(filteredSessions.find(s => s.key === selectedSession))}
                 </div>
               )}
             </div>
