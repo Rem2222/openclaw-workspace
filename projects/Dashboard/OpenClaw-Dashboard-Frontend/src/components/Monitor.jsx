@@ -486,9 +486,15 @@ export default function Monitor() {
                       return `${secs}с`;
                     };
                     
-                    // If > 1 day total, show 3 values
-                    const ONE_DAY = 86400000;
-                    if (totalTimeMs > ONE_DAY) {
+                    // If crossed calendar day boundary, show 3 values
+                    const firstTaskDate = new Date(firstTaskCreated);
+                    const today = new Date();
+                    const crossedDayBoundary = 
+                      firstTaskDate.getFullYear() !== today.getFullYear() ||
+                      firstTaskDate.getMonth() !== today.getMonth() ||
+                      firstTaskDate.getDate() !== today.getDate();
+                    
+                    if (crossedDayBoundary) {
                       return `${fmtMs(todayTimeMs)} / ${fmtMs(sessionTimeMs)} / ${fmtMs(totalTimeMs)}`;
                     }
                     
