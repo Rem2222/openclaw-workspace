@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const SORT_ICONS = {
+  asc: ' ▲',
+  desc: ' ▼',
+  none: '',
+};
+
 export default function Subagents() {
   const [subagents, setSubagents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rawData, setRawData] = useState(null);
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
+  const [sortField, setSortField] = useState('updatedAt');
+  const [sortDir, setSortDir] = useState('desc');
 
   useEffect(() => {
     loadSubagents();
@@ -165,6 +173,58 @@ export default function Subagents() {
     }
   };
 
+  function handleSort(field) {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  }
+
+  function getSortIcon(field) {
+    if (sortField !== field) return SORT_ICONS.none;
+    return sortDir === 'asc' ? SORT_ICONS.asc : SORT_ICONS.desc;
+  }
+
+  function getSortedSubagents() {
+    const sorted = [...subagents];
+    sorted.sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortField) {
+        case 'id':
+          aVal = a.id?.toLowerCase() || '';
+          bVal = b.id?.toLowerCase() || '';
+          break;
+        case 'task':
+          aVal = (a.displayName || '').toLowerCase();
+          bVal = (b.displayName || '').toLowerCase();
+          break;
+        case 'model':
+          aVal = (a.model || '').toLowerCase();
+          bVal = (b.model || '').toLowerCase();
+          break;
+        case 'channel':
+          aVal = (a.channel || '').toLowerCase();
+          bVal = (b.channel || '').toLowerCase();
+          break;
+        case 'updatedAt':
+          aVal = a.updatedAt || 0;
+          bVal = b.updatedAt || 0;
+          break;
+        default:
+          aVal = '';
+          bVal = '';
+      }
+
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -191,17 +251,37 @@ export default function Subagents() {
           <table className="table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Задача</th>
-                <th>Модель</th>
-                <th>Канал</th>
+                <th>
+                  <button className="sort-btn" onClick={() => handleSort('id')}>
+                    ID{getSortIcon('id')}
+                  </button>
+                </th>
+                <th>
+                  <button className="sort-btn" onClick={() => handleSort('task')}>
+                    Задача{getSortIcon('task')}
+                  </button>
+                </th>
+                <th>
+                  <button className="sort-btn" onClick={() => handleSort('model')}>
+                    Модель{getSortIcon('model')}
+                  </button>
+                </th>
+                <th>
+                  <button className="sort-btn" onClick={() => handleSort('channel')}>
+                    Канал{getSortIcon('channel')}
+                  </button>
+                </th>
                 <th>Тип</th>
-                <th>Активность</th>
+                <th>
+                  <button className="sort-btn" onClick={() => handleSort('updatedAt')}>
+                    Активность{getSortIcon('updatedAt')}
+                  </button>
+                </th>
                 <th style={{ textAlign: 'right' }}>Действия</th>
               </tr>
             </thead>
             <tbody>
-              {subagents.map((subagent) => (
+              {getSortedSubagents().map((subagent) => (
                 <tr key={subagent.id} className="table-nested">
                   <td><span className="mono" style={{ fontSize: '11px' }}>{subagent.id?.length > 12 ? subagent.id.substring(0, 12) + '…' : subagent.id}</span></td>
                   <td>
