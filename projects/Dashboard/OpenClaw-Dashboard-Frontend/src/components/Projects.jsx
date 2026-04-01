@@ -514,16 +514,19 @@ export default function Projects() {
                                   📊 Монитор
                                 </Link>
                               )}
-                              {issue.id && sessionTaskMap[issue.id] && (
-                                <Link
-                                  to={`/sessions?highlight=${encodeURIComponent(sessionTaskMap[issue.id])}`}
-                                  className="btn btn-ghost"
-                                  style={{ fontSize: '11px', padding: '4px 12px' }}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  🔹 Сессия/Агент
-                                </Link>
-                              )}
+                              {issue.id &&Object.values(sessionTaskMap).includes(issue.id) && (() => {
+                                const sessionKey = Object.entries(sessionTaskMap).find(([_, taskId]) => taskId === issue.id)?.[0];
+                                return sessionKey ? (
+                                  <Link
+                                    to={`/sessions?highlight=${encodeURIComponent(sessionKey)}`}
+                                    className="btn btn-ghost"
+                                    style={{ fontSize: '11px', padding: '4px 12px' }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    🔹 Сессия/Агент
+                                  </Link>
+                                ) : null;
+                              })()}
                               {issue.id && taskResults[issue.id] && (
                                 <button
                                   className="btn btn-ghost"
