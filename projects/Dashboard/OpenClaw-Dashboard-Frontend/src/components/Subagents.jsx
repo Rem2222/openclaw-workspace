@@ -295,7 +295,7 @@ export default function Subagents() {
             </thead>
             <tbody>
               {getSortedSubagents().map((subagent) => {
-                const isHighlighted = highlight === subagent.key;
+                const isHighlighted = highlight === subagent.id;
                 return (
                 <tr key={subagent.id} ref={isHighlighted ? highlightRef : null} className={isHighlighted ? 'tr-selected' : 'table-nested'}>
                   <td><span className="mono" style={{ fontSize: '11px' }}>{subagent.id?.length > 12 ? subagent.id.substring(0, 12) + '…' : subagent.id}</span></td>
