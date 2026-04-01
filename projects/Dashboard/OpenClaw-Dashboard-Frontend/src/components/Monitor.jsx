@@ -347,9 +347,43 @@ export default function Monitor() {
                 return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
               }
               
+              // Сортировка: RUNNING сначала, потом DONE, внутри групп по updatedAt (новые первые)
+              const sorted = [...subagentSessions].sort((a, b) => {
+                const statusOrder = { running: 0, done: 1 };
+                const statusA = statusOrder[a.status] ?? 2;
+                const statusB = statusOrder[b.status] ?? 2;
+                if (statusA !== statusB) return statusA - statusB;
+                const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                return timeB - timeA; // новые первые
+              });
+              
+              // Функция для получения имени задачи из Beads
+              const getTaskName = (session) => {
+                const sessionKey = session.key;
+                // Ищем маппинг sessionKey -> issueId в taskSessionMap
+                const mapping = taskSessionMap[sessionKey];
+                if (mapping?.issueId) {
+                  // Находим issue по issueId в projects
+                  for (const proj of projects) {
+                    const issue = proj.issues.find(i => i.id === mapping.issueId);
+                    if (issue) return issue.title;
+                  }
+                }
+                // Пробуем извлечь из label (формат "bd:workspace-xxx")
+                if (session.label?.startsWith('bd:')) {
+                  const issueKey = session.label.slice(3); // убираем "bd:"
+                  for (const proj of projects) {
+                    const issue = proj.issues.find(i => i.id === issueKey || i.key === issueKey);
+                    if (issue) return issue.title;
+                  }
+                }
+                return '— Unknown —';
+              };
+              
               return (
                 <div style={{ fontSize: '12px' }}>
-                  {subagentSessions.map(s => (
+                  {sorted.map(s => (
                     <div key={s.key} style={{ 
                       padding: '4px 0', 
                       borderBottom: '1px solid var(--border)',
@@ -358,7 +392,7 @@ export default function Monitor() {
                       alignItems: 'center'
                     }}>
                       <span>
-                        {getStatusIcon(s)} {getSessionDisplay(s)}
+                        {getStatusIcon(s)} {getTaskName(s)}
                       </span>
                       <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
                         {s.model || '—'} {formatDuration(s.duration) ? `· ${formatDuration(s.duration)}` : ''}
