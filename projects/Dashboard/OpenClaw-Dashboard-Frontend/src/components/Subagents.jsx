@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const SORT_ICONS = {
   asc: ' ▲',
@@ -14,6 +14,18 @@ export default function Subagents() {
   const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
+  const [searchParams] = useSearchParams();
+  const highlight = searchParams.get('highlight');
+  const highlightRef = useRef(null);
+
+  // Scroll to highlighted row
+  useEffect(() => {
+    if (highlight && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [highlight, subagents]);
 
   useEffect(() => {
     loadSubagents();
@@ -283,8 +295,10 @@ export default function Subagents() {
               </tr>
             </thead>
             <tbody>
-              {getSortedSubagents().map((subagent) => (
-                <tr key={subagent.id} className="table-nested">
+              {getSortedSubagents().map((subagent) => {
+                const isHighlighted = highlight === subagent.key;
+                return (
+                <tr key={subagent.id} ref={isHighlighted ? highlightRef : null} className={isHighlighted ? 'tr-selected' : 'table-nested'}>
                   <td><span className="mono" style={{ fontSize: '11px' }}>{subagent.id?.length > 12 ? subagent.id.substring(0, 12) + '…' : subagent.id}</span></td>
                   <td>
                     {(() => {
@@ -356,7 +370,8 @@ export default function Subagents() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+              })}
               {subagents.length === 0 && (
                 <tr className="no-hover">
                   <td colSpan={8}>
