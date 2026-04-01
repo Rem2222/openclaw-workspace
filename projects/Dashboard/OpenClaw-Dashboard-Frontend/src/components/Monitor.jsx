@@ -565,118 +565,122 @@ export default function Monitor() {
         {/* Right: Tasks + Subagents */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
-          <div className="card" style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
             <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📌 Задачи</h3>
-            {projects.length === 0 ? (
-              <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
-            ) : (
-              (projectFilter ? projects.filter(p => p.name === projectFilter) : projects).map(proj => (
-                <div key={proj.name} style={{ marginBottom: '12px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                    {proj.name}
-                  </div>
-                  {proj.issues.map(issue => (
-                    <div 
-                      key={issue.id}
-                      onClick={() => setExpandedRow(expandedRow === issue.id ? null : issue.id)}
-                      style={{ 
-                        padding: '6px 8px',
-                        marginBottom: '2px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        background: expandedRow === issue.id ? 'var(--surface)' : 'transparent',
-                        borderLeft: `2px solid ${
-                          issue.status === 'closed' ? 'var(--success)' :
-                          issue.status === 'in_progress' ? 'var(--warning)' : 'var(--border)'
-                        }`
-                      }}
-                    >
-                      <span style={{ fontSize: '12px' }}>
-                        {issue.status === 'closed' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
-                        {issue.title}
-                      </span>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {projects.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
+              ) : (
+                (projectFilter ? projects.filter(p => p.name === projectFilter) : projects).map(proj => (
+                  <div key={proj.name} style={{ marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                      {proj.name}
                     </div>
-                  ))}
-                </div>
-              ))
-            )}
+                    {proj.issues.map(issue => (
+                      <div 
+                        key={issue.id}
+                        onClick={() => setExpandedRow(expandedRow === issue.id ? null : issue.id)}
+                        style={{ 
+                          padding: '6px 8px',
+                          marginBottom: '2px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          background: expandedRow === issue.id ? 'var(--surface)' : 'transparent',
+                          borderLeft: `2px solid ${
+                            issue.status === 'closed' ? 'var(--success)' :
+                            issue.status === 'in_progress' ? 'var(--warning)' : 'var(--border)'
+                          }`
+                        }}
+                      >
+                        <span style={{ fontSize: '12px' }}>
+                          {issue.status === 'closed' ? '✓' : issue.status === 'in_progress' ? '◐' : '○'}{' '}
+                          {issue.title}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           {/* Subagents */}
-          <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'auto' }}>
+          <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'hidden' }}>
             <h3 style={{ marginTop: 0, marginBottom: '8px' }}>🔄 Subagents</h3>
-            {(() => {
-              const isSubagent = (s) => 
-                s.key?.includes('subagent') || 
-                s.label?.startsWith('bd:') || 
-                s.label?.includes('subagent');
-              
-              let subagentSessions = allSessions.filter(isSubagent);
-              
-              if (projectFilter) {
-                const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
-                const projectSessionKeys = Object.entries(taskSessionMap)
-                  .filter(([_, issueId]) => projectTaskIds.includes(issueId))
-                  .map(([sessionKey]) => sessionKey);
-                subagentSessions = subagentSessions.filter(s => 
-                  s.status === 'running' || projectSessionKeys.includes(s.key)
+            <div style={{ overflow: 'auto', maxHeight: 'calc(200px - 40px)' }}>
+              {(() => {
+                const isSubagent = (s) => 
+                  s.key?.includes('subagent') || 
+                  s.label?.startsWith('bd:') || 
+                  s.label?.includes('subagent');
+                
+                let subagentSessions = allSessions.filter(isSubagent);
+                
+                if (projectFilter) {
+                  const projectTaskIds = projects.find(p => p.name === projectFilter)?.issues.map(i => i.id) || [];
+                  const projectSessionKeys = Object.entries(taskSessionMap)
+                    .filter(([_, issueId]) => projectTaskIds.includes(issueId))
+                    .map(([sessionKey]) => sessionKey);
+                  subagentSessions = subagentSessions.filter(s => 
+                    s.status === 'running' || projectSessionKeys.includes(s.key)
+                  );
+                }
+                
+                if (subagentSessions.length === 0) {
+                  return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
+                }
+                
+                const sorted = [...subagentSessions].sort((a, b) => {
+                  const statusOrder = { running: 0, done: 1 };
+                  const statusA = statusOrder[a.status] ?? 2;
+                  const statusB = statusOrder[b.status] ?? 2;
+                  if (statusA !== statusB) return statusA - statusB;
+                  const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                  const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                  return timeB - timeA;
+                });
+                
+                const getTaskName = (session) => {
+                  const sessionKey = session.key;
+                  const issueId = taskSessionMap[sessionKey];
+                  if (issueId) {
+                    for (const proj of projects) {
+                      const issue = proj.issues.find(i => i.id === issueId);
+                      if (issue) return issue.title;
+                    }
+                  }
+                  if (session.label?.startsWith('bd:')) {
+                    const id = session.label.slice(3);
+                    for (const proj of projects) {
+                      const issue = proj.issues.find(i => i.id === id);
+                      if (issue) return issue.title;
+                    }
+                  }
+                  return '— Unknown —';
+                };
+                
+                return (
+                  <div style={{ fontSize: '12px' }}>
+                    {sorted.map(s => (
+                      <div key={s.key} style={{ 
+                        padding: '4px 0', 
+                        borderBottom: '1px solid var(--border)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span>
+                          {getStatusIcon(s)} {getTaskName(s)}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                          {s.model || '—'} {formatDuration(s.duration) ? `· ${formatDuration(s.duration)}` : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 );
-              }
-              
-              if (subagentSessions.length === 0) {
-                return <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Нет активных subagent сессий</div>;
-              }
-              
-              const sorted = [...subagentSessions].sort((a, b) => {
-                const statusOrder = { running: 0, done: 1 };
-                const statusA = statusOrder[a.status] ?? 2;
-                const statusB = statusOrder[b.status] ?? 2;
-                if (statusA !== statusB) return statusA - statusB;
-                const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-                const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-                return timeB - timeA;
-              });
-              
-              const getTaskName = (session) => {
-                const sessionKey = session.key;
-                const issueId = taskSessionMap[sessionKey];
-                if (issueId) {
-                  for (const proj of projects) {
-                    const issue = proj.issues.find(i => i.id === issueId);
-                    if (issue) return issue.title;
-                  }
-                }
-                if (session.label?.startsWith('bd:')) {
-                  const id = session.label.slice(3);
-                  for (const proj of projects) {
-                    const issue = proj.issues.find(i => i.id === id);
-                    if (issue) return issue.title;
-                  }
-                }
-                return '— Unknown —';
-              };
-              
-              return (
-                <div style={{ fontSize: '12px' }}>
-                  {sorted.map(s => (
-                    <div key={s.key} style={{ 
-                      padding: '4px 0', 
-                      borderBottom: '1px solid var(--border)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <span>
-                        {getStatusIcon(s)} {getTaskName(s)}
-                      </span>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-                        {s.model || '—'} {formatDuration(s.duration) ? `· ${formatDuration(s.duration)}` : ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
+              })()}
+            </div>
           </div>
 
           {/* Chat Section */}
