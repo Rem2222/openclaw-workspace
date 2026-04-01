@@ -5,5 +5,6 @@
   "workspace-9cm": "Fixed: system events (agent=main) now show when project selected - added check for main agent events in filter",
   "workspace-3ad": "Fixed: sessionTaskMap and taskResults now refresh on page focus (onFocus event)",
   "workspace-19u": "Fixed: Result button now shows in a nice modal with dark overlay instead of ugly alert()",
-  "workspace-29z": "Fixed: sessionTaskMap now refreshes when returning to tab via focus/visibilitychange events. Added console.log debugging and updated manual refresh button to also reload session data."
+  "workspace-29z": "Fixed: sessionTaskMap now refreshes when returning to tab via focus/visibilitychange events. Added console.log debugging and updated manual refresh button to also reload session data.",
+  "workspace-iy2": "Fixed: Tasks section now has proper bounded layout with minHeight: 0 on flex container and Tasks card, overflow: auto for internal scroll"
 }
