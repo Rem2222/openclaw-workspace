@@ -138,23 +138,52 @@ _Last updated: 2026-04-01_
 ### OpenClaw Dashboard (2026-03-19 — в разработке)
 **Цель:** Dashboard для мониторинга и управления OpenClaw (агенты, сессии, задачи, approvals).
 
-**Прогресс:**
-- ✅ Backend: Express + socket.io, API роуты
-- ✅ Frontend: React + Vite + Tailwind
-- ✅ Страницы: Agents, Tasks, Sessions, Cron, Activity, Approvals
-- ✅ **Субагенты:** отдельная страница, backend endpoint `/api/subagents`
-- ⚠️ Проблема: `/api/subagents` возвращает пустой массив из-за insufficient token scopes
-- 🔄 Следующие шаги: расширить права GATEWAY_TOKEN, протестировать отображение
+**Стек:**
+- Backend: Express + Socket.io, port 3000
+- Frontend: React + Vite + Tailwind, port 5173
+- UI: Catppuccin дизайн (nekocode-landing.css), dark/light темы
+- Task tracking: Beads (Dolt), Superpowers workflow
+- Realtime: polling каждые 5 сек
 
-**Технические детали:**
-- Backend: port 3000, polling каждые 5 сек
-- Frontend: port 5173, WebSocket real-time
-- OpenMOSS: порт 6565, Activity Feed включен
-- **Достижимость извне (2026-04-01):** Pinggy tunnel → `http://qlwqx-185-207-139-4.a.free.pinggy.link` (работает!)
+**Страницы:**
+- ✅ Agents — список агентов
+- ✅ Sessions — сессии с сортировкой, фильтрацией, удалением
+- ✅ Subagents — subagent-сессии с проектами
+- ✅ Tasks — Kanban доска
+- ✅ Cron — cron задачи
+- ✅ Activity Feed — лента событий
+- ✅ Approvals — очередь подтверждений
+- ✅ Settings — GatewaySelector
+- ✅ Projects — группировка по проектам, навигация на Монитор/Сессию
+- ✅ Monitor — мониторинг активности проекта (сессии, задачи, таймлайн)
 
+**Интеграции (API routes):**
+- `GET/POST /api/spawn` — спавн сессий
+- `GET /api/issues` — список задач из Beads
+- `GET /api/issues/session-task-map` — маппинг сессий к задачам
+- `POST /api/issues/sessions` — регистрация сессии за задачей (auto-bind)
+- `GET /api/sessions` — список сессий (читает из файлов)
+- `DELETE /api/sessions/:id` — удаление сессии
+- `GET /api/subagents` — список subagent-ов (читает из sessions.json)
+- `GET /api/command` — выполнение shell команд (bd)
 
-**Запущено (2026-03-19):**
-- Тестовый субагент на 5 минут (до ~18:28)
+**Superpowers Workflow:**
+- Subagent при спавне получает лейбл `bd:<issue_id>`
+- При старте: `bd update <id> --claim`
+- При завершении: `bd update <id> --status done`
+- Все новые задачи создаются с префиксом `[Dashboard]`
+
+**Доступ извне:**
+- Pinggy tunnel: `https://qlwqx-185-207-139-4.a.free.pinggy.link` (60 мин)
+- Перезапуск: `ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3000 a.pinggy.io`
+
+**Текущие задачи (2026-04-01):**
+- workspace-mjf (P1): Исправить кнопку Сессия/Агент — не работает
+- workspace-o4f (P2): Исследовать торможение при переключении закладок
+
+**Важно:**
+- `/api/subagents` возвращает пустой массив через Gateway API — читаем напрямую из sessions.json
+- Backend хранит `session-task-map` в файле для привязки сессий к проектам
 
 ## Правила приветствия
 
@@ -292,7 +321,22 @@ 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
 - brainstorming, writing-plans, TDD, subagent-driven-development
 - **Записано в TODOS.md** для изучения (2026-03-26)
 
-## 🚨 ЖЕЛЕЗНОЕ ПРАВИЛО (2026-03-25)
+### Subagent labels — только реальные Beads ID (mem_009)
+- 2026-04-01: Запустил subagent с меткой "bd:p1-fixes" — задачи с такими названиями нет в Beads
+- Роман указал: subagent сессия в списке показывает бессмысленную метку
+- **Правило:** При спавне subagent использовать реальный ID задачи (workspace-xxx) или создать родительскую задачу в Beads
+- Не создавать искусственных меток-групп
+
+### Когда Роман говорит "добавь в Туду" — только добавить, НЕ выполнять (mem_010)
+- 2026-04-01: Роман написал "добавь в Туду" — я добавил задачи И сразу запустил subagent
+- Он хотел только записать, а я начал делать
+- **Правило:** "добавить в Туду" = создать задачу и записать, ЖДАТЬ указаний. Не выполнять.
+
+### LCM контекст — порог 75%, не триггерти вручную (mem_011)
+- 2026-04-01: Роман спросил можно ли запустить сжатие контекста вручную
+- LCM запускается автоматически при достижении 75% контекста (threshold=0.75)
+- Вручную запустить нельзя, команды `openclaw lcm` нет
+- Сейчас 35% — далеко до порога
 
 **НИКОГДА не запускать обновления, установки, перезагрузки сервисов и прочие серьёзные действия БЕЗ ЯВНОГО РАЗРЕШЕНИЯ Романа.**
 
