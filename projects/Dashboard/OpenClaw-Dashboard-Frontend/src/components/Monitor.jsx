@@ -502,7 +502,7 @@ export default function Monitor() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
         {/* Left: Activity Feed */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '8px', position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg)', paddingBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
+          <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
           
           {!projectFilter ? (
             <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
