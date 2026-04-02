@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        // Test 1: Direct connection to localhost:3000
+        console.log('Test 1: Connecting to http://localhost:3000');
+        const socket = io('http://localhost:3000', {
+            transports: ['websocket', 'polling'],
+            autoConnect: true
+        });
+        
+        socket.on('connect', () => {
+            console.log('✅ CONNECTED:', socket.id);
+            statusDiv.innerHTML = '<span style="color: green;">✅ CONNECTED: ' + socket.id + '</span>';
+        });
+        
+        socket.on('connect_error', (err) => {
+            console.error('❌ CONNECT_ERROR:', err.message);
+            statusDiv.innerHTML = '<span style="color: red;">❌ ERROR: ' + err.message + '</span>';
+        });
+        
+        socket.on('disconnect', (reason) => {
+            console.log('❌ DISCONNECTED:', reason);
+            statusDiv.innerHTML += ' <span style="color: orange;">Disconnected: ' + reason + '</span>';
+        });
+        
+        // Test 2: Check Vite env vars
+        console.log('VITE_SOCKET_URL:', import.meta.env?.VITE_SOCKET_URL || 'undefined');
+        console.log('DEV:', import.meta.env?.DEV);
+    </script>
+</body>
+</html>
