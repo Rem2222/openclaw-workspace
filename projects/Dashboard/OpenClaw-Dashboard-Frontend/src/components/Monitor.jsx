@@ -124,11 +124,32 @@ export default function Monitor() {
   function handleSendMessage() {
     if (!chatMessage.trim() || !selectedSession) return;
     
-    // TODO: Implement actual message sending via backend API
-    // For now, just show the message in console and clear input
-    console.log(`[Chat] Send to ${selectedSession}:`, chatMessage);
-    alert(`Сообщение отправлено в сессию:\n\n${chatMessage}\n\n(Функционал в разработке — сообщение пока не доставлено)`);
+    const message = chatMessage;
+    const sessionKey = selectedSession;
+    
+    // Optimistic update - show message immediately
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: message,
+      timestamp: new Date().toISOString()
+    }]);
     setChatMessage('');
+    
+    // Send to backend
+    fetch('/api/chat/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionKey, message })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          console.error('[Chat] Send failed:', data.error);
+        }
+      })
+      .catch(err => {
+        console.error('[Chat] Send error:', err);
+      });
   }
 
   function loadActivity(sessionKey, offset = 0, isPolling = false) {
@@ -584,7 +605,7 @@ export default function Monitor() {
       {/* Main content */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
         {/* Left: Activity Feed */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '150px', maxHeight: '100%', overflow: 'hidden' }}>
           <h3 
             onClick={() => toggleSection('activity')}
             style={{ marginTop: 0, marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -655,7 +676,7 @@ export default function Monitor() {
         {/* Right: Tasks + Subagents */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '150px', overflow: 'hidden' }}>
             <h3 
               onClick={() => toggleSection('tasks')}
               style={{ marginTop: 0, marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
