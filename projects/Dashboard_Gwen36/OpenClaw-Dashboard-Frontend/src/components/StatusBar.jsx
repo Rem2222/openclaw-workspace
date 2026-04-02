@@ -30,9 +30,9 @@ export default function StatusBar() {
   }
 
   const statusColor = {
-    checking: 'bg-yellow-500',
-    connected: 'bg-green-500',
-    disconnected: 'bg-red-500',
+    checking: '#eab308',
+    connected: '#22c55e',
+    disconnected: '#ef4444',
   }[status];
 
   const statusText = {
@@ -42,19 +42,45 @@ export default function StatusBar() {
   }[status];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-dark-800 border-t border-dark-700 px-4 py-2 text-xs text-dark-400 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${statusColor} animate-pulse`}></span>
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: 'var(--surface)',
+      borderTop: '1px solid var(--border)',
+      padding: '8px 16px',
+      fontSize: '12px',
+      color: 'var(--text-muted)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{
+            display: 'inline-block',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: statusColor,
+            animation: status === 'checking' ? 'statusbar-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
+          }}></span>
           <span>{statusText}</span>
         </div>
         {responseTime && (
-          <span className="hidden sm:inline text-dark-500">{responseTime}ms</span>
+          <span style={{ color: 'var(--text-muted)' }}>{responseTime}ms</span>
         )}
       </div>
       <div>
         {backendTime && `Backend: ${new Date(backendTime).toLocaleTimeString()}`}
       </div>
+      <style>{`
+        @keyframes statusbar-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -10,16 +10,12 @@ export default function Cron() {
   useEffect(() => {
     loadCron();
     
-    // Polling каждые 10 секунд (fallback)
-    const interval = setInterval(loadCron, 10000);
-    
     // Подписка на WebSocket события
     if (socket) {
       socket.on('cron:update', handleCronUpdate);
     }
     
     return () => {
-      clearInterval(interval);
       if (socket) {
         socket.off('cron:update', handleCronUpdate);
       }

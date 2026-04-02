@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CountsProvider } from './context/CountsContext';
+import { IssueProvider } from './context/IssueContext';
 import { SocketProvider } from './context/SocketContext';
 import Layout from './components/Layout';
 import Agents from './components/Agents';
@@ -19,6 +20,7 @@ function App() {
     <BrowserRouter>
       <SocketProvider>
         <CountsProvider>
+          <IssueProvider>
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Navigate to="/agents" replace />} />
@@ -35,6 +37,7 @@ function App() {
             </Route>
           </Routes>
           <StatusIndicator />
+          </IssueProvider>
         </CountsProvider>
       </SocketProvider>
     </BrowserRouter>

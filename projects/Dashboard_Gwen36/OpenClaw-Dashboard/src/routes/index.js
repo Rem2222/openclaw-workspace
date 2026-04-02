@@ -16,6 +16,7 @@ const resultsRoutes = require('./results');
 const monitorRoutes = require('./monitor');
 const chatRoutes = require('./chat');
 
+router.use('/counts', require('./counts'));
 router.use('/agents', agentsRoutes);
 router.use('/tasks', tasksRoutes);
 router.use('/sessions', sessionsRoutes);

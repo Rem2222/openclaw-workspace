@@ -1,11 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useIssues } from '../context/IssueContext';
 import { Link, useSearchParams } from 'react-router-dom';
-
-const SORT_ICONS = {
-  asc: ' ▲',
-  desc: ' ▼',
-  none: '',
-};
+import { formatDateTime, SORT_ICONS } from '../utils/format';
 
 // Генерация человекочитаемого названия сессии
 function getSessionDisplayName(session) {
@@ -66,11 +62,11 @@ export default function Sessions() {
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDir, setSortDir] = useState('desc');
   const [hideSubagents, setHideSubagents] = useState(true); // По умолчанию скрываем субов
+  const { issueData, sessionTaskMap } = useIssues();
   const [projectFilter, setProjectFilter] = useState(() => {
     return localStorage.getItem('dashboard.projectFilter') || 'all';
   });
-  const [issueData, setIssueData] = useState({}); // { issueId: { title, project } }
-  const [sessionTaskMap, setSessionTaskMap] = useState({}); // sessionKey -> issueId
+
 
   // Скролл к подсвеченной сессии
   useEffect(() => {
@@ -83,8 +79,6 @@ export default function Sessions() {
 
   useEffect(() => {
     loadSessions();
-    loadIssueTitles();
-    loadSessionTaskMap();
     const interval = setInterval(loadSessions, 15000);
     return () => clearInterval(interval);
   }, []);
@@ -93,33 +87,6 @@ export default function Sessions() {
   useEffect(() => {
     localStorage.setItem('dashboard.projectFilter', projectFilter);
   }, [projectFilter]);
-
-  // Загружаем titles для Beads issues
-  async function loadIssueTitles() {
-    try {
-      const res = await fetch('/api/issues');
-      const data = await res.json();
-      const issues = data.issues || [];
-      const dataMap = {};
-      issues.forEach(iss => {
-        dataMap[iss.id] = { title: iss.title, project: iss.project };
-      });
-      setIssueData(dataMap);
-    } catch (e) {
-      console.error('Failed to load issue titles:', e);
-    }
-  }
-
-  // Загружаем маппинг session -> task
-  async function loadSessionTaskMap() {
-    try {
-      const res = await fetch('/api/issues/session-task-map');
-      const data = await res.json();
-      setSessionTaskMap(data.map || {});
-    } catch (e) {
-      console.error('Failed to load session-task-map:', e);
-    }
-  }
 
   // Получить issueId для сессии
   function getSessionIssueId(sessionKey, displayName) {
@@ -266,35 +233,6 @@ export default function Sessions() {
       setDeleting(null);
     }
   }
-
-  const formatDuration = (ms) => {
-    if (!ms) return '—';
-    const sec = Math.floor(ms / 1000);
-    if (sec < 60) return `${sec}с`;
-    const min = Math.floor(sec / 60);
-    if (min < 60) return `${min}м`;
-    const hr = Math.floor(min / 60);
-    return `${hr}ч ${min % 60}м`;
-  };
-
-  const formatDateTime = (timestamp) => {
-    if (!timestamp) return '—';
-    try {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-      const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      
-      // Сегодня — только время, не сегодня — дата
-      if (dateStr === todayStr) {
-        return timeStr;
-      }
-      return dateStr;
-    } catch {
-      return '—';
-    }
-  };
 
   function handleSort(field) {
     if (sortField === field) {

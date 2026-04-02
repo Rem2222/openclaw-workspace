@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatDateTime } from '../utils/format';
 
 const TYPE_ICONS = {
   agent_started: '🚀',
@@ -58,25 +59,6 @@ export default function ActivityFeed() {
       setLoading(false);
     }
   }
-
-  const formatDateTime = (timestamp) => {
-    if (!timestamp) return '—';
-    try {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-      const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      
-      // Сегодня — только время, не сегодня — дата
-      if (dateStr === todayStr) {
-        return timeStr;
-      }
-      return dateStr;
-    } catch {
-      return '—';
-    }
-  };
 
   if (loading) {
     return (

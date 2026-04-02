@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { HISTORY_LIMIT } from '../pages/Settings';
+import { getIssueType, TYPE_ORDER, TYPE_COLORS, formatDuration } from '../utils/format';
 
 export default function Monitor() {
   const location = useLocation();
@@ -42,27 +43,6 @@ export default function Monitor() {
   const [activityLoading, setActivityLoading] = useState(false);
   const [expandedActivity, setExpandedActivity] = useState({});
   const activityListRef = useRef(null);
-
-  // Функция для определения типа задачи по названию
-  function getIssueType(title) {
-    const t = (title || '').toLowerCase();
-    if (t.includes('исследован') || t.includes('анализ') || t.includes('аналитик')) return 'Аналитика';
-    if (t.includes('тз') || t.includes('спецификац') || t.includes('требовани') || t.includes('spec')) return 'ТЗ';
-    if (t.includes('тест') || t.includes('проверить') || t.includes('проверка')) return 'Тесты';
-    if (t.includes('починить') || t.includes('исправить') || t.includes('фикс') || t.includes('bug')) return 'Исправление';
-    if (t.includes('доработать') || t.includes('улучшить') || t.includes('оптимизировать')) return 'Доработка';
-    return 'Разработка';
-  }
-  
-  const TYPE_ORDER = ['Аналитика', 'ТЗ', 'Разработка', 'Тесты', 'Исправление', 'Доработка'];
-  const TYPE_COLORS = {
-    'Аналитика': '#9b59b6',
-    'ТЗ': '#3498db',
-    'Разработка': '#27ae60',
-    'Тесты': '#f39c12',
-    'Исправление': '#e74c3c',
-    'Доработка': '#1abc9c',
-  };
 
   // Project-wide activity count (for header stat)
   const [projectActivityCount, setProjectActivityCount] = useState(0);
@@ -297,16 +277,6 @@ export default function Monitor() {
     return '○';
   }
 
-  function formatDuration(ms) {
-    if (!ms) return '';
-    const secs = Math.floor(ms / 1000);
-    const mins = Math.floor(secs / 60);
-    const hours = Math.floor(mins / 60);
-    if (hours > 0) return `${hours}ч ${mins % 60}м`;
-    if (mins > 0) return `${mins}м`;
-    return `${secs}с`;
-  }
-
   // Format timestamp
   function formatTime(timestamp) {
     if (!timestamp) return '--:--';
@@ -402,10 +372,6 @@ export default function Monitor() {
         )}
       </div>
     );
-  }
-
-  if (loading) {
-    return <div className="page"><div className="card">Загрузка...</div></div>;
   }
 
   // --- Memoized computations (replacing IIFE in JSX) ---
@@ -602,6 +568,10 @@ export default function Monitor() {
     if (avgMins > 0) return `в среднем ${avgMins} ${avgMins === 1 ? 'минута' : avgMins < 5 ? 'минуты' : 'минут'}`;
     return `в среднем ${avgSecs} ${avgSecs === 1 ? 'секунда' : avgSecs < 5 ? 'секунды' : 'секунд'}`;
   }, [currentProject, taskSessionMap, allSessions]);
+
+  if (loading) {
+    return <div className="page"><div className="card">Загрузка...</div></div>;
+  }
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

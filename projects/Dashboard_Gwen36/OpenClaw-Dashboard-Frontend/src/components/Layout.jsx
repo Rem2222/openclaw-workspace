@@ -1,7 +1,7 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import StatusBar from './StatusBar';
 import { useCounts } from '../context/CountsContext';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
 const NAV_ITEMS = [
   { path: '/agents', label: 'Агенты', countKey: 'agents', icon: (
@@ -57,7 +57,7 @@ const NAV_ITEMS = [
   )},
 ];
 
-export default function Layout() {
+export default memo(function Layout() {
   const location = useLocation();
   const currentPath = location.pathname;
   const counts = useCounts();
@@ -152,4 +152,4 @@ export default function Layout() {
       <StatusBar />
     </div>
   );
-}
+});

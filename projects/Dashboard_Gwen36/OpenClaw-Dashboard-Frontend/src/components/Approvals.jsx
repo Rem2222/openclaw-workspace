@@ -10,16 +10,12 @@ export default function Approvals() {
   useEffect(() => {
     loadApprovals();
     
-    // Polling every 5 seconds (fallback)
-    const interval = setInterval(loadApprovals, 15000);
-    
     // Subscribe to WebSocket events
     if (socket) {
       socket.on('approvals:update', handleApprovalsUpdate);
     }
     
     return () => {
-      clearInterval(interval);
       if (socket) {
         socket.off('approvals:update', handleApprovalsUpdate);
       }

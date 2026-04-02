@@ -22,16 +22,12 @@ export default function Tasks() {
   useEffect(() => {
     loadTasks();
     
-    // Polling каждые 5 секунд (fallback)
-    const interval = setInterval(loadTasks, 15000);
-    
     // Подписка на WebSocket события
     if (socket) {
       socket.on('tasks:update', handleTasksUpdate);
     }
     
     return () => {
-      clearInterval(interval);
       if (socket) {
         socket.off('tasks:update', handleTasksUpdate);
       }

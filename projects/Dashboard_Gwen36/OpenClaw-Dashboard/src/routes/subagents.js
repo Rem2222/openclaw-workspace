@@ -45,10 +45,28 @@ router.post('/:sessionKey/kill', async (req, res) => {
     const { sessionKey } = req.params;
     if (process.env.NODE_ENV === 'development') console.log(`[Subagents API] Kill request for: ${sessionKey}`);
     
-    // TODO: Интеграция с gateway для kill команды
-    // Пока возвращаем успех - kill будет реализован через gateway API
+    const sessionsPath = '/home/rem/.openclaw/agents/main/sessions/sessions.json';
     
-    res.json({ success: true, message: 'Kill signal sent' });
+    if (!fs.existsSync(sessionsPath)) {
+      return res.status(404).json({ error: 'sessions.json not found' });
+    }
+    
+    const content = fs.readFileSync(sessionsPath, 'utf8');
+    const data = JSON.parse(content);
+    
+    // sessions.json is an object keyed by session key
+    const session = data[sessionKey];
+    
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    // Soft delete: rename .jsonl file if exists
+    if (session.jsonlPath && fs.existsSync(session.jsonlPath)) {
+      fs.renameSync(session.jsonlPath, session.jsonlPath + '.bak');
+    }
+    
+    res.json({ success: true, message: `Session ${sessionKey} killed` });
   } catch (error) {
     if (process.env.NODE_ENV === 'development') console.error('[Subagents API] Kill error:', error.message);
     res.status(500).json({ error: error.message });

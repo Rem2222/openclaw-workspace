@@ -22,39 +22,9 @@ export function CountsProvider({ children }) {
 
   async function loadCounts() {
     try {
-      const [agentsRes, tasksRes, sessionsRes, subagentsRes, cronRes, activityRes, approvalsRes, issuesRes] = await Promise.all([
-        fetch('/api/agents'),
-        fetch('/api/tasks'),
-        fetch('/api/sessions'),
-        fetch('/api/subagents'),
-        fetch('/api/cron'),
-        fetch('/api/activity?limit=100'),
-        fetch('/api/approvals'),
-        fetch('/api/issues'),
-      ]);
-      
-      const [agents, tasks, sessions, subagents, cron, activity, approvals, issues] = await Promise.all([
-        agentsRes.json(),
-        tasksRes.json(),
-        sessionsRes.json(),
-        subagentsRes.json(),
-        cronRes.json(),
-        activityRes.json(),
-        approvalsRes.json(),
-        issuesRes.json(),
-      ]);
-      
-      const issuesList = Array.isArray(issues) ? issues : [];
-      setCounts({
-        agents: Array.isArray(agents) ? agents.length : 0,
-        tasks: Array.isArray(tasks) ? tasks.length : 0,
-        sessions: Array.isArray(sessions) ? sessions.length : 0,
-        subagents: Array.isArray(subagents) ? subagents.length : 0,
-        cron: Array.isArray(cron) ? cron.length : 0,
-        activity: Array.isArray(activity) ? activity.length : 0,
-        approvals: Array.isArray(approvals) ? approvals.length : 0,
-        issues: { open: issuesList.filter(i => i.status === 'open').length, total: issuesList.length },
-      });
+      const res = await fetch('/api/counts');
+      const data = await res.json();
+      setCounts(data);
     } catch (error) {
       console.error('[Counts] Ошибка:', error);
     }

@@ -1,61 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-
-const formatDateTime = (timestamp) => {
-  if (!timestamp) return '—';
-  try {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const dateStr = date.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const todayStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    
-    // Сегодня — только время, не сегодня — дата
-    if (dateStr === todayStr) {
-      return timeStr;
-    }
-    return dateStr;
-  } catch {
-    return '—';
-  }
-};
-
-const STATUS_SYMBOLS = {
-  open: '○',
-  in_progress: '◐',
-  blocked: '●',
-  closed: '✓',
-  deferred: '❄',
-};
-
-const STATUS_LABELS = {
-  open: 'Открыта',
-  in_progress: 'В работе',
-  blocked: 'Заблокирована',
-  closed: 'Закрыта',
-  deferred: 'Отложена',
-};
-
-const TYPE_ORDER = ['Аналитика', 'ТЗ', 'Разработка', 'Тесты', 'Исправление', 'Доработка'];
-const TYPE_COLORS = {
-  'Аналитика': '#9b59b6',
-  'ТЗ': '#3498db',
-  'Разработка': '#27ae60',
-  'Тесты': '#f39c12',
-  'Исправление': '#e74c3c',
-  'Доработка': '#1abc9c',
-};
-
-function getIssueType(title) {
-  if (!title) return 'Разработка';
-  const t = title.toLowerCase();
-  if (t.includes('исследован') || t.includes('анализ') || t.includes('аналитик')) return 'Аналитика';
-  if (t.includes('тз') || t.includes('спецификац') || t.includes('требовани') || t.includes('spec')) return 'ТЗ';
-  if (t.includes('тест') || t.includes('проверить') || t.includes('проверка')) return 'Тесты';
-  if (t.includes('починить') || t.includes('исправить') || t.includes('фикс') || t.includes('bug')) return 'Исправление';
-  if (t.includes('доработать') || t.includes('улучшить') || t.includes('оптимизировать')) return 'Доработка';
-  return 'Разработка';
-}
+import { formatDateTime, getIssueType, TYPE_ORDER, TYPE_COLORS, STATUS_SYMBOLS, STATUS_LABELS, SORT_ICONS } from '../utils/format';
 
 const PRIORITY_COLORS = {
   P0: 'danger',
@@ -63,12 +8,6 @@ const PRIORITY_COLORS = {
   P2: 'info',
   P3: 'muted',
   P4: 'muted',
-};
-
-const SORT_ICONS = {
-  asc: ' ↑',
-  desc: ' ↓',
-  none: '',
 };
 
 export default function Projects() {
