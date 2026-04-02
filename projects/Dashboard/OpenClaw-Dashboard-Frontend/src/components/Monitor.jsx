@@ -839,7 +839,7 @@ export default function Monitor() {
             {/* Message Area */}
             <div style={{ 
               minHeight: '80px', 
-              maxHeight: '150px',
+              maxHeight: '300px',
               overflow: 'auto',
               padding: '8px 12px',
               background: 'var(--elevation-1)',
