@@ -14,6 +14,24 @@ export default function Monitor() {
   const [projectFilter, setProjectFilter] = useState(null);
   const [taskSessionMap, setTaskSessionMap] = useState({});
   const [chatMessage, setChatMessage] = useState('');
+  
+  // Collapsible sections state
+  const [collapsedSections, setCollapsedSections] = useState(() => {
+    try {
+      const stored = localStorage.getItem('dashboard.monitorCollapsed');
+      return stored ? JSON.parse(stored) : { activity: false, tasks: false, subagents: false };
+    } catch { return { activity: false, tasks: false, subagents: false }; }
+  });
+
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('dashboard.monitorCollapsed', JSON.stringify(collapsedSections));
+  }, [collapsedSections]);
+
+  function toggleSection(section) {
+    setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  }
+
   const pollingRef = useRef(null);
   const sessionsLoaded = useRef(false);
 
@@ -567,17 +585,24 @@ export default function Monitor() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flex: 1, minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
         {/* Left: Activity Feed */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</h3>
+          <h3 
+            onClick={() => toggleSection('activity')}
+            style={{ marginTop: 0, marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <span>{collapsedSections.activity ? '▶' : '▼'}</span>
+            <span>📋 Активность {selectedSession ? `(${getSessionDisplay(filteredSessions.find(s => s.key === selectedSession) || {})})` : ''}</span>
+            <span style={{ fontSize: '11px', opacity: 0.6 }}>({activityItems.length})</span>
+          </h3>
           
-          {!projectFilter ? (
+          {!collapsedSections.activity && !projectFilter ? (
             <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
               Выберите проект для просмотра активности
             </div>
-          ) : !selectedSession ? (
+          ) : !collapsedSections.activity && !selectedSession ? (
             <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
               Нет активных сессий для выбранного проекта
             </div>
-          ) : (
+          ) : !collapsedSections.activity && (
             <>
               <div 
                 ref={activityListRef}
@@ -631,7 +656,13 @@ export default function Monitor() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minHeight: 0 }}>
           {/* Tasks */}
           <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '8px' }}>📌 Задачи</h3>
+            <h3 
+              onClick={() => toggleSection('tasks')}
+              style={{ marginTop: 0, marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>{collapsedSections.tasks ? '▶' : '▼'}</span>
+              <span>📌 Задачи</span>
+            </h3>
             <div style={{ flex: 1, overflow: 'auto' }}>
               {projects.length === 0 ? (
                 <div style={{ color: 'var(--text-muted)' }}>Нет задач</div>
@@ -697,7 +728,13 @@ export default function Monitor() {
 
           {/* Subagents */}
           <div className="card" style={{ flex: '0 0 auto', maxHeight: '200px', overflow: 'hidden' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '8px' }}>🔄 Subagents</h3>
+            <h3 
+              onClick={() => toggleSection('subagents')}
+              style={{ marginTop: 0, marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>{collapsedSections.subagents ? '▶' : '▼'}</span>
+              <span>🔄 Subagents</span>
+            </h3>
             <div style={{ overflow: 'auto', maxHeight: 'calc(200px - 40px)' }}>
               {(() => {
                 const isSubagent = (s) => 
