@@ -7,6 +7,14 @@ const router = express.Router();
 const WORKSPACE = '/home/rem/.openclaw/workspace';
 const SESSION_TASK_FILE = path.join(__dirname, '../../data/session-task.json');
 
+// Cache for bd list results (TTL: 30 seconds)
+const CACHE_TTL_MS = 30 * 1000;
+const issuesCache = {
+  data: null,
+  timestamp: 0,
+  params: null
+};
+
 // Убеждаемся что директория существует
 const dataDir = path.dirname(SESSION_TASK_FILE);
 if (!fs.existsSync(dataDir)) {
@@ -32,6 +40,36 @@ function saveSessionTaskMap(map) {
 router.get('/', async (req, res) => {
   try {
     const { filter = 'all', project = 'all' } = req.query;
+    const cacheKey = `${filter}|${project}`;
+    const now = Date.now();
+
+    // Check cache
+    if (issuesCache.data && 
+        issuesCache.params === cacheKey && 
+        (now - issuesCache.timestamp) < CACHE_TTL_MS) {
+      console.log(`[Issues API] Cache HIT for key "${cacheKey}", age: ${now - issuesCache.timestamp}ms`);
+      const cached = issuesCache.data;
+      // Re-apply filters (they may differ even with same cache key for raw data)
+      let filtered = cached.allIssues;
+      if (filter === 'open') {
+        filtered = filtered.filter(i => i.status === 'open');
+      } else if (filter === 'in_progress') {
+        filtered = filtered.filter(i => i.status === 'in_progress');
+      } else if (filter === 'closed') {
+        filtered = filtered.filter(i => i.status === 'closed');
+      }
+      if (project !== 'all') {
+        filtered = filtered.filter(i => i.project === project);
+      }
+      return res.json({
+        total: cached.total,
+        filtered: filtered.length,
+        issues: filtered,
+        cached: true
+      });
+    }
+
+    console.log(`[Issues API] Cache MISS for key "${cacheKey}"`);
 
     // JSON mode — получаем все данные
     const output = execSync(
@@ -49,6 +87,15 @@ router.get('/', async (req, res) => {
 
     // Нормализуем данные
     issues = issues.map(normalizeIssue);
+
+    // Update cache
+    issuesCache.data = {
+      allIssues: issues,
+      total: issues.length
+    };
+    issuesCache.timestamp = now;
+    issuesCache.params = cacheKey;
+    console.log(`[Issues API] Cache UPDATED for key "${cacheKey}"`);
 
     // Фильтруем
     let filtered = issues;
