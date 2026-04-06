@@ -1,0 +1,36 @@
+# Secrets — никогда не коммитить
+.env
+**/*.key
+**/*.pem
+**/secrets*
+
+# OpenClaw internal — не коммитить (токены, сессии, конфиг)
+.openclaw/
+.clawhub/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary / swap
+*.tmp
+*.swp
+*~
+
+# Logs
+*.log
+
+# Node modules (если появятся)
+node_modules/
+
+# Build artifacts
+*.o
+*.so
+
+# Large repos (too big for backup)
+Star-Office-UI/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

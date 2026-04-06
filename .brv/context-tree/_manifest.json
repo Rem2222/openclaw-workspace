@@ -1,0 +1,151 @@
+{
+  "active_context": [
+    {
+      "order": 3,
+      "path": "_index.md",
+      "tokens": 511,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "facts/_index.md",
+      "tokens": 227,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "game_development/_index.md",
+      "tokens": 165,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "infrastructure/_index.md",
+      "tokens": 177,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "llm_setup/_index.md",
+      "tokens": 132,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "one_c_development/_index.md",
+      "tokens": 202,
+      "type": "summary"
+    },
+    {
+      "order": 1,
+      "path": "facts/personal/_index.md",
+      "tokens": 142,
+      "type": "summary"
+    },
+    {
+      "order": 1,
+      "path": "game_development/bug_fixes/_index.md",
+      "tokens": 149,
+      "type": "summary"
+    },
+    {
+      "order": 1,
+      "path": "infrastructure/monitoring/_index.md",
+      "tokens": 75,
+      "type": "summary"
+    },
+    {
+      "order": 1,
+      "path": "infrastructure/telegram_bot/_index.md",
+      "tokens": 200,
+      "type": "summary"
+    },
+    {
+      "importance": 50,
+      "path": "facts/context.md",
+      "tokens": 115,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "facts/personal/context.md",
+      "tokens": 48,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "facts/personal/user_profile.md",
+      "tokens": 152,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "game_development/bug_fixes/campfire_survival_lighting_bug.md",
+      "tokens": 264,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "infrastructure/monitoring/server_monitoring_configuration.md",
+      "tokens": 284,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "infrastructure/telegram_bot/context.md",
+      "tokens": 91,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "infrastructure/telegram_bot/openclaw_telegram_bot_configuration.md",
+      "tokens": 379,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "llm_setup/context.md",
+      "tokens": 70,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "llm_setup/ollama_local/context.md",
+      "tokens": 55,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "llm_setup/ollama_local/ollama_local_configuration.md",
+      "tokens": 302,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "one_c_development/context.md",
+      "tokens": 121,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "one_c_development/http_response_parsing/context.md",
+      "tokens": 80,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "one_c_development/http_response_parsing/http_response_parsing_in_1c.md",
+      "tokens": 433,
+      "type": "context"
+    }
+  ],
+  "generated_at": "2026-04-01T10:00:58.390Z",
+  "lane_tokens": {
+    "contexts": 2394,
+    "stubs": 0,
+    "summaries": 1980
+  },
+  "source_fingerprint": "923c6a9f9f1cc85de3e5f74f827c542f1f3c0f9a0bd44ee7b13cc71d75eb7546",
+  "total_tokens": 4374,
+  "version": 1
+}
