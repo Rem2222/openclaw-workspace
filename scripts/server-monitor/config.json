@@ -1,0 +1,49 @@
+{
+  "servers": [
+    {
+      "name": "Ollama",
+      "host": "localhost",
+      "port": 11434,
+      "type": "http",
+      "path": "/",
+      "timeout": 5,
+      "expected_code": 200
+    },
+    {
+      "name": "Backend",
+      "host": "localhost",
+      "port": 3000,
+      "type": "http",
+      "path": "/health",
+      "timeout": 5,
+      "expected_code": 200
+    },
+    {
+      "name": "Frontend",
+      "host": "localhost",
+      "port": 5173,
+      "type": "http",
+      "path": "/",
+      "timeout": 5,
+      "expected_code": 200
+    },
+    {
+      "name": "OpenMOSS",
+      "host": "localhost",
+      "port": 6565,
+      "type": "http",
+      "path": "/health",
+      "timeout": 5,
+      "expected_code": 200
+    },
+    {
+      "name": "MissionControl",
+      "host": "localhost",
+      "port": 3333,
+      "type": "http",
+      "path": "/",
+      "timeout": 5,
+      "expected_code": 200
+    }
+  ]
+}

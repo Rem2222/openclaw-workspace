@@ -1,0 +1,130 @@
+# HEARTBEAT.md
+
+# Регулярные задачи для сердцебиений
+
+## 🖥️ Мониторинг серверов
+
+**При каждом heartbeat (каждый час):**
+```bash
+# Проверить статус серверов
+cd ~/.openclaw/workspace/scripts/server-monitor && python3 check-servers.py 2>/dev/null
+
+# Показать текущий статус
+cat ~/.openclaw/workspace/scripts/server-monitor/status.json | python3 -m json.tool 2>/dev/null | grep -E '"(name|status)":' | paste - - | sed 's/"//g; s/,//g; s/name://; s/status://' | while read name status; do
+  if [ "$status" = "UP" ]; then echo "🟢 $name"; else echo "🔴 $name"; fi
+done
+```
+
+**Если есть DOWN сервера — уведомить Романа.**
+
+**Cron:** Автоматическая проверка каждые 15 минут уже настроена.
+
+## ⚡ Мониторинг нагрузки процессора
+
+**При каждом heartbeat проверять нагрузку на процессы:**
+```bash
+# Проверить Gateway CPU
+GATEWAY_CPU=$(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $3}')
+if (( $(echo "$GATEWAY_CPU > 50" | bc -l) 2>/dev/null || echo "0" )); then
+  echo "⚠️ Gateway CPU: ${GATEWAY_CPU}%"
+fi
+
+# Проверить общую нагрузку
+LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
+echo "📊 Load average: $LOAD"
+```
+
+**Если Gateway CPU > 50% — предупредить.**
+
+## 🔴 Проверка зависших сессий
+
+**При каждом heartbeat:**
+```bash
+# Проверить есть ли зависшие сессии (asks > 5 минут без ответа)
+# Список активных сессий можно получить через API Gateway
+curl -s -m 5 http://localhost:18789/api/sessions 2>/dev/null | python3 -c "
+import sys, json
+try:
+    sessions = json.load(sys.stdin)
+    stuck = [s for s in sessions if s.get('duration', 0) > 300000 and s.get('asks', 0) == 0]
+    if stuck:
+        print(f'⚠️ Зависших сессий: {len(stuck)}')
+        for s in stuck[:3]:
+            print(f'  - {s.get(\"key\", \"unknown\")}: {s.get(\"duration\", 0)//60000} min')
+except: pass
+" 2>/dev/null || echo "Не могу проверить сессии"
+```
+
+## 📝 Личный To-Do
+
+**При каждом heartbeat показывать:**
+```bash
+# Проверить есть ли незавершенные задачи
+if [ -f ~/.openclaw/workspace/TODOS.md ]; then
+  echo "📝 Личные задачи:"
+  grep "\- \[ \]" ~/.openclaw/workspace/TODOS.md | sed 's/- \[ \]/  • /' || echo "  Нет активных задач"
+fi
+```
+
+## 🧠 Self-Improvement
+
+**При каждом сердцебиении:**
+
+## 🎛️ Мониторинг субагентов оркестратора
+
+**При каждом heartbeat (каждые 5 минут для долгих задач):**
+```bash
+# Проверить активные субагенты (оркестратор)
+echo "🎯 Активные субагенты оркестратора:"
+openclaw subagents list --recent 30 || echo "  Нет активных"
+
+# Если есть running дольше 30 минут — уведомить
+openclaw subagents list --recent 30 | grep -q "running" && echo "⚠️ Есть долгие субагенты!" || true
+```
+
+**Примечание:** Для фоновых субагентов оркестратора (pipeline) проверяй каждые 5 минут, если задача >15 мин.
+
+---
+
+## Ежедневный регламент
+
+### Утро (если онлайн)
+- Проверить погоду в Ростове-на-Дону (скилл weather)
+- Проверить календарь на события сегодня
+- **2026-03-19**: Проверить память — что я вспомню из 2026-03-18?
+
+### Вечер (если онлайн)
+- Проверить `.learnings/` на pending items (приоритет high/critical)
+- Если pending > 3 — напомнить о зачистке
+- Проверить email/уведомления
+- Проверить календарь на завтра
+- **Изучить новые скиллы** (если использовались сегодня)
+  - Прочитать SKILL.md использованных скиллов
+  - Запомнить варианты использования
+  - Обновить контекст для будущих предложений
+
+### **Последняя проверка дня** (при "на сегодня достаточно")
+- **Итоговая сводка** — темы, задачи, токены
+- **Проверка работы memory** — тестовый запрос к memory и ожидание результата
+- **Git бэкап** — коммит + пуш в GitHub
+- **🔄 Проверка обновлений**:
+```bash
+# 1. npm global (OpenClaw, mcporter, node-llama-cpp)
+echo "=== npm global ===" && npm outdated -g --depth=0 2>/dev/null | grep -v "(empty)" | tail -n +2 || echo "нет npm"
+
+# 2. lossless-claw (LCM)
+echo "=== LCM ===" && npm show @martian-engineering/lossless-claw version 2>/dev/null
+
+# 3. clawhub skills (все скиллы из ~/.openclaw/workspace/skills/)
+echo "=== clawhub skills ===" && cd ~/.openclaw/workspace && npx clawhub update --workdir . --dir skills --all --no-input 2>&1 | grep -E "(updated|skipped|local changes)" | head -20
+
+# 4. git repos (если есть)
+for d in ~/.openclaw/workspace/skills/*/; do
+  [ -d "$d/.git" ] && echo -n "$(basename $d): " && cd "$d" && git status -sb 2>/dev/null | head -1
+done
+```
+Показать списком: что устарело и какие версии доступны.
+
+---
+
+*Этот файл обновляется по мере необходимости.*

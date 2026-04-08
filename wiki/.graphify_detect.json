@@ -1,0 +1,49 @@
+{
+  "files": {
+    "code": [],
+    "document": [
+      "1\u0421 MCP \u0441\u0435\u0440\u0432\u0435\u0440\u044b.md",
+      "SDD \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u044b \u0441\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u0435.md",
+      "log.md",
+      "index.md",
+      "SCHEMA.md",
+      "tech/cursor-rules-1c.md",
+      "tech/sdd-instruments.md",
+      "tech/openspec.md",
+      "tech/openspec-usage.md",
+      "tech/1c-mcp.md",
+      "tech/sdd-deep-guide-ru.md",
+      "tech/vibe-coding-workflow.md",
+      "tech/sdd-deep-guide.md",
+      "wiki/tech/proxy-acpx-x.md",
+      "wiki/tech/qmd.md",
+      "wiki/tech/dataview.md",
+      "wiki/tech/obsidian-web-clipper.md",
+      "wiki/tech/marp.md",
+      "wiki/tech/spec-kit.md",
+      "wiki/tech/tessl.md",
+      "wiki/tech/defuddle.md",
+      "wiki/tech/obsidian.md",
+      "wiki/tech/openclaw-billing-proxy.md",
+      "wiki/tech/kiro.md",
+      "wiki/books/ne-otkladyvay-na-zavtra.md",
+      "wiki/1c/mcp-1c-setup.md",
+      "wiki/concepts/mcp.md",
+      "wiki/concepts/rag.md",
+      "wiki/concepts/sdd.md",
+      "wiki/concepts/memex.md",
+      "wiki/concepts/llm-wiki.md",
+      "raw/llm-wiki-gist.md"
+    ],
+    "paper": [],
+    "image": []
+  },
+  "total_files": 32,
+  "total_words": 13804,
+  "needs_graph": false,
+  "warning": "Corpus is ~13,804 words - fits in a single context window. You may not need a graph.",
+  "skipped_sensitive": [
+    "wiki/1c/mcp-vs-builtin-token-analysis.md"
+  ],
+  "graphifyignore_patterns": 0
+}

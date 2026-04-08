@@ -1,4 +1,4 @@
-# LLM Wiki — Паттерн персональных баз знаний с помощью LLM
+# LLM Wiki — Паттерн персональных баз знаний с помощью LLM.
 
 Источник: https://gist.github.com/iAlexeyRu/84a365fe34c3f0a964888a2c09a4541b
 Автор: iAlexeyRu

@@ -1,0 +1,350 @@
+{
+  "nodes": [
+    {
+      "id": "llm-wiki",
+      "label": "LLM Wiki"
+    },
+    {
+      "id": "rag",
+      "label": "RAG"
+    },
+    {
+      "id": "mcp",
+      "label": "MCP (Model Context Protocol)"
+    },
+    {
+      "id": "sdd",
+      "label": "Spec-Driven Development"
+    },
+    {
+      "id": "vibe-coding",
+      "label": "Vibe Coding"
+    },
+    {
+      "id": "memex",
+      "label": "Memex"
+    },
+    {
+      "id": "obsidian",
+      "label": "Obsidian"
+    },
+    {
+      "id": "defuddle",
+      "label": "Defuddle"
+    },
+    {
+      "id": "mcp-1c-setup",
+      "label": "MCP \u0434\u043b\u044f 1\u0421"
+    },
+    {
+      "id": "mcp-vs-builtin-token-analysis",
+      "label": "MCP vs \u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439 \u0430\u043d\u0430\u043b\u0438\u0437 \u0442\u043e\u043a\u0435\u043d\u043e\u0432"
+    },
+    {
+      "id": "openclaw-billing-proxy",
+      "label": "OpenClaw Billing Proxy"
+    },
+    {
+      "id": "proxy-acpx-x",
+      "label": "proxy-acpx-x"
+    },
+    {
+      "id": "kiro",
+      "label": "Kiro"
+    },
+    {
+      "id": "spec-kit",
+      "label": "Spec-Kit"
+    },
+    {
+      "id": "tessl",
+      "label": "Tessl"
+    },
+    {
+      "id": "openspec",
+      "label": "OpenSpec"
+    },
+    {
+      "id": "ne-otkladyvay-na-zavtra",
+      "label": "\u041d\u0435 \u043e\u0442\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u0439 \u043d\u0430 \u0437\u0430\u0432\u0442\u0440\u0430"
+    },
+    {
+      "id": "sdd-deep-guide-ru",
+      "label": "SDD Deep Guide (RU)"
+    },
+    {
+      "id": "qmd",
+      "label": "QMD"
+    },
+    {
+      "id": "dataview",
+      "label": "Dataview"
+    },
+    {
+      "id": "obsidian-web-clipper",
+      "label": "Obsidian Web Clipper"
+    },
+    {
+      "id": "marp",
+      "label": "Marp"
+    },
+    {
+      "id": "sdd-instruments",
+      "label": "SDD Instruments"
+    },
+    {
+      "id": "cursor-rules-1c",
+      "label": "Cursor Rules \u0434\u043b\u044f 1\u0421"
+    },
+    {
+      "id": "openspec-usage",
+      "label": "OpenSpec Usage"
+    },
+    {
+      "id": "1c-mcp",
+      "label": "1\u0421 MCP"
+    },
+    {
+      "id": "vibe-coding-workflow",
+      "label": "Vibe Coding Workflow"
+    }
+  ],
+  "edges": [
+    {
+      "source": "llm-wiki",
+      "target": "rag",
+      "relation": "uses"
+    },
+    {
+      "source": "llm-wiki",
+      "target": "memex",
+      "relation": "inspired_by"
+    },
+    {
+      "source": "llm-wiki",
+      "target": "obsidian",
+      "relation": "implemented_in"
+    },
+    {
+      "source": "mcp",
+      "target": "sdd",
+      "relation": "used_in"
+    },
+    {
+      "source": "mcp",
+      "target": "mcp-1c-setup",
+      "relation": "documented_in"
+    },
+    {
+      "source": "mcp",
+      "target": "mcp-vs-builtin-token-analysis",
+      "relation": "compared_in"
+    },
+    {
+      "source": "mcp",
+      "target": "openspec",
+      "relation": "supports"
+    },
+    {
+      "source": "mcp",
+      "target": "defuddle",
+      "relation": "used_with"
+    },
+    {
+      "source": "mcp",
+      "target": "proxy-acpx-x",
+      "relation": "alternative_to"
+    },
+    {
+      "source": "mcp",
+      "target": "obsidian",
+      "relation": "used_with"
+    },
+    {
+      "source": "sdd",
+      "target": "kiro",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "sdd",
+      "target": "spec-kit",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "sdd",
+      "target": "tessl",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "sdd",
+      "target": "openspec",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "sdd",
+      "target": "sdd-deep-guide-ru",
+      "relation": "documented_in"
+    },
+    {
+      "source": "sdd",
+      "target": "vibe-coding",
+      "relation": "alternative_to"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "sdd-instruments",
+      "relation": "uses"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "cursor-rules-1c",
+      "relation": "applied_to"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "ne-otkladyvay-na-zavtra",
+      "relation": "applies_to"
+    },
+    {
+      "source": "obsidian",
+      "target": "defuddle",
+      "relation": "used_with"
+    },
+    {
+      "source": "obsidian",
+      "target": "dataview",
+      "relation": "used_with"
+    },
+    {
+      "source": "obsidian",
+      "target": "qmd",
+      "relation": "used_with"
+    },
+    {
+      "source": "obsidian",
+      "target": "marp",
+      "relation": "used_with"
+    },
+    {
+      "source": "obsidian",
+      "target": "obsidian-web-clipper",
+      "relation": "used_with"
+    },
+    {
+      "source": "openclaw-billing-proxy",
+      "target": "proxy-acpx-x",
+      "relation": "similar_to"
+    },
+    {
+      "source": "openspec",
+      "target": "openspec-usage",
+      "relation": "documented_in"
+    }
+  ],
+  "links": [
+    {
+      "source": "llm-wiki",
+      "target": "rag"
+    },
+    {
+      "source": "llm-wiki",
+      "target": "memex"
+    },
+    {
+      "source": "llm-wiki",
+      "target": "obsidian"
+    },
+    {
+      "source": "mcp",
+      "target": "sdd"
+    },
+    {
+      "source": "mcp",
+      "target": "mcp-1c-setup"
+    },
+    {
+      "source": "mcp",
+      "target": "mcp-vs-builtin-token-analysis"
+    },
+    {
+      "source": "mcp",
+      "target": "openspec"
+    },
+    {
+      "source": "mcp",
+      "target": "defuddle"
+    },
+    {
+      "source": "mcp",
+      "target": "proxy-acpx-x"
+    },
+    {
+      "source": "mcp",
+      "target": "obsidian"
+    },
+    {
+      "source": "sdd",
+      "target": "kiro"
+    },
+    {
+      "source": "sdd",
+      "target": "spec-kit"
+    },
+    {
+      "source": "sdd",
+      "target": "tessl"
+    },
+    {
+      "source": "sdd",
+      "target": "openspec"
+    },
+    {
+      "source": "sdd",
+      "target": "sdd-deep-guide-ru"
+    },
+    {
+      "source": "sdd",
+      "target": "vibe-coding"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "sdd-instruments"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "cursor-rules-1c"
+    },
+    {
+      "source": "vibe-coding",
+      "target": "ne-otkladyvay-na-zavtra"
+    },
+    {
+      "source": "obsidian",
+      "target": "defuddle"
+    },
+    {
+      "source": "obsidian",
+      "target": "dataview"
+    },
+    {
+      "source": "obsidian",
+      "target": "qmd"
+    },
+    {
+      "source": "obsidian",
+      "target": "marp"
+    },
+    {
+      "source": "obsidian",
+      "target": "obsidian-web-clipper"
+    },
+    {
+      "source": "openclaw-billing-proxy",
+      "target": "proxy-acpx-x"
+    },
+    {
+      "source": "openspec",
+      "target": "openspec-usage"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "0": [
+    "llm-wiki",
+    "memex",
+    "rag"
+  ],
+  "1": [
+    "mcp-1c-setup",
+    "mcp",
+    "openclaw-billing-proxy",
+    "mcp-vs-builtin-token-analysis",
+    "defuddle",
+    "proxy-acpx-x"
+  ],
+  "2": [
+    "cursor-rules-1c",
+    "vibe-coding",
+    "sdd-instruments",
+    "ne-otkladyvay-na-zavtra"
+  ],
+  "3": [
+    "obsidian-web-clipper",
+    "marp",
+    "dataview",
+    "obsidian",
+    "qmd"
+  ],
+  "4": [
+    "kiro",
+    "spec-kit",
+    "openspec-usage",
+    "openspec",
+    "tessl",
+    "sdd-deep-guide-ru",
+    "sdd"
+  ],
+  "5": [
+    "1c-mcp"
+  ],
+  "6": [
+    "vibe-coding-workflow"
+  ]
+}

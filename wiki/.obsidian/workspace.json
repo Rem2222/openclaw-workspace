@@ -1,0 +1,215 @@
+{
+  "main": {
+    "id": "41bcfb2e9a569a8b",
+    "type": "split",
+    "children": [
+      {
+        "id": "460033dc82cbc031",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f1f3564624e3d76f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "tech/sdd-deep-guide.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "sdd-deep-guide"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "823673eef7144c59",
+    "type": "split",
+    "children": [
+      {
+        "id": "f41d0da842bf6687",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "76cef7aa8d3784cb",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Файловый менеджер"
+            }
+          },
+          {
+            "id": "9e2521d7ee1ee82d",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Поиск"
+            }
+          },
+          {
+            "id": "e531588c1dcd8a0c",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Закладки"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b472b17620c91761",
+    "type": "split",
+    "children": [
+      {
+        "id": "6ce9715efdf2ebbc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cc5fc3d9aa2a217a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "tech/sdd-deep-guide.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Обратные ссылки для sdd-deep-guide"
+            }
+          },
+          {
+            "id": "c8a147b058905f8f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "wiki/concepts/llm-wiki.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Исходящие ссылки из llm-wiki"
+            }
+          },
+          {
+            "id": "a626e4af2adea9d2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Теги"
+            }
+          },
+          {
+            "id": "bb614c8b8d1fd9cb",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Все свойства"
+            }
+          },
+          {
+            "id": "2e0594c0fc3c36cd",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "wiki/concepts/llm-wiki.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Структура llm-wiki"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "bases:Создать новую базу": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "f1f3564624e3d76f",
+  "lastOpenFiles": [
+    "wiki/1c/mcp-1c-setup.md",
+    "index.md",
+    "wiki/tech/tessl.md",
+    "wiki/tech/spec-kit.md",
+    "wiki/tech/kiro.md",
+    "log.md",
+    "1С MCP серверы.md",
+    "wiki/tech/defuddle.md",
+    "wiki/tech/dataview.md",
+    "tech/sdd-deep-guide.md",
+    "tech/openspec-usage.md",
+    "tech/openspec.md",
+    "wiki/1c/mcp-vs-builtin-token-analysis.md",
+    "tech/sdd-instruments.md",
+    "tech/1c-mcp.md",
+    "SDD инструменты сравнение.md",
+    "wiki/tech/proxy-acpx-x.md",
+    "wiki/tech/openclaw-billing-proxy.md",
+    "wiki/books/ne-otkladyvay-na-zavtra.md",
+    "wiki/books",
+    "wiki/1c",
+    "wiki/concepts/llm-wiki.md",
+    "raw/llm-wiki-gist.md",
+    "wiki/concepts/sdd.md",
+    "SCHEMA.md"
+  ]
+}

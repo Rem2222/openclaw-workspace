@@ -235,6 +235,14 @@ This prevents relying on outdated file analysis when LCM has fresher context.
 
 
 ---
+---
+
+### Правило 13: Запись памяти при session reset
+**При каждом session reset (/new или /reset):**
+1. Если `memory/YYYY-MM-DD.md` уже существует → дописать секцию `## Session HH:MM`
+2. Если файла нет → создать `memory/YYYY-MM-DD.md`
+3. Формат: дата, session key, краткое содержание разговора
+4. Это гарантирует что ни один рабочий день не будет потерян
 
 ## Group Chats
 

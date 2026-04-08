@@ -1,0 +1,8 @@
+#!/bin/bash
+# Wrapper for sherpa-onnx-tts with Russian model (ruslan-medium)
+
+exec /home/rem/.openclaw/tools/sherpa-onnx-tts/runtime/bin/sherpa-onnx-offline-tts \
+  --vits-model=/home/rem/.openclaw/tools/sherpa-onnx-tts/models/vits-piper-ru_RU-ruslan-medium/ru_RU-ruslan-medium.onnx \
+  --vits-tokens=/home/rem/.openclaw/tools/sherpa-onnx-tts/models/vits-piper-ru_RU-ruslan-medium/tokens.txt \
+  --vits-data-dir=/home/rem/.openclaw/tools/sherpa-onnx-tts/models/vits-piper-ru_RU-ruslan-medium/espeak-ng-data \
+  "$@"

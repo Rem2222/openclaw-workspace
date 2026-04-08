@@ -1,0 +1,16 @@
+{
+  "workspace-j9m": "Тестовая задача выполнена успешно. Кнопка Результат работает!",
+  "workspace-0vv": "Fixed: proper date formatting using createdRaw/updatedRaw/closedAtRaw timestamps, sort function uses correct raw fields",
+  "workspace-afm": "Fixed: Subagents and Activity sections now show all data correctly",
+  "workspace-9cm": "Fixed: system events (agent=main) now show when project selected - added check for main agent events in filter",
+  "workspace-3ad": "Fixed: sessionTaskMap and taskResults now refresh on page focus (onFocus event)",
+  "workspace-19u": "Fixed: Result button now shows in a nice modal with dark overlay instead of ugly alert()",
+  "workspace-29z": "Fixed: sessionTaskMap now refreshes when returning to tab via focus/visibilitychange events. Added console.log debugging and updated manual refresh button to also reload session data.",
+  "workspace-iy2": "Fixed: Tasks section now has proper bounded layout with minHeight: 0 on flex container and Tasks card, overflow: auto for internal scroll",
+  "workspace-fde": "Added project header with 4 stat cards: Task Progress (progress bar), Time Tracker, Subagent Stats, Activity Count",
+  "workspace-ccy": "Activity section already shows real chat data (tool calls, agent spawns, results) with infinite scroll and expandable details - implementation was completed in previous commit e4adf52",
+  "workspace-kxi": "Fixed: Activity and Tasks sections now have max-height with vertical scroll, no more infinite stretch",
+  "workspace-jw6": "Fixed: widgets now show correct calculated data from filtered project data. Tasks: uses project.issues filtered by status. Time: calculates from endedAt-startedAt instead of missing duration field. Subagents: calculates from endedAt-startedAt for average duration. Activity: uses /api/monitor/session-activity endpoint for project-wide activity count.",
+  "workspace-a29": "Fixed: Задачи and Субагенты headers now sticky, stay visible when scrolling",
+  "workspace-r2y": "Added Chat section UI belowSubagents: header, message area, input field, send button - functional connection to session will be added later"
+}
