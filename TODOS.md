@@ -6,7 +6,7 @@
 - **OpenClaw Dashboard** — закончить проект, поменять морду на стиль https://nekocode.app
 
 ### ⏳ Запланировано
-- _(empty)_
+- [[Heisenberg Team]] — протестировать мультиагентный шаблон для OpenClaw (8 агентов, 34 скилла, Board-First протокол)
 
 ### ✅ Завершено
 - _(empty)_

@@ -32,3 +32,28 @@ _Append-only. Формат: `## [дата] type | описание`_
 - Создан [[Dataview]] (wiki/tech/dataview.md)
 - Обновлён index.md
 - Итого: 9 страниц в wiki, все связаны с [[LLM Wiki]]
+
+## [2026-04-08] ingest | NaiveProxy Guide
+
+- Источник: gist swrneko + GitHub klzgrad/naiveproxy
+- Создан [[NaiveProxy]] (wiki/tech/naiveproxy.md) — полная инструкция по установке
+- Сохранён raw-источник: raw/naiveproxy-guide-swrneko.md
+- Обновлён index.md и log.md
+- Добавлены клиенты: v2rayN, NekoRay, NekoBox
+- Добавлены хостинг-провайдеры: RuVDS, 62yun, Zomro, Reg.ru
+
+## [2026-04-08] ingest | Cursor Proxy Fix
+
+- Источник: forwarded message от Дарт Вейдер
+- Создан [[Cursor Proxy Fix]] (wiki/tech/cursor-proxy-fix.md)
+- Сохранён raw-источник: raw/cursor-proxy-fix.md
+- Обновлён index.md и log.md
+- Добавлены: OneXRay, Hiddify, VLESS, HTTP/2 fix для Cursor
+
+## [2026-04-09] ingest | Heisenberg Team
+
+- Источник: https://github.com/ai-operacionka/heisenberg-team-GPT
+- Создан [[Heisenberg Team]] (wiki/tech/heisenberg-team-gpt.md)
+- 8 агентов, 34 скилла, Board-First протокол
+- Обновлён index.md и log.md
+- Статус: на рассмотрении

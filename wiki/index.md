@@ -39,4 +39,6 @@ _(пока пусто)_
 
 ## Разное
 
-_(пока пусто)_
+- [[NaiveProxy]] — лучший способ обхода DPI в 2026 (2026-04-08)
+- [[Cursor Proxy Fix]] — как починить доступ к Claude Sonnet в Cursor через прокси (2026-04-08)
+- [[Heisenberg Team]] — production-ready мультиагентный шаблон для OpenClaw (2026-04-09)
