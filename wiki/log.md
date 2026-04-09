@@ -57,3 +57,19 @@ _Append-only. Формат: `## [дата] type | описание`_
 - 8 агентов, 34 скилла, Board-First протокол
 - Обновлён index.md и log.md
 - Статус: на рассмотрении
+
+## [2026-04-09] ingest | MarkItDown
+
+- Источник: forwarded от Derp Learning (https://github.com/microsoft/markitdown)
+- Создан [[MarkItDown]] (wiki/tech/markitdown.md)
+- Конвертер: PDF, Word, Excel, PowerPoint, Images (OCR), Audio, YouTube, HTML
+- Установлен: pip install 'markitdown[all]'
+- Обновлён index.md и log.md
+
+## [2026-04-09] ingest | OpenAI Routing
+
+- Источник: OpenClaw Lab (forwarded)
+- Создан [[OpenAI Routing]] (wiki/tech/openai-routing.md)
+- OmniRoute для балансировки между несколькими OpenAI подписками
+- Автопереключение при исчерпании лимитов
+- Обновлён index.md и log.md
