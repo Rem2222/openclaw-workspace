@@ -923,6 +923,8 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
     d = ImageDraw.Draw(img)
 
     # Try to load provider logo
+    pct = int(sp) if isinstance(sp, (int, float)) else 0
+
     logo = _load_logo(colors["logo"], sz)
     # Draw percentage-colored background circle
     margin = 4
@@ -939,7 +941,6 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         pass  # Circle already drawn above
 
     # Draw percentage text centered on icon with thick dark outline for visibility
-    pct = int(sp) if isinstance(sp, (int, float)) else 0
     if pct > 0:
         try:
             # Larger font for better visibility (20pt for 64x64 icon)
