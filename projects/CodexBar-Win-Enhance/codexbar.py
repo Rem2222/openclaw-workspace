@@ -924,12 +924,19 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
 
     # Try to load provider logo
     logo = _load_logo(colors["logo"], sz)
+    # Draw percentage-colored background circle
+    margin = 4
+    if pct < 50:
+        circle_color = (74, 180, 100)   # Green
+    elif pct < 70:
+        circle_color = (232, 168, 62)   # Yellow
+    else:
+        circle_color = (226, 75, 74)    # Red
+    d.ellipse([margin, margin, sz - margin, sz - margin], fill=circle_color)
     if logo:
         img.paste(logo, (0, 0), logo if logo.mode == 'RGBA' else None)
     else:
-        # Fallback: colored circle
-        margin = 4
-        d.ellipse([margin, margin, sz - margin, sz - margin], fill=colors["accent"])
+        pass  # Circle already drawn above
 
     # Draw percentage text centered on icon with thick dark outline for visibility
     pct = int(sp) if isinstance(sp, (int, float)) else 0
@@ -1539,7 +1546,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
             # Active Z.AI tab: white text on accent background
-            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
+            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_ACCENT_LT, text_color=self.ZA_PRIMARY)
 
         # Ensure inactive tabs have proper styling with visible background
         if tab != "claude":
@@ -1656,9 +1663,10 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         self._cl_tab_btn = ctk.CTkButton(
             tab_inner,
-            text="",
+            text="CL" if not self._cl_tab_icon else "",
             image=self._cl_tab_icon,
-            font=("Segoe UI", 1),
+            font=("Segoe UI Semibold", 10),
+            text_color="#D97757",
             fg_color=self.CL_LITE,
             hover_color=self.CL_LITE,
             corner_radius=8, height=26, width=34,
@@ -1667,12 +1675,13 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         self._oa_tab_btn = ctk.CTkButton(
             tab_inner,
-            text="",
+            text="Codex" if not self._oa_tab_icon else "",
             image=self._oa_tab_icon,
-            font=("Segoe UI", 1),
-            fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
+            font=("Segoe UI Semibold", 10),
+            text_color="#10A37F",
+            fg_color=self.CL_TRACK,
             hover_color=self.CL_HOVER,
-            corner_radius=8, height=26, width=34,
+            corner_radius=8, height=26, width=48,
             command=lambda: self._switch_tab("openai"))
         self._oa_tab_btn.pack(side="left", padx=(1, 1), pady=2)
 
