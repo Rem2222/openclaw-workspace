@@ -1713,44 +1713,39 @@ class CodexBarPopup(ctk.CTkToplevel):
             frame.pack_forget()
         self._fixed_panel_h = max(heights)
 
-        # Apply initial tab state based on saved tab
-        # Hide claude_frame (shown by default) and show the correct frame
-        if self._active_tab != "claude":
-            self._claude_frame.pack_forget()
-            # Apply initial tab button and panel styling
-            if self._active_tab == "openai":
-                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
-                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.CL_ACCENT)
-                self._zai_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.ZA_ACCENT)
-                self._tab_bar.configure(fg_color=self.OA_BG)
-                self._tab_inner.configure(fg_color=self.OA_TRACK)
-                self.configure(fg_color=self.OA_BG)
-                self._openai_frame.pack(fill="both", expand=True)
-            elif self._active_tab == "zai":
-                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.CL_ACCENT)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.OA_GREEN)
-                self._tab_bar.configure(fg_color=self.ZA_BG)
-                self._tab_inner.configure(fg_color=self.ZA_TRACK)
-                self.configure(fg_color=self.ZA_BG)
-                self._zai_frame.pack(fill="both", expand=True)
-            # Update footer colors for non-Claude tab
-            if self._active_tab != "claude":
-                bg = self.OA_BG if self._active_tab == "openai" else self.ZA_BG
-                divider = self.OA_DIVIDER if self._active_tab == "openai" else self.ZA_DIVIDER
-                accent = self.OA_GREEN if self._active_tab == "openai" else self.ZA_ACCENT
-                tertiary = self.OA_TERTIARY if self._active_tab == "openai" else self.ZA_TERTIARY
-                hover = self.OA_HOVER if self._active_tab == "openai" else self.ZA_HOVER
-                self._footer_frame.configure(fg_color=bg)
-                self._footer_divider.configure(fg_color=divider)
-                self._dash_btn.configure(text_color=accent, hover_color=hover)
-                self._quit_btn.configure(text_color=tertiary, hover_color=hover)
-                self._refresh_btn.configure(fg_color=accent, hover_color=hover)
-
         # ── FOOTER (always visible, bottom) ──
         self._footer_frame = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         self._build_footer(self._footer_frame)
         self._footer_frame.pack(fill="x", side="bottom")
+
+        # Apply initial tab state based on saved tab
+        if self._active_tab != "claude":
+            self._claude_frame.pack_forget()
+            if self._active_tab == "openai":
+                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
+                self._cl_tab_btn.configure(fg_color=self.OA_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.OA_TRACK)
+                self._tab_bar.configure(fg_color=self.OA_BG)
+                self._tab_inner.configure(fg_color=self.OA_TRACK)
+                self.configure(fg_color=self.OA_BG)
+                self._openai_frame.pack(fill="both", expand=True)
+                self._footer_frame.configure(fg_color=self.OA_BG)
+                self._footer_divider.configure(fg_color=self.OA_DIVIDER)
+                self._dash_btn.configure(text_color=self.OA_GREEN)
+                self._refresh_btn.configure(fg_color=self.OA_GREEN)
+            elif self._active_tab == "zai":
+                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT)
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK)
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
+                self._zai_frame.pack(fill="both", expand=True)
+                self._footer_frame.configure(fg_color=self.ZA_BG)
+                self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
+                self._dash_btn.configure(text_color=self.ZA_ACCENT)
+                self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
+
 
     # ═══════════════════════════════════════
     # CLAUDE PANEL
