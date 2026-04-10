@@ -125,6 +125,25 @@ done
 ```
 Показать списком: что устарело и какие версии доступны.
 
+### 🛡️ Отчёт по защите сервера
+```bash
+# Проверить забаненные IP
+BANNED=$(sudo fail2ban-client banned 2>/dev/null | grep -c '[' || echo '0')
+echo "🛡️ fail2ban: $BANNED IP забанено"
+sudo fail2ban-client banned 2>/dev/null | grep -E "\[" | sed 's/^/  /'
+
+# Неудачные SSH за сегодня
+FAILED=$(sudo grep "Failed password" /var/log/auth.log 2>/dev/null | grep -c "$(date '+%b %d')" || echo '0')
+echo "🚫 Неудачных SSH-входов сегодня: $FAILED"
+
+# Успешные входы за сегодня (кроме своих IP)
+GOOD=$(sudo last -20 2>/dev/null | grep -v "185.207.139" | grep -v "185.224.3" | grep "$(date '+%a %b %d')" | grep -v "reboot" | wc -l)
+if [ "$GOOD" -gt "0" ]; then
+  echo "⚠️ Подозрительные входы: $GOOD"
+fi
+```
+**Если есть забаненные IP или подозрительные входы — показать Роману.**
+
 ---
 
 *Этот файл обновляется по мере необходимости.*
