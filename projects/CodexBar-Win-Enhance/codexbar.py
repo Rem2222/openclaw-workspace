@@ -1201,28 +1201,45 @@ class ZaiDataFetcher:
             print(f"    Z.AI: error: {e}")
             return None
 
-        # Parse response: {"quota": N, "used": N, "remaining": N, "reset_date": "..."}
+        # Parse actual Z.AI response structure:
+        # {"data": {"limits": [...], "level": "..."}}
         result = {}
-        quota = data.get("quota", 0)
-        used = data.get("used", 0)
-        remaining = data.get("remaining", 0)
+        try:
+            data_root = data.get("data", {})
+            limits = data_root.get("limits", [])
+            tok_limits = [l for l in limits if l.get("type") == "TOKENS_LIMIT"]
+            time_limits = [l for l in limits if l.get("type") == "TIME_LIMIT"]
 
-        if quota > 0:
-            result["session_used_pct"] = min(100, int(used / quota * 100))
-        elif remaining > 0 and used > 0:
-            total = used + remaining
-            result["session_used_pct"] = min(100, int(used / total * 100))
+            for lim in tok_limits:
+                unit = lim.get("unit")  # unit 3 = session, 6 = weekly
+                pct = lim.get("percentage", 0)
+                if unit == 3:
+                    result["session_used_pct"] = min(100, pct)
+                elif unit == 6:
+                    result["weekly_used_pct"] = min(100, pct)
 
-        reset_date = data.get("reset_date") or data.get("resetDate") or data.get("reset_at")
-        if reset_date:
-            try:
-                dt = datetime.fromisoformat(str(reset_date).replace("Z", "+00:00"))
-                delta = dt - datetime.now(dt.tzinfo)
-                secs = max(0, int(delta.total_seconds()))
-                h, m = divmod(secs // 60, 60)
-                result["session_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
-            except Exception:
-                result["session_reset"] = str(reset_date)
+            for lim in limits:
+                ts_ms = lim.get("nextResetTime")
+                if not ts_ms:
+                    continue
+                ts_sec = ts_ms / 1000
+                delta = ts_sec - datetime.now().timestamp()
+                if delta < 0:
+                    delta = 0
+                h, m = divmod(int(delta) // 60, 60)
+                label = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
+                unit = lim.get("unit")
+                if unit == 3:
+                    result["session_reset"] = label
+                elif unit == 6:
+                    result["weekly_reset"] = label
+
+            result["plan"] = data_root.get("level", "Unknown")
+            result["source"] = "api"
+            return result
+        except Exception as e:
+            print(f"    Z.AI: parse error: {e}")
+            return None
 
         return result
 
