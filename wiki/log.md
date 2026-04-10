@@ -73,3 +73,17 @@ _Append-only. Формат: `## [дата] type | описание`_
 - OmniRoute для балансировки между несколькими OpenAI подписками
 - Автопереключение при исчерпании лимитов
 - Обновлён index.md и log.md
+
+## 2026-04-10
+
+### CodexBar-Win-Enhance
+- Создан проект для добавления провайдеров в CodexBar-Win
+- Цель: z.ai (API token), MiniMax (cookies), OpenCode (cookies)
+- Создан шаблон проекта в projects/CodexBar-Win-Enhance/
+- Созданa страница wiki: [[CodexBar-Win Cookie Decryption]] — документация по технологии расшифровки Chromium cookies
+
+### CodexBar research
+- Найден CodexBar-Win — Windows порт CodexBar
+- Найдены 16+ провайдеров в macOS версии включая OpenCode и MiniMax
+- Субагент исследовал архитектуру провайдеров
+- OpenRouter поддерживается! Через него можно проксировать на Minimax
