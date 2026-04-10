@@ -2,7 +2,7 @@
 CodexBar for Windows v1.0.0
 ============================
 System tray app that shows your REAL Claude usage.
-Native customtkinter popup — no browser hack needed.
+Native customtkinter popup - no browser hack needed.
 
 Requirements: pip install pystray Pillow customtkinter
 Usage: python codexbar.py
@@ -54,7 +54,7 @@ except ImportError:
 
 
 def _resource_path(relative_path):
-    """Get absolute path to resource — works for dev and PyInstaller .exe."""
+    """Get absolute path to resource - works for dev and PyInstaller .exe."""
     if getattr(sys, 'frozen', False):
         base = Path(sys._MEIPASS)
     else:
@@ -73,7 +73,7 @@ class _CookieDecryptor:
     Chromium 127+ uses App-Bound Encryption (``v20`` prefix).
 
     v10: The AES key lives in ``Local State``, encrypted with Windows DPAPI.
-    v20: Requires Chrome's elevation-service COM object — attempted here,
+    v20: Requires Chrome's elevation-service COM object - attempted here,
          falls back gracefully if the service is unavailable.
 
     All crypto is pure ctypes (DPAPI via crypt32, AES-GCM via bcrypt.dll).
@@ -164,7 +164,7 @@ class _CookieDecryptor:
             raise OSError(f"BCryptOpenAlgorithmProvider 0x{st & 0xFFFFFFFF:08x}")
 
         try:
-            # set GCM chaining mode — property value is raw UTF-16LE bytes
+            # set GCM chaining mode - property value is raw UTF-16LE bytes
             mode_bytes = "ChainingModeGCM\0".encode("utf-16-le")
             mode_buf = (ctypes.c_ubyte * len(mode_bytes))(*mode_bytes)
             st = _b.BCryptSetProperty(
@@ -316,7 +316,7 @@ class _CookieDecryptor:
             tag        = ct_and_tag[-16:]
             plain = cls._aes_gcm_decrypt(key, nonce, ciphertext, tag)
             return plain.decode("utf-8", errors="replace")
-        # v20: App-Bound Encryption (Chrome 127+) — needs elevation service
+        # v20: App-Bound Encryption (Chrome 127+) - needs elevation service
         if prefix == b"v20":
             print("      cookie is v20 (App-Bound Encryption)")
             print("      v20 requires Chrome's elevation service; skipping")
@@ -455,7 +455,7 @@ class ClaudeDataFetcher:
 
         try:
             time.sleep(startup_wait)       # wait for welcome / trust prompt
-            # Accept the workspace trust prompt if shown ("Yes, I trust…")
+            # Accept the workspace trust prompt if shown ("Yes, I trust...")
             proc.write("\r")
             time.sleep(trust_wait)         # wait for welcome screen after trust
             proc.write("/usage\r")         # select from autocomplete + execute
@@ -528,7 +528,7 @@ class ClaudeDataFetcher:
             lo = line.lower().strip()
 
             # ── section headers ──
-            # Don't 'continue' — the header and data can land on the
+            # Don't 'continue' - the header and data can land on the
             # same line after ANSI stripping in the Windows PTY.
             if "current session" in lo:
                 section = "session"
@@ -551,7 +551,7 @@ class ClaudeDataFetcher:
 
             # ── reset: tolerant pattern for "Resets"/"Reses"/"Reset" ──
             # ANSI stripping can eat characters, so match broadly:
-            #   "Resets 4pm …", "Reses4pm …", "Reset Mar 27 …"
+            #   "Resets 4pm ...", "Reses4pm ...", "Reset Mar 27 ..."
             rm = re.search(
                 r'[Rr]es[et]*s?\s*(.+)', line)
             if rm:
@@ -630,7 +630,7 @@ class ClaudeDataFetcher:
         """GET /organizations → /usage using the given auth header.
 
         ``auth_header`` is a (name, value) tuple, e.g.
-        ("Authorization", "Bearer …") or ("Cookie", "sessionKey=…").
+        ("Authorization", "Bearer ...") or ("Cookie", "sessionKey=...").
         """
         headers = {
             auth_header[0]: auth_header[1],
@@ -890,7 +890,7 @@ def _make_openai_icon(size=28):
 
 def make_icon(sp=0, wp=0, sz=64, provider="claude"):
     """Generate a system-tray icon with provider logo, percentage overlay, and status dot.
-    
+
     Args:
         sp: Session percentage (0-100) for dot color
         wp: Weekly percentage (unused, kept for compatibility)
@@ -915,13 +915,13 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
             "green": (74, 108, 247),
         },
     }
-    
+
     colors = COLORS.get(provider, COLORS["claude"])
-    
+
     # Create base transparent image
     img = Image.new('RGBA', (sz, sz), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    
+
     # Try to load provider logo
     logo = _load_logo(colors["logo"], sz)
     if logo:
@@ -930,21 +930,24 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         # Fallback: colored circle
         margin = 4
         d.ellipse([margin, margin, sz - margin, sz - margin], fill=colors["accent"])
-    
-    # Draw percentage text centered on icon
+
+    # Draw percentage text centered on icon with thick dark outline for visibility
     pct = int(sp) if isinstance(sp, (int, float)) else 0
     if pct > 0:
         try:
-            # Use a small font for the percentage
-            font_size = max(12, sz // 4)
-            # Try to use a system font, fallback to default
+            # Larger font for better visibility (20pt for 64x64 icon)
+            font_size = max(18, sz // 3)
+            # Try to use a bold system font for better readability
             try:
-                font = ImageDraw.ImageFont.truetype("arial.ttf", font_size)
+                font = ImageDraw.ImageFont.truetype("arialbd.ttf", font_size)  # Bold Arial
             except Exception:
                 try:
-                    font = ImageDraw.ImageFont.truetype("segoeui.ttf", font_size)
+                    font = ImageDraw.ImageFont.truetype("seguisb.ttf", font_size)  # Semibold Segoe
                 except Exception:
-                    font = ImageDraw.ImageFont.load_default()
+                    try:
+                        font = ImageDraw.ImageFont.truetype("arial.ttf", font_size)
+                    except Exception:
+                        font = ImageDraw.ImageFont.load_default()
             
             text = f"{pct}%"
             # Calculate text position for centering
@@ -954,29 +957,32 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
             text_x = (sz - text_w) // 2
             text_y = (sz - text_h) // 2 - 2
             
-            # Draw shadow for readability
-            shadow_offset = 1
-            d.text((text_x + shadow_offset, text_y + shadow_offset), text, font=font, fill=(0, 0, 0, 180))
-            # Draw white text
+            # Draw thick dark outline by drawing text multiple times with offsets
+            outline_color = (0, 0, 0, 255)  # Solid black outline
+            for ox in [-2, -1, 0, 1, 2]:
+                for oy in [-2, -1, 0, 1, 2]:
+                    if abs(ox) + abs(oy) <= 3:  # Circular outline pattern
+                        d.text((text_x + ox, text_y + oy), text, font=font, fill=outline_color)
+            # Draw white text on top
             d.text((text_x, text_y), text, font=font, fill=(255, 255, 255, 255))
         except Exception:
             pass
-    
+
     # Draw colored dot indicator in bottom-right corner
     # Color based on percentage:
-    # <70%: green/accent, 70-90%: yellow, >90%: red
+    # <50%: green/accent, 50-70%: yellow, >70%: red
     dot_radius = max(3, sz // 10)
     dot_margin = 2
     dot_x = sz - dot_radius - dot_margin
     dot_y = sz - dot_radius - dot_margin
-    
-    if pct < 70:
+
+    if pct < 50:
         dot_color = colors["green"] + (255,)  # Green/accent
-    elif pct < 90:
+    elif pct < 70:
         dot_color = (232, 168, 62, 255)  # Yellow #E8A83E
     else:
         dot_color = (226, 75, 74, 255)  # Red #E24B4A
-    
+
     # Draw dot with white outline for visibility
     d.ellipse(
         [dot_x - dot_radius, dot_y - dot_radius, dot_x + dot_radius, dot_y + dot_radius],
@@ -984,7 +990,7 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         outline=(255, 255, 255, 200),
         width=1
     )
-    
+
     return img
 
 
@@ -1324,7 +1330,7 @@ class ZaiDataFetcher:
 
 
 # ─────────────────────────────────────────────
-# Native popup window — Multi-provider
+# Native popup window - Multi-provider
 # ─────────────────────────────────────────────
 
 class CodexBarPopup(ctk.CTkToplevel):
@@ -1393,7 +1399,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.attributes("-topmost", True)
         self.attributes("-alpha", 0.0)
 
-        # load logos — tiny for tab buttons, bigger for panel headers
+        # load logos - tiny for tab buttons, bigger for panel headers
         cl_tab = _load_logo("claude-logo.png", 18)
         self._cl_tab_icon = ctk.CTkImage(cl_tab, size=(18, 18)) if cl_tab else None
         oa_tab = _load_logo("openai-icon.png", 18)
@@ -1512,9 +1518,10 @@ class CodexBarPopup(ctk.CTkToplevel):
         """Instant swap while window is invisible."""
         tab = self._active_tab
 
-        # Reset all tab buttons to inactive
+        # Reset all tab buttons to inactive (use track color for visibility inboth modes)
+        track_bg = self.CL_TRACK  # Will be updated per-tab below
         for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn):
-            btn.configure(fg_color="transparent")
+            btn.configure(fg_color=self.CL_TRACK)  # Visible background
 
         # tab button + footer styles
         if tab == "claude":
@@ -1534,14 +1541,14 @@ class CodexBarPopup(ctk.CTkToplevel):
             # Active Z.AI tab: white text on accent background
             self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
 
-        # Ensure inactive tabs have proper styling
+        # Ensure inactive tabs have proper styling with visible background
         if tab != "claude":
-            self._cl_tab_btn.configure(hover_color=hover)
+            self._cl_tab_btn.configure(fg_color=track, hover_color=hover)
         if tab != "openai":
-            self._oa_tab_btn.configure(hover_color=hover)
+            self._oa_tab_btn.configure(fg_color=track, hover_color=hover)
         if tab != "zai":
-            # Inactive Z.AI tab: accent text on transparent
-            self._zai_tab_btn.configure(fg_color="transparent", hover_color=hover, text_color=self.ZA_ACCENT)
+            # Inactive Z.AI tab: accent text on track background
+            self._zai_tab_btn.configure(fg_color=track, hover_color=hover, text_color=self.ZA_ACCENT)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -1637,7 +1644,7 @@ class CodexBarPopup(ctk.CTkToplevel):
     # ═══════════════════════════════════════
 
     def _build_ui(self):
-        # ── TAB BAR — tiny icon pills, top-left ──
+        # ── TAB BAR - tiny icon pills, top-left ──
         tab_bar = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0, height=34)
         tab_bar.pack(fill="x")
         tab_bar.pack_propagate(False)
@@ -1663,7 +1670,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="",
             image=self._oa_tab_icon,
             font=("Segoe UI", 1),
-            fg_color="transparent",
+            fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("openai"))
@@ -1675,7 +1682,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             image=None,  # Always show text, no image
             font=("Segoe UI Semibold", 11),
             text_color=self.ZA_ACCENT,
-            fg_color="transparent",
+            fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=42,
             command=lambda: self._switch_tab("zai"))
@@ -1705,6 +1712,40 @@ class CodexBarPopup(ctk.CTkToplevel):
             heights.append(frame.winfo_reqheight())
             frame.pack_forget()
         self._fixed_panel_h = max(heights)
+
+        # Apply initial tab state based on saved tab
+        # Hide claude_frame (shown by default) and show the correct frame
+        if self._active_tab != "claude":
+            self._claude_frame.pack_forget()
+            # Apply initial tab button and panel styling
+            if self._active_tab == "openai":
+                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
+                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.CL_ACCENT)
+                self._zai_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.ZA_ACCENT)
+                self._tab_bar.configure(fg_color=self.OA_BG)
+                self._tab_inner.configure(fg_color=self.OA_TRACK)
+                self.configure(fg_color=self.OA_BG)
+                self._openai_frame.pack(fill="both", expand=True)
+            elif self._active_tab == "zai":
+                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.CL_ACCENT)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.OA_GREEN)
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
+                self._zai_frame.pack(fill="both", expand=True)
+            # Update footer colors for non-Claude tab
+            if self._active_tab != "claude":
+                bg = self.OA_BG if self._active_tab == "openai" else self.ZA_BG
+                divider = self.OA_DIVIDER if self._active_tab == "openai" else self.ZA_DIVIDER
+                accent = self.OA_GREEN if self._active_tab == "openai" else self.ZA_ACCENT
+                tertiary = self.OA_TERTIARY if self._active_tab == "openai" else self.ZA_TERTIARY
+                hover = self.OA_HOVER if self._active_tab == "openai" else self.ZA_HOVER
+                self._footer_frame.configure(fg_color=bg)
+                self._footer_divider.configure(fg_color=divider)
+                self._dash_btn.configure(text_color=accent, hover_color=hover)
+                self._quit_btn.configure(text_color=tertiary, hover_color=hover)
+                self._refresh_btn.configure(fg_color=accent, hover_color=hover)
 
         # ── FOOTER (always visible, bottom) ──
         self._footer_frame = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
@@ -1773,7 +1814,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                          font=("Segoe UI Semibold", 13),
                          text_color=self.CL_TERTIARY,
                          anchor="w").pack(fill="x", padx=22, pady=(10, 0))
-            ctk.CTkLabel(parent, text="Estimated API equivalent — not billed",
+            ctk.CTkLabel(parent, text="Estimated API equivalent - not billed",
                          font=("Segoe UI", 10),
                          text_color=self.CL_TERTIARY,
                          anchor="w").pack(fill="x", padx=22, pady=(0, 4))
@@ -1840,7 +1881,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                          text_color=self.CL_TERTIARY, anchor="w").pack(fill="x")
 
     # ═══════════════════════════════════════
-    # OPENAI PANEL — mirrors Claude layout
+    # OPENAI PANEL - mirrors Claude layout
     # ═══════════════════════════════════════
 
     def _build_openai_panel(self, parent):
@@ -1925,7 +1966,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                          font=("Segoe UI Semibold", 13),
                          text_color=self.OA_TERTIARY,
                          anchor="w").pack(fill="x", padx=22, pady=(10, 0))
-            ctk.CTkLabel(parent, text="Estimated API equivalent — not billed",
+            ctk.CTkLabel(parent, text="Estimated API equivalent - not billed",
                          font=("Segoe UI", 10),
                          text_color=self.OA_TERTIARY,
                          anchor="w").pack(fill="x", padx=22, pady=(0, 4))
@@ -2057,37 +2098,12 @@ class CodexBarPopup(ctk.CTkToplevel):
                          anchor="w").pack(fill="x", padx=22, pady=(10, 2))
             sp = d["session_used_pct"]
             wp = d.get("weekly_used_pct", 0)
-            
-            # Session quota bar
-            self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
-            
+
+            # Session quota bar (5-hour window)
+            self._zai_usage_bar(parent, "5 Hours Quota", sp, d.get("session_reset"))
+
             # Weekly quota bar
             self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
-
-            # Show remaining / used details for session
-            detail = ctk.CTkFrame(parent, fg_color=self.ZA_CARD, corner_radius=10)
-            detail.pack(fill="x", padx=20, pady=(6, 2))
-            inner = ctk.CTkFrame(detail, fg_color="transparent")
-            inner.pack(fill="x", padx=14, pady=10)
-            
-            # Session details
-            for label, val in [("Session Used", f"{sp}%"),
-                               ("Session Left", f"{100 - sp}%")]:
-                r = ctk.CTkFrame(inner, fg_color="transparent")
-                r.pack(fill="x", pady=1)
-                ctk.CTkLabel(r, text=label, font=("Segoe UI", 12),
-                             text_color=self.ZA_SECOND).pack(side="left")
-                ctk.CTkLabel(r, text=val, font=("Segoe UI Semibold", 13),
-                             text_color=self.ZA_PRIMARY).pack(side="right")
-            
-            # Weekly details
-            if wp > 0:
-                r = ctk.CTkFrame(inner, fg_color="transparent")
-                r.pack(fill="x", pady=1)
-                ctk.CTkLabel(r, text="Weekly Used", font=("Segoe UI", 12),
-                             text_color=self.ZA_SECOND).pack(side="left")
-                ctk.CTkLabel(r, text=f"{wp}%", font=("Segoe UI Semibold", 13),
-                             text_color=self.ZA_PRIMARY).pack(side="right")
 
         # Show plan level (monthly)
         plan_level = d.get("plan", "")
@@ -2129,9 +2145,9 @@ class CodexBarPopup(ctk.CTkToplevel):
 
     @staticmethod
     def _za_bar_color(pct):
-        if pct <= 70:  return "#4A6CF7"
-        if pct <= 90:  return "#E8A83E"
-        return "#E24B4A"
+        if pct <= 50:  return "#4A6CF7"  # Blue/accent for low usage
+        if pct <= 70:  return "#E8A83E"  # Yellow for medium
+        return "#E24B4A"  # Red for high usage
 
     # ═══════════════════════════════════════
     # FOOTER (shared between tabs)
@@ -2381,6 +2397,7 @@ class CodexBarApp:
         self.running = True
         self.codex_data = None
         self.zai_data = None                          # added by Romul
+        self._active_provider = "claude"  # Track currently active provider for icon
 
         # Load saved tokens on startup
         saved = SettingsPopup._load_token()
@@ -2486,6 +2503,8 @@ class CodexBarApp:
         self._do_refresh()
 
     def _on_tab_switch(self, tab):
+        # Store the active provider for icon refresh
+        self._active_provider = tab if tab in ("openai", "zai") else "claude"
         self._set_tray_icon(tab)
 
     def _set_tray_icon(self, provider):
@@ -2517,9 +2536,8 @@ class CodexBarApp:
                 self.zai_data = self.zai_fetcher.fetch()
             except Exception:
                 pass
-            d = self.fetcher.data
-            # Update tray icon with current session percentage
-            self.tray.icon = make_icon(sp=d.get("session_used_pct", 0), provider="claude")
+            # Update tray icon with current session percentage for active provider
+            self._set_tray_icon(self._active_provider)
             print("[CodexBar] Refreshed")
         threading.Thread(target=bg, daemon=True).start()
 
@@ -2552,7 +2570,7 @@ if __name__ == '__main__':
     print(r"""
    ========================================
     CodexBar for Windows v1.0.0
-    Native popup — no browser needed
+    Native popup - no browser needed
    ========================================
     """)
     CodexBarApp().start()
