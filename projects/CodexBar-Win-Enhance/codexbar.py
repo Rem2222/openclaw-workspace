@@ -888,24 +888,103 @@ def _make_openai_icon(size=28):
     return img
 
 
-def make_icon(sp=1.0, wp=1.0, sz=64, provider="claude"):
-    """Generate a system-tray icon for Claude or OpenAI."""
-    if provider == "openai":
-        logo = _load_logo("openai-icon.png", sz)
-        if logo:
-            return logo
-        # fallback: green circle
-        img = Image.new('RGBA', (sz, sz), (0, 0, 0, 0))
-        ImageDraw.Draw(img).ellipse([4, 4, sz-4, sz-4], fill=(16, 163, 127, 255))
-        return img
-
+def make_icon(sp=0, wp=0, sz=64, provider="claude"):
+    """Generate a system-tray icon with provider logo, percentage overlay, and status dot.
+    
+    Args:
+        sp: Session percentage (0-100) for dot color
+        wp: Weekly percentage (unused, kept for compatibility)
+        sz: Icon size in pixels
+        provider: "claude", "openai", or "zai"
+    """
+    # Color palette per provider
+    COLORS = {
+        "claude": {
+            "logo": "claude-logo.png",
+            "accent": (217, 119, 87),  # CL_ACCENT
+            "green": (217, 119, 87),   #Same as accent for claude
+        },
+        "openai": {
+            "logo": "openai-icon.png",
+            "accent": (16, 163, 127),  # OA_GREEN
+            "green": (16, 163, 127),
+        },
+        "zai": {
+            "logo": "zai-logo.png",
+            "accent": (74, 108, 247),  # ZA_ACCENT #4A6CF7
+            "green": (74, 108, 247),
+        },
+    }
+    
+    colors = COLORS.get(provider, COLORS["claude"])
+    
+    # Create base transparent image
     img = Image.new('RGBA', (sz, sz), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    logo = _load_logo("claude-logo.png", sz)
+    
+    # Try to load provider logo
+    logo = _load_logo(colors["logo"], sz)
     if logo:
-        img.paste(logo, (0, 0), logo)
+        img.paste(logo, (0, 0), logo if logo.mode == 'RGBA' else None)
     else:
-        d.ellipse([4, 4, sz - 4, sz - 4], fill=(217, 119, 87, 255))
+        # Fallback: colored circle
+        margin = 4
+        d.ellipse([margin, margin, sz - margin, sz - margin], fill=colors["accent"])
+    
+    # Draw percentage text centered on icon
+    pct = int(sp) if isinstance(sp, (int, float)) else 0
+    if pct > 0:
+        try:
+            # Use a small font for the percentage
+            font_size = max(12, sz // 4)
+            # Try to use a system font, fallback to default
+            try:
+                font = ImageDraw.ImageFont.truetype("arial.ttf", font_size)
+            except Exception:
+                try:
+                    font = ImageDraw.ImageFont.truetype("segoeui.ttf", font_size)
+                except Exception:
+                    font = ImageDraw.ImageFont.load_default()
+            
+            text = f"{pct}%"
+            # Calculate text position for centering
+            bbox = d.textbbox((0, 0), text, font=font)
+            text_w = bbox[2] - bbox[0]
+            text_h = bbox[3] - bbox[1]
+            text_x = (sz - text_w) // 2
+            text_y = (sz - text_h) // 2 - 2
+            
+            # Draw shadow for readability
+            shadow_offset = 1
+            d.text((text_x + shadow_offset, text_y + shadow_offset), text, font=font, fill=(0, 0, 0, 180))
+            # Draw white text
+            d.text((text_x, text_y), text, font=font, fill=(255, 255, 255, 255))
+        except Exception:
+            pass
+    
+    # Draw colored dot indicator in bottom-right corner
+    # Color based on percentage:
+    # <70%: green/accent, 70-90%: yellow, >90%: red
+    dot_radius = max(3, sz // 10)
+    dot_margin = 2
+    dot_x = sz - dot_radius - dot_margin
+    dot_y = sz - dot_radius - dot_margin
+    
+    if pct < 70:
+        dot_color = colors["green"] + (255,)  # Green/accent
+    elif pct < 90:
+        dot_color = (232, 168, 62, 255)  # Yellow #E8A83E
+    else:
+        dot_color = (226, 75, 74, 255)  # Red #E24B4A
+    
+    # Draw dot with white outline for visibility
+    d.ellipse(
+        [dot_x - dot_radius, dot_y - dot_radius, dot_x + dot_radius, dot_y + dot_radius],
+        fill=dot_color,
+        outline=(255, 255, 255, 200),
+        width=1
+    )
+    
     return img
 
 
@@ -1307,7 +1386,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._on_settings = on_settings
         self._zai = zai_data or ZaiDataFetcher._empty()
         self._on_tab_switch = on_tab_switch
-        self._active_tab = "claude"
+        self._active_tab = SettingsPopup.load_last_tab()
 
         self.overrideredirect(True)
         self.configure(fg_color=self.CL_BG)
@@ -1422,6 +1501,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         if tab == self._active_tab:
             return
         self._active_tab = tab
+        SettingsPopup.save_last_tab(tab)
         if self._on_tab_switch:
             self._on_tab_switch(tab)
         self._m_step = 0
@@ -1451,11 +1531,17 @@ class CodexBarPopup(ctk.CTkToplevel):
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_ACCENT_LT)
+            # Active Z.AI tab: white text on accent background
+            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
 
-        for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn):
-            if btn.cget("fg_color") == "transparent":
-                btn.configure(hover_color=hover)
+        # Ensure inactive tabs have proper styling
+        if tab != "claude":
+            self._cl_tab_btn.configure(hover_color=hover)
+        if tab != "openai":
+            self._oa_tab_btn.configure(hover_color=hover)
+        if tab != "zai":
+            # Inactive Z.AI tab: accent text on transparent
+            self._zai_tab_btn.configure(fg_color="transparent", hover_color=hover, text_color=self.ZA_ACCENT)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -1585,13 +1671,13 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         self._zai_tab_btn = ctk.CTkButton(
             tab_inner,
-            text="Z" if not self._zai_tab_icon else "",
-            image=self._zai_tab_icon,
-            font=("Segoe UI Semibold", 12),
+            text="Z.AI",
+            image=None,  # Always show text, no image
+            font=("Segoe UI Semibold", 11),
             text_color=self.ZA_ACCENT,
             fg_color="transparent",
             hover_color=self.CL_HOVER,
-            corner_radius=8, height=26, width=34,
+            corner_radius=8, height=26, width=42,
             command=lambda: self._switch_tab("zai"))
         self._zai_tab_btn.pack(side="left", padx=(1, 2), pady=2)
 
@@ -1970,21 +2056,55 @@ class CodexBarPopup(ctk.CTkToplevel):
                          text_color=self.ZA_TERTIARY,
                          anchor="w").pack(fill="x", padx=22, pady=(10, 2))
             sp = d["session_used_pct"]
-            self._zai_usage_bar(parent, "Quota", sp, d.get("session_reset"))
+            wp = d.get("weekly_used_pct", 0)
+            
+            # Session quota bar
+            self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+            
+            # Weekly quota bar
+            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
 
-            # Show remaining / used details
+            # Show remaining / used details for session
             detail = ctk.CTkFrame(parent, fg_color=self.ZA_CARD, corner_radius=10)
             detail.pack(fill="x", padx=20, pady=(6, 2))
             inner = ctk.CTkFrame(detail, fg_color="transparent")
             inner.pack(fill="x", padx=14, pady=10)
-            for label, val in [("Used", f"{sp}%"),
-                               ("Remaining", f"{100 - sp}%")]:
+            
+            # Session details
+            for label, val in [("Session Used", f"{sp}%"),
+                               ("Session Left", f"{100 - sp}%")]:
                 r = ctk.CTkFrame(inner, fg_color="transparent")
                 r.pack(fill="x", pady=1)
                 ctk.CTkLabel(r, text=label, font=("Segoe UI", 12),
                              text_color=self.ZA_SECOND).pack(side="left")
                 ctk.CTkLabel(r, text=val, font=("Segoe UI Semibold", 13),
                              text_color=self.ZA_PRIMARY).pack(side="right")
+            
+            # Weekly details
+            if wp > 0:
+                r = ctk.CTkFrame(inner, fg_color="transparent")
+                r.pack(fill="x", pady=1)
+                ctk.CTkLabel(r, text="Weekly Used", font=("Segoe UI", 12),
+                             text_color=self.ZA_SECOND).pack(side="left")
+                ctk.CTkLabel(r, text=f"{wp}%", font=("Segoe UI Semibold", 13),
+                             text_color=self.ZA_PRIMARY).pack(side="right")
+
+        # Show plan level (monthly)
+        plan_level = d.get("plan", "")
+        if plan_level and plan_level != "Unknown":
+            ctk.CTkFrame(parent, fg_color=self.ZA_DIVIDER,
+                         height=1, corner_radius=0).pack(fill="x", padx=20, pady=(8, 0))
+            ctk.CTkLabel(parent, text="Plan", font=("Segoe UI Semibold", 13),
+                         text_color=self.ZA_TERTIARY,
+                         anchor="w").pack(fill="x", padx=22, pady=(10, 2))
+            plan_card = ctk.CTkFrame(parent, fg_color=self.ZA_CARD, corner_radius=10)
+            plan_card.pack(fill="x", padx=20, pady=(0, 2))
+            plan_inner = ctk.CTkFrame(plan_card, fg_color="transparent")
+            plan_inner.pack(fill="x", padx=14, pady=10)
+            ctk.CTkLabel(plan_inner, text="Monthly Plan", font=("Segoe UI", 12),
+                         text_color=self.ZA_SECOND).pack(side="left")
+            ctk.CTkLabel(plan_inner, text=plan_level.capitalize(), font=("Segoe UI Semibold", 13),
+                         text_color=self.ZA_ACCENT).pack(side="right")
 
         ctk.CTkFrame(parent, fg_color="transparent", height=6).pack(fill="x")
 
@@ -2096,6 +2216,30 @@ class SettingsPopup(ctk.CTkToplevel):
 
     CONFIG_PATH = Path.home() / ".codexbar" / "settings.json"
 
+    @classmethod
+    def load_last_tab(cls):
+        """Load last active tab from settings file."""
+        try:
+            if cls.CONFIG_PATH.exists():
+                data = json.loads(cls.CONFIG_PATH.read_text())
+                return data.get("last_tab", "claude")
+        except Exception:
+            pass
+        return "claude"
+
+    @classmethod
+    def save_last_tab(cls, tab):
+        """Save last active tab to settings file."""
+        try:
+            cls.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            data = {}
+            if cls.CONFIG_PATH.exists():
+                data = json.loads(cls.CONFIG_PATH.read_text())
+            data["last_tab"] = tab
+            cls.CONFIG_PATH.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
+
     def __init__(self, master, on_save=None):
         super().__init__(master)
         self.title("CodexBar Settings")
@@ -2169,19 +2313,21 @@ class SettingsPopup(ctk.CTkToplevel):
             pass
         return ""
 
-    @classmethod
-    def save_token(cls, token):
+    def save_token(self):
         """Save z.ai token to config file and set env var."""
-        cls.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        data = {}
-        if cls.CONFIG_PATH.exists():
-            try:
-                data = json.loads(cls.CONFIG_PATH.read_text())
-            except Exception:
-                pass
-        data["zai_token"] = token
-        cls.CONFIG_PATH.write_text(json.dumps(data, indent=2))
-        os.environ["ZAI_API_TOKEN"] = token
+        try:
+            self.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            data = {}
+            if self.CONFIG_PATH.exists():
+                try:
+                    data = json.loads(self.CONFIG_PATH.read_text())
+                except Exception:
+                    pass
+            data["zai_token"] = self._token_entry.get().strip()
+            self.CONFIG_PATH.write_text(json.dumps(data, indent=2))
+            os.environ["ZAI_API_TOKEN"] = data.get("zai_token", "")
+        except Exception:
+            pass
 
     def _test_token(self):
         token = self._token_entry.get().strip()
@@ -2267,8 +2413,7 @@ class CodexBarApp:
 
         # ── tray icon (background thread) ──
         d = self.fetcher.data
-        sl = (100 - d["session_used_pct"]) / 100
-        wl = (100 - d["weekly_used_pct"]) / 100
+        sp = d.get("session_used_pct", 0)
 
         menu = Menu(
             MenuItem('Open CodexBar', self._tray_open, default=True),
@@ -2276,7 +2421,7 @@ class CodexBarApp:
             Menu.SEPARATOR,
             MenuItem('Quit', self._tray_quit),
         )
-        self.tray = pystray.Icon('CodexBar', make_icon(sl, wl), 'CodexBar', menu)
+        self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
         threading.Thread(target=self.tray.run, daemon=True).start()
 
         # ── auto-refresh every 5 min ──
@@ -2345,11 +2490,17 @@ class CodexBarApp:
 
     def _set_tray_icon(self, provider):
         try:
-            if provider in ("openai", "zai"):
-                p = provider
+            p = provider if provider in ("openai", "zai") else "claude"
+            # Get session percentage for the active provider
+            if p == "claude":
+                sp = self.fetcher.data.get("session_used_pct", 0)
+            elif p == "openai":
+                sp = self.codex_data.get("session_used_pct", 0) if self.codex_data else 0
+            elif p == "zai":
+                sp = self.zai_data.get("session_used_pct", 0) if self.zai_data else 0
             else:
-                p = "claude"
-            self.tray.icon = make_icon(provider=p)
+                sp = 0
+            self.tray.icon = make_icon(sp=sp, provider=p)
         except Exception:
             pass
 
@@ -2367,9 +2518,8 @@ class CodexBarApp:
             except Exception:
                 pass
             d = self.fetcher.data
-            self.tray.icon = make_icon(
-                (100 - d["session_used_pct"]) / 100,
-                (100 - d["weekly_used_pct"]) / 100)
+            # Update tray icon with current session percentage
+            self.tray.icon = make_icon(sp=d.get("session_used_pct", 0), provider="claude")
             print("[CodexBar] Refreshed")
         threading.Thread(target=bg, daemon=True).start()
 
