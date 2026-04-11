@@ -1482,233 +1482,88 @@ class MiniMaxDataFetcher:
 class OpenCodeDataFetcher:
     """Fetch usage quota from OpenCode.ai via browser cookies.
 
-    Uses cookie header from browser (not API token).
-    Two-step process:
-    1. Get workspace_id from POST to /_server
-    2. Get usage data from POST to /_server with workspace_id
+    The workspace page at opencode.ai/workspace/<id>/go contains embedded JSON
+    with rollingUsage, weeklyUsage, and monthlyUsage data in inline scripts.
     """
 
-    API_URL = "https://opencode.ai/_server"
     TIMEOUT = 15
-    # Default serverID to query workspaces
-    DEFAULT_SERVER_ID = "def39973159c7f0483d8793a822b8dbb10d067e12c65455fcb4608459ba0234f"
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
 
-    # Percent keys to try (in order)
-    PERCENT_KEYS = ["usagePercent", "usedPercent", "percentUsed", "percent", "utilization", "utilizationPercent"]
-    # Reset keys to try (in order)
-    RESET_KEYS = ["resetInSec", "resetInSeconds", "resetIn", "resetAt", "resetsAt", "nextReset"]
-
-    # Cookie storage (set via settings or env)
     _cookie_header = None
 
     @classmethod
     def set_cookie(cls, cookie_header: str):
-        """Store cookie header for subsequent requests."""
         cls._cookie_header = cookie_header
 
     @staticmethod
     def _empty():
         return {
-            "provider": "OpenCode",
-            "plan": "Go",
-            "updated": "Never",
-            "source": "none",
-            "session_used_pct": 0,
-            "session_reset": "unknown",
-            "weekly_used_pct": 0,
-            "weekly_reset": "unknown",
-            "cost_today": 0,
-            "cost_today_tokens": "0",
-            "cost_30d": 0,
-            "cost_30d_tokens": "0",
-            "model": "",
-            "error": None,
-            "available": False,
+            "provider": "OpenCode", "plan": "Go", "updated": "Never",
+            "source": "none", "session_used_pct": 0, "session_reset": "unknown",
+            "weekly_used_pct": 0, "weekly_reset": "unknown",
+            "cost_today": 0, "cost_today_tokens": "0",
+            "cost_30d": 0, "cost_30d_tokens": "0", "model": "", "error": None, "available": False,
         }
 
     def fetch(self):
         d = self._empty()
-
-        # Get cookie from storage or env
         cookie = self._cookie_header or os.environ.get("OPENCODE_COOKIE", "")
         if not cookie:
             d["error"] = "cookie not set"
             return d
-
         d["available"] = True
 
-        # Step 1: Get workspace IDs
-        workspaces = self._get_workspaces(cookie)
-        if not workspaces:
-            d["error"] = "invalid credentials"
-            d["source"] = "none"
-            return d
+        import re as _re
 
-        # Step 2: Get usage for first workspace
-        for ws_id in workspaces:
-            result = self._get_usage(cookie, ws_id)
-            if result:
-                d.update(result)
-                d["source"] = "api"
-                break
-        else:
-            d["error"] = "parse failed"
-
-        d["updated"] = datetime.now().strftime("Updated %H:%M")
-        return d
-
-    def _get_workspaces(self, cookie: str):
-        """Get list of workspace IDs from OpenCode API.
-        Returns list of workspace IDs or None on error.
-        """
         try:
-            req = Request(self.API_URL,
-                          data=json.dumps({"serverID": self.DEFAULT_SERVER_ID}).encode(),
-                          headers={
-                              "Cookie": cookie,
-                              "User-Agent": self.USER_AGENT,
-                              "Accept": "application/json, text/plain, */*",
-                              "Content-Type": "application/json",
-                          },
-                          method="POST")
+            req = Request(
+                "https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
+                headers={"Cookie": cookie, "User-Agent": self.USER_AGENT}
+            )
             with urlopen(req, timeout=self.TIMEOUT) as resp:
-                content = resp.read().decode("utf-8", errors="replace")
+                html = resp.read().decode("utf-8", errors="replace")
 
-            # Parse workspace IDs (UUID-like strings)
-            # Pattern: 8-4-4-4-12 hex characters
-            uuid_pattern = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-            workspaces = re.findall(uuid_pattern, content, re.I)
-            return list(set(workspaces)) if workspaces else None
-
-        except HTTPError as e:
-            if e.code in (401, 403):
-                print(f"    OpenCode: auth error {e.code}")
-                return None
-            else:
-                print(f"    OpenCode: HTTP {e.code}")
-                return None
-        except (URLError, TimeoutError) as e:
-            print(f"    OpenCode: connection error: {e}")
-            return None
-        except Exception as e:
-            print(f"    OpenCode: error: {e}")
-            return None
-
-    def _get_usage(self, cookie: str, workspace_id: str):
-        """Get usage data for a workspace.
-        Returns partial dict with usage info or None on error.
-        """
-        try:
-            req = Request(self.API_URL,
-                          data=json.dumps({"serverID": workspace_id}).encode(),
-                          headers={
-                              "Cookie": cookie,
-                              "User-Agent": self.USER_AGENT,
-                              "Accept": "application/json, text/plain, */*",
-                              "Content-Type": "application/json",
-                          },
-                          method="POST")
-            with urlopen(req, timeout=self.TIMEOUT) as resp:
-                content = resp.read().decode("utf-8", errors="replace")
-
-            # Try to parse as JSON first
-            try:
-                data = json.loads(content)
-                return self._parse_usage_json(data)
-            except json.JSONDecodeError:
-                # Fall back to text parsing
-                return self._parse_usage_text(content)
-
-        except HTTPError as e:
-            if e.code in (401, 403):
-                print(f"    OpenCode: auth error {e.code}")
-            else:
-                print(f"    OpenCode: HTTP {e.code}")
-            return None
-        except (URLError, TimeoutError) as e:
-            print(f"    OpenCode: connection error: {e}")
-            return None
-        except Exception as e:
-            print(f"    OpenCode: error: {e}")
-            return None
-
-    def _parse_usage_json(self, data):
-        """Parse JSON response for usage data."""
-        result = {}
-
-        # Try to find percent value
-        for key in self.PERCENT_KEYS:
-            if key in data:
-                try:
-                    pct = float(data[key])
-                    result["session_used_pct"] = min(100, max(0, int(pct)))
-                    break
-                except (ValueError, TypeError):
-                    pass
-
-        # Try to find reset value
-        for key in self.RESET_KEYS:
-            if key in data:
-                try:
-                    if "Sec" in key or "sec" in key or "In" in key:
-                        # Seconds value
-                        secs = int(data[key])
-                        h, m = divmod(secs // 60, 60)
-                        if h >= 24:
-                            result["session_reset"] = f"{h // 24}d {h % 24}h"
-                        else:
-                            result["session_reset"] = f"{h}h {m:02d}m"
+            # Parse embedded JS data: rollingUsage, weeklyUsage, monthlyUsage
+            # Format: rollingUsage:$R[31]={status:"ok",resetInSec:N,usagePercent:N}
+            def _parse_usage(html, label):
+                pattern = label + r'.+?"status":"ok","resetInSec":(\d+),"usagePercent":(\d+)'
+                m = _re.search(pattern, html)
+                if m:
+                    secs, pct = int(m.group(1)), int(m.group(2))
+                    h, mn = divmod(secs // 60, 60)
+                    if h >= 24:
+                        reset = f"{h // 24}d {h % 24}h"
                     else:
-                        # Timestamp or other format
-                        result["session_reset"] = str(data[key])
-                    break
-                except (ValueError, TypeError):
-                    pass
+                        reset = f"{h}h {mn:02d}m"
+                    return pct, reset
+                return None, "unknown"
 
-        # Look for nested usage data
-        if "usage" in data and isinstance(data["usage"], dict):
-            usage = data["usage"]
-            for key in self.PERCENT_KEYS:
-                if key in usage:
-                    try:
-                        pct = float(usage[key])
-                        result["session_used_pct"] = min(100, max(0, int(pct)))
-                        break
-                    except (ValueError, TypeError):
-                        pass
+            session_pct, session_reset = _parse_usage(html, "rollingUsage")
+            weekly_pct, weekly_reset = _parse_usage(html, "weeklyUsage")
+            monthly_pct, monthly_reset = _parse_usage(html, "monthlyUsage")
 
-        if "plan" in data:
-            result["plan"] = str(data["plan"])
+            if monthly_pct is None and weekly_pct is None and session_pct is None:
+                d["error"] = "no usage data found"
+                return d
 
-        return result if result else None
+            d["session_used_pct"] = session_pct if session_pct is not None else 0
+            d["session_reset"] = session_reset
+            d["weekly_used_pct"] = weekly_pct if weekly_pct is not None else 0
+            d["weekly_reset"] = weekly_reset
+            d["session_used_pct"] = monthly_pct if monthly_pct is not None else d["session_used_pct"]
+            d["session_reset"] = monthly_reset if monthly_reset != "unknown" else d["session_reset"]
+            d["source"] = "html"
+            d["updated"] = datetime.now().strftime("Updated %H:%M")
 
-    def _parse_usage_text(self, content: str):
-        """Parse text response for usage data (fallback)."""
-        result = {}
+        except HTTPError as e:
+            if e.code in (401, 403):
+                d["error"] = "invalid cookie"
+            else:
+                d["error"] = f"HTTP {e.code}"
+        except Exception as e:
+            d["error"] = str(e)
 
-        # Try to extract percent: "X%" or "percent: X" patterns
-        pct_match = re.search(r'(\d+(?:\.\d+)?)\s*%', content)
-        if not pct_match:
-            pct_match = re.search(r'(?:percent|usage|used)[:\s]+(\d+(?:\.\d+)?)', content, re.I)
-        if pct_match:
-            try:
-                pct = float(pct_match.group(1))
-                result["session_used_pct"] = min(100, max(0, int(pct)))
-            except ValueError:
-                pass
-
-        # Try to extract reset time
-        reset_match = re.search(r'(?:reset|resets?|resetIn)[:\s]+(\d+(?:\.\d+)?|\w+)', content, re.I)
-        if reset_match:
-            result["session_reset"] = reset_match.group(1)
-
-        return result if result else None
-
-
-# ─────────────────────────────────────────────
-# Native popup window - Multi-provider
-# ─────────────────────────────────────────────
+        return d
 
 class CodexBarPopup(ctk.CTkToplevel):
     """Borderless popup with Claude + OpenAI tabs and smooth transitions."""
