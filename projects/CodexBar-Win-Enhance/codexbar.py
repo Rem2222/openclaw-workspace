@@ -88,6 +88,8 @@ class _CookieDecryptor:
 
     # ── public entry point ──────────────────────
 
+
+
     @classmethod
     def get_session_key(cls):
         """Return ``(cookie_value, browser_name)`` or ``(None, None)``."""
@@ -2807,7 +2809,7 @@ class SettingsPopup(ctk.CTkToplevel):
     def __init__(self, master, on_save=None):
         super().__init__(master)
         self.title("CodexBar Settings")
-        self.geometry("420x380")
+        self.geometry("420x520")
         self.resizable(False, False)
         self.configure(fg_color="#F8FAFE")
         self.attributes("-topmost", True)
@@ -2845,24 +2847,6 @@ class SettingsPopup(ctk.CTkToplevel):
             self, text="", font=("Segoe UI", 11),
             text_color="#5A607A", anchor="w")
         self._test_result.pack(fill="x", padx=20, pady=(4, 0))
-
-        # ── Save button ──
-        btn_row = ctk.CTkFrame(self, fg_color="transparent")
-        btn_row.pack(fill="x", padx=20, pady=(12, 16))
-
-        ctk.CTkButton(
-            btn_row, text="Save", font=("Segoe UI Semibold", 12),
-            width=100, height=32, corner_radius=6,
-            fg_color="#4A6CF7", hover_color="#3B5BE0",
-            text_color="#FFFFFF", command=self._save_and_close
-        ).pack(side="right")
-
-        ctk.CTkButton(
-            btn_row, text="Cancel", font=("Segoe UI", 12),
-            width=80, height=32, corner_radius=6,
-            fg_color="transparent", hover_color="#EEF2F8",
-            text_color="#5A607A", command=self.destroy
-        ).pack(side="right", padx=(0, 8))
 
         # ── MiniMax section ──
         mm_header = ctk.CTkFrame(self, fg_color="transparent")
@@ -2928,6 +2912,25 @@ class SettingsPopup(ctk.CTkToplevel):
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
         self._token_entry.focus_set()
+
+
+        # ── Bottom buttons ──
+        bottom_row = ctk.CTkFrame(self, fg_color="transparent")
+        bottom_row.pack(side="bottom", fill="x", padx=20, pady=(8, 16))
+
+        ctk.CTkButton(
+            bottom_row, text="Save", font=("Segoe UI Semibold", 12),
+            width=100, height=34, corner_radius=6,
+            fg_color="#4A6CF7", hover_color="#3B5BE0",
+            text_color="#FFFFFF", command=self._save_and_close
+        ).pack(side="right")
+
+        ctk.CTkButton(
+            bottom_row, text="Cancel", font=("Segoe UI", 12),
+            width=80, height=34, corner_radius=6,
+            fg_color="transparent", hover_color="#EEF2F8",
+            text_color="#5A607A", command=self.destroy
+        ).pack(side="right", padx=(0, 8))
 
     @classmethod
     def _load_token(cls, key="zai_token"):
