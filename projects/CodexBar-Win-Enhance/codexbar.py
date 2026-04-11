@@ -1421,201 +1421,149 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.1"
+VERSION = "2.2.2"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
 # ─────────────────────────────────────────────
 
 class MiniMaxDataFetcher:
-    """Fetch usage quota from MiniMax AI via browser cookies.
+    """Fetch usage quota from MiniMax AI.
 
-    MiniMax's /coding_plan/remains API requires a browser session cookie
-    (HMACCCS from .minimax.io), not a raw API token.  Falls back to
-    "requires browser login" when no cookie is found.
-
-    Matches the CodexBar macOS v0.20 approach: cookie extraction + API fetch.
+    Primary auth: Bearer token (API key from MINIMAX_API_KEY env or settings.json).
+    Fallback: browser cookie (HMACCCS from .minimax.io).
     """
 
+    TIMEOUT = 15
     API_URL = "https://api.minimax.io/v1/api/openplatform/coding_plan/remains"
-    TIMEOUT = 10
 
-    @staticmethod
-    def _empty():
+    def __init__(self):
+        self.data = self._empty()
+
+    def _empty(self):
         return {
             "provider": "MiniMax",
-            "plan": "Unknown",
+            "plan": "—",
             "updated": "Never",
             "source": "none",
             "session_used_pct": 0,
-            "session_reset": "unknown",
+            "session_reset": "—",
             "weekly_used_pct": 0,
-            "weekly_reset": "unknown",
-            "cost_today": 0,
-            "cost_today_tokens": "0",
-            "cost_30d": 0,
-            "cost_30d_tokens": "0",
-            "model": "",
+            "weekly_reset": "—",
             "error": None,
             "available": False,
         }
 
-    @classmethod
-    def _load_cookies_from_browser(cls) -> dict:
-        """Return cookies from browser OR API key from env/settings.
-        MiniMax API works with Bearer token — use that if no browser cookie."""
-        # Try Bearer token first (API key works for /coding_plan/remains)
-        token = os.environ.get("MINIMAX_API_KEY") or cls._settings_token()
-        if token:
-            return {"__bearer_token__": token}
-        # Fall back to browser cookies from .minimax.io
-        return _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
-
     @staticmethod
-    def _load_token():
-        """Load manually saved token from settings (fallback only, not used for auth)."""
+    def _settings_token() -> str:
         try:
-            if SettingsPopup.CONFIG_PATH.exists():
-                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
-                return data.get("minimax_token", "") or os.environ.get("MINIMAX_API_KEY", "")
+            data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+            return data.get("minimax_token", "") or os.environ.get("MINIMAX_API_KEY", "")
         except Exception:
             pass
         return os.environ.get("MINIMAX_API_KEY", "")
 
+    def _load(self) -> dict:
+        """Load bearer token (API key) or browser cookies from .minimax.io."""
+        token = os.environ.get("MINIMAX_API_KEY") or self._settings_token()
+        if token:
+            return {"__bearer_token__": token}
+        return _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
+
     def fetch(self):
         d = self._empty()
-
-        # Try Bearer token first (API key from env/settings), then browser cookie
-        cookies = self._load_cookies_from_browser()
-        bearer = cookies.get("__bearer_token__", "")
-        hmac = cookies.get("HMACCCS", "")
+        auth = self._load()
+        bearer = auth.get("__bearer_token__", "")
+        hmac = auth.get("HMACCCS", "")
+        locale = auth.get("locale", "en")
 
         if bearer:
-            d["available"] = True
-            result = self._fetch_from_api(bearer, hmac)
-            if result is not None:
-                d.update(result)
-                d["source"] = "api_key"
-            else:
-                d["error"] = d.get("error") or "API request failed"
+            result = self._call_api(bearer, hmac, locale)
         elif hmac:
-            d["available"] = True
-            result = self._fetch_from_browser_cookie(hmac, cookies.get("locale", "en"))
-            if result is not None:
-                d.update(result)
-                d["source"] = "browser_cookie"
-            else:
-                d["error"] = d.get("error") or "browser cookie request failed"
+            result = self._call_api(bearer, hmac, locale)
         else:
-            # No browser cookie — show as unavailable (not an error)
-            d["error"] = "no MiniMax auth found; set MINIMAX_API_KEY in environment"
+            d["error"] = "no MiniMax auth; set token in Settings or login to browser"
             d["available"] = False
+            d["updated"] = datetime.now().strftime("Updated %H:%M")
+            return d
 
+        if result is not None:
+            d.update(result)
         d["updated"] = datetime.now().strftime("Updated %H:%M")
         return d
 
-    def _fetch_from_api(self, token: str, hmac: str = ""):
-        """Call MiniMax /coding_plan/remains with Bearer token (API key)."""
+    def _call_api(self, token: str, hmac: str, locale: str):
+        """Call /coding_plan/remains with Bearer token or HMACCCS cookie."""
         try:
             headers = {
-                "Authorization": f"Bearer {token}",
+                "Authorization": f"Bearer {token}" if token else None,
+                "Cookie": f"HMACCCS={hmac}; locale={locale}" if hmac else None,
                 "MM-API-Source": "web",
                 "Accept": "application/json",
             }
-            if hmac:
-                headers["Cookie"] = f"HMACCCS={hmac}; locale=en"
+            headers = {k: v for k, v in headers.items() if v is not None}
             req = Request(self.API_URL, headers=headers)
             with urlopen(req, timeout=self.TIMEOUT) as resp:
-                data = json.loads(resp.read())
-                return self._parse_response(data)
+                raw = json.loads(resp.read())
         except HTTPError as e:
             if e.code in (401, 403):
-                return {"error": "invalid API token"}
-            return None
-        except (URLError, TimeoutError):
+                return {"error": "invalid token or expired"}
             return None
         except Exception as e:
-            print(f"    MiniMax API error: {e}")
+            print(f"    MiniMax: {e}")
             return None
 
-    def _fetch_from_browser_cookie(self, hmac: str, locale: str):
-        """Call MiniMax coding_plan API with HMACCCS browser cookie."""
-        try:
-            req = Request(self.API_URL, headers={
-                "Cookie": f"HMACCCS={hmac}; locale={locale}",
-                "MM-API-Source": "CodexBar",
-                "Accept": "application/json",
-            })
-            with urlopen(req, timeout=self.TIMEOUT) as resp:
-                data = json.loads(resp.read())
-                return self._parse_response(data)
-        except HTTPError as e:
-            if e.code in (401, 403):
-                return {"error": "session expired; please re-login in browser"}
-            return None
-        except (URLError, TimeoutError):
-            return None
-        except Exception as e:
-            print(f"    MiniMax error: {e}")
-            return None
-        except HTTPError as e:
-            if e.code in (401, 403):
-                print(f"    MiniMax: session expired (HTTP {e.code})")
-                return {"error": "session expired; please re-login in browser"}
-            else:
-                print(f"    MiniMax: HTTP {e.code}")
-            return None
-        except (URLError, TimeoutError) as e:
-            print(f"    MiniMax: connection error: {e}")
-            return None
-        except Exception as e:
-            print(f"    MiniMax: error: {e}")
-            return None
+        return self._parse(raw)
 
+    def _parse(self, data: dict):
         result = {}
-        try:
-            base_resp = data.get("base_resp", {})
-            status_code = base_resp.get("status_code", -1)
-            status_msg = base_resp.get("status_msg", "unknown error")
+        base = data.get("base_resp", {})
+        if base.get("status_code", -1) != 0:
+            msg = base.get("status_msg", "error")
+            return {"error": msg}
 
-            if status_code != 0:
-                if status_code == 1004:
-                    print(f"    MiniMax: invalid credentials (1004)")
-                    return {"error": "Invalid credentials"}
-                print(f"    MiniMax: API error {status_code}: {status_msg}")
-                return {"error": f"API error {status_code}: {status_msg}"}
+        items = data.get("data", {}).get("model_remains", [])
+        if not items:
+            # Try flat model_remains
+            items = data.get("model_remains", [])
 
-            data_root = data.get("data", {})
-            result["plan"] = data_root.get("current_subscribe_title",
-                            data_root.get("plan_name", "Unknown"))
+        if not items:
+            return {"error": "no usage data in response"}
 
-            model_remains = data_root.get("model_remains", [])
-            if model_remains:
-                mr = model_remains[0]
-                total = mr.get("max_calls", 0)
-                used_calls = mr.get("used_calls", 0)
-                used_pct = (used_calls / total * 100) if total > 0 else 0
-                result["session_used_pct"] = min(100, round(used_pct))
+        # Find coding-plan entry
+        cp = None
+        for item in items:
+            name = item.get("model_name", "")
+            total = item.get("current_interval_total_count", 0) or item.get("max_calls", 0)
+            if total > 0 or "coding" in name.lower():
+                cp = item
+                if "coding" in name.lower():
+                    break
+        if not cp:
+            cp = items[0]
 
-                end_time = mr.get("end_time")
-                if end_time:
-                    ts = end_time / 1000 if end_time > 1e12 else end_time
-                    delta_sec = ts - datetime.now().timestamp()
-                    if delta_sec < 0:
-                        delta_sec = 0
-                    h, m = divmod(int(delta_sec) // 60, 60)
-                    result["session_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
+        total = cp.get("current_interval_total_count", 0) or cp.get("max_calls", 0)
+        used = cp.get("current_interval_usage_count", 0) or cp.get("used_calls", 0)
+        pct = min(100, round(used / total * 100)) if total > 0 else 0
+        result["session_used_pct"] = pct
 
-            result["source"] = "browser_cookie"
-            return result
-        except Exception as e:
-            print(f"    MiniMax: parse error: {e}")
-            return None
+        w_total = cp.get("current_weekly_total_count", 0)
+        w_used = cp.get("current_weekly_usage_count", 0)
+        wpct = min(100, round(w_used / w_total * 100)) if w_total > 0 else 0
+        result["weekly_used_pct"] = wpct
 
+        end = cp.get("end_time")
+        if end:
+            ts = end / 1000 if end > 1e12 else end
+            remaining = max(0, ts - datetime.now().timestamp())
+            h, m = divmod(int(remaining // 60), 60)
+            result["session_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
 
-# ─────────────────────────────────────────────
-# OpenCode data fetcher  (cookie-based, auto-read from browser)
-# ─────────────────────────────────────────────
+        sub = data.get("data", {}).get("current_subscribe_title", "")
+        result["plan"] = sub if sub else "—"
+        result["available"] = True
+        return result
+
 
 class OpenCodeDataFetcher:
     """Fetch usage quota from OpenCode.ai via browser cookies (auto-read).
