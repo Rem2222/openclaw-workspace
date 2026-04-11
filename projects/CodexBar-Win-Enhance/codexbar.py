@@ -3017,26 +3017,38 @@ class SettingsPopup(ctk.CTkToplevel):
         threading.Thread(target=do_test, daemon=True).start()
 
     def _test_opencode(self):
-        cookie = self._oc_entry.get().strip()
-        if not cookie:
-            self._oc_result.configure(text="✗ Enter a cookie first", text_color="#E04040")
+        raw = self._oc_entry.get().strip()
+        if not raw:
+            self._oc_result.configure(text="✗ Enter token or cookie first", text_color="#E04040")
             return
         self._oc_test_btn.configure(text="...", state="disabled")
         self._oc_result.configure(text="Testing...", text_color="#5A607A")
         self.update_idletasks()
         def do_test():
             try:
+                # Try as Bearer token first (Authorization header)
                 req = Request("https://api.opencode.ai/v1/workspaces",
-                             headers={"Cookie": cookie,
+                             headers={"Authorization": f"Bearer {raw}",
                                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
                 with urlopen(req, timeout=10) as resp:
                     json.loads(resp.read())
-                self.after(0, lambda: self._oc_result.configure(text="✓ Cookie valid", text_color="#2E9E5A"))
-            except HTTPError as e:
-                msg = "✗ Invalid cookie" if e.code in (401, 403) else f"✗ HTTP {e.code}"
-                self.after(0, lambda: self._oc_result.configure(text=msg, text_color="#E04040"))
-            except Exception:
-                self.after(0, lambda: self._oc_result.configure(text="✗ Connection error", text_color="#E04040"))
+                self.after(0, lambda: self._oc_result.configure(text="✓ Token accepted", text_color="#2E9E5A"))
+            except HTTPError:
+                # Try as Cookie
+                try:
+                    req2 = Request("https://api.opencode.ai/v1/workspaces",
+                                 headers={"Cookie": raw,
+                                          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
+                    with urlopen(req2, timeout=10) as resp:
+                        json.loads(resp.read())
+                    self.after(0, lambda: self._oc_result.configure(text="✓ Cookie accepted", text_color="#2E9E5A"))
+                except HTTPError as e:
+                    msg = "✗ Invalid" if e.code in (401, 403) else f"✗ HTTP {e.code}"
+                    self.after(0, lambda: self._oc_result.configure(text=msg, text_color="#E04040"))
+                except Exception as e:
+                    self.after(0, lambda: self._oc_result.configure(text=f"✗ {type(e).__name__}", text_color="#E04040"))
+            except Exception as e:
+                self.after(0, lambda: self._oc_result.configure(text=f"✗ {type(e).__name__}", text_color="#E04040"))
             finally:
                 self.after(0, lambda: self._oc_test_btn.configure(text="Test", state="normal"))
         threading.Thread(target=do_test, daemon=True).start()
