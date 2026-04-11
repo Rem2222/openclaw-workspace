@@ -1538,9 +1538,11 @@ class OpenCodeDataFetcher:
         import re as _re
 
         try:
+            # Add auth= prefix if cookie value starts with Fe26 (raw session key)
+            cookie_header = f"auth={cookie}" if cookie.startswith("Fe26") else cookie
             req = Request(
                 "https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
-                headers={"Cookie": cookie, "User-Agent": self.USER_AGENT}
+                headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT}
             )
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 html = resp.read().decode("utf-8", errors="replace")
@@ -1548,7 +1550,8 @@ class OpenCodeDataFetcher:
             # Parse embedded JS data: rollingUsage, weeklyUsage, monthlyUsage
             # Format: rollingUsage:$R[31]={status:"ok",resetInSec:N,usagePercent:N}
             def _parse_usage(html, label):
-                pattern = label + r'.+?status:"ok",resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
+                # Use word boundary anchor to avoid greedy match bleeding across labels
+                pattern = r'\\b' + label + r'[^}]*?resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
                 m = _re.search(pattern, html)
                 if m:
                     secs, pct = int(m.group(1)), int(m.group(2))
@@ -2911,17 +2914,18 @@ class SettingsPopup(ctk.CTkToplevel):
         def do_test():
             try:
                 # Try as Bearer token first (Authorization header)
-                req = Request("https://api.opencode.ai/v1/workspaces",
+                req = Request("https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
                              headers={"Authorization": f"Bearer {raw}",
                                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
                 with urlopen(req, timeout=10) as resp:
                     json.loads(resp.read())
                 self.after(0, lambda: self._oc_result.configure(text="✓ Token accepted", text_color="#2E9E5A"))
             except HTTPError:
-                # Try as Cookie
+                # Try as Cookie — add auth= prefix if raw value starts with Fe26
                 try:
-                    req2 = Request("https://api.opencode.ai/v1/workspaces",
-                                 headers={"Cookie": raw,
+                    cookie_val = f"auth={raw}" if raw.startswith("Fe26") else raw
+                    req2 = Request("https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
+                                 headers={"Cookie": cookie_val,
                                           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
                     with urlopen(req2, timeout=10) as resp:
                         json.loads(resp.read())
