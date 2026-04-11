@@ -1349,7 +1349,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.1.4"
+VERSION = "2.1.5"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2877,7 +2877,7 @@ class SettingsPopup(ctk.CTkToplevel):
         threading.Thread(target=do_test, daemon=True).start()
 
     def _test_minimax(self):
-        token = SettingsPopup._load_token("minimax_token")
+        token = self._mm_entry.get().strip() or SettingsPopup._load_token("minimax_token")
         if not token:
             self._mm_result.configure(text="✗ Enter a token first", text_color="#E04040")
             return
