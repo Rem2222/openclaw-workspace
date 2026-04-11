@@ -1491,6 +1491,17 @@ class OpenCodeDataFetcher:
 
     _cookie_header = None
 
+    @staticmethod
+    def _load_cookie():
+        """Load cookie from settings file or env var."""
+        try:
+            if SettingsPopup.CONFIG_PATH.exists():
+                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+                return data.get("opencode_cookie", "") or os.environ.get("OPENCODE_COOKIE", "")
+        except Exception:
+            pass
+        return os.environ.get("OPENCODE_COOKIE", "")
+
     @classmethod
     def set_cookie(cls, cookie_header: str):
         cls._cookie_header = cookie_header
@@ -1507,7 +1518,7 @@ class OpenCodeDataFetcher:
 
     def fetch(self):
         d = self._empty()
-        cookie = self._cookie_header or os.environ.get("OPENCODE_COOKIE", "")
+        cookie = self._cookie_header or self._load_cookie()
         if not cookie:
             d["error"] = "cookie not set"
             return d
