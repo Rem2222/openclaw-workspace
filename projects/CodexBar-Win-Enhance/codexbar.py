@@ -1451,10 +1451,9 @@ class MiniMaxDataFetcher:
             if model_remains:
                 # Use first entry for session usage
                 mr = model_remains[0]
-                total = mr.get("current_interval_total_count", 0)
-                usage_count = mr.get("current_interval_usage_count", 0)
-                used = total - usage_count
-                used_pct = (used / total * 100) if total > 0 else 0
+                total = mr.get("max_calls", 0)
+                used_calls = mr.get("used_calls", 0)
+                used_pct = (used_calls / total * 100) if total > 0 else 0
                 result["session_used_pct"] = min(100, round(used_pct))
 
                 # Reset time from end_time
