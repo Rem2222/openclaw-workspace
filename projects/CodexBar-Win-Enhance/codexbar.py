@@ -1349,7 +1349,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.1.3"
+VERSION = "2.1.4"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1548,7 +1548,7 @@ class OpenCodeDataFetcher:
             # Parse embedded JS data: rollingUsage, weeklyUsage, monthlyUsage
             # Format: rollingUsage:$R[31]={status:"ok",resetInSec:N,usagePercent:N}
             def _parse_usage(html, label):
-                pattern = label + r'.+?"status":"ok","resetInSec":(\d+),"usagePercent":(\d+)'
+                pattern = label + r'.+?status:"ok",resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
                 m = _re.search(pattern, html)
                 if m:
                     secs, pct = int(m.group(1)), int(m.group(2))
