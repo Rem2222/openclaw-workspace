@@ -1421,7 +1421,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.0"
+VERSION = "2.2.1"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1431,13 +1431,13 @@ class MiniMaxDataFetcher:
     """Fetch usage quota from MiniMax AI via browser cookies.
 
     MiniMax's /coding_plan/remains API requires a browser session cookie
-    (HMACCCS from .minimaxi.com), not a raw API token.  Falls back to
+    (HMACCCS from .minimax.io), not a raw API token.  Falls back to
     "requires browser login" when no cookie is found.
 
     Matches the CodexBar macOS v0.20 approach: cookie extraction + API fetch.
     """
 
-    API_URL = "https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains"
+    API_URL = "https://api.minimax.io/v1/api/openplatform/coding_plan/remains"
     TIMEOUT = 10
 
     @staticmethod
@@ -1462,8 +1462,14 @@ class MiniMaxDataFetcher:
 
     @classmethod
     def _load_cookies_from_browser(cls) -> dict:
-        """Return {cookie_name: value} for HMACCCS and locale from .minimaxi.com."""
-        return _CookieDecryptor.get_cookies(".minimaxi.com", "HMACCCS", "locale")
+        """Return cookies from browser OR API key from env/settings.
+        MiniMax API works with Bearer token — use that if no browser cookie."""
+        # Try Bearer token first (API key works for /coding_plan/remains)
+        token = os.environ.get("MINIMAX_API_KEY") or cls._settings_token()
+        if token:
+            return {"__bearer_token__": token}
+        # Fall back to browser cookies from .minimax.io
+        return _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
 
     @staticmethod
     def _load_token():
@@ -1479,11 +1485,22 @@ class MiniMaxDataFetcher:
     def fetch(self):
         d = self._empty()
 
-        # Try browser cookie first (primary auth method)
+        # Try Bearer token first (API key from env/settings), then browser cookie
         cookies = self._load_cookies_from_browser()
-        if cookies and cookies.get("HMACCCS"):
+        bearer = cookies.get("__bearer_token__", "")
+        hmac = cookies.get("HMACCCS", "")
+
+        if bearer:
             d["available"] = True
-            result = self._fetch_from_browser_cookie(cookies)
+            result = self._fetch_from_api(bearer, hmac)
+            if result is not None:
+                d.update(result)
+                d["source"] = "api_key"
+            else:
+                d["error"] = d.get("error") or "API request failed"
+        elif hmac:
+            d["available"] = True
+            result = self._fetch_from_browser_cookie(hmac, cookies.get("locale", "en"))
             if result is not None:
                 d.update(result)
                 d["source"] = "browser_cookie"
@@ -1491,16 +1508,38 @@ class MiniMaxDataFetcher:
                 d["error"] = d.get("error") or "browser cookie request failed"
         else:
             # No browser cookie — show as unavailable (not an error)
-            d["error"] = "browser cookie not found; please login to minimaxi.com"
+            d["error"] = "no MiniMax auth found; set MINIMAX_API_KEY in environment"
             d["available"] = False
 
         d["updated"] = datetime.now().strftime("Updated %H:%M")
         return d
 
-    def _fetch_from_browser_cookie(self, cookies: dict):
+    def _fetch_from_api(self, token: str, hmac: str = ""):
+        """Call MiniMax /coding_plan/remains with Bearer token (API key)."""
+        try:
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "MM-API-Source": "web",
+                "Accept": "application/json",
+            }
+            if hmac:
+                headers["Cookie"] = f"HMACCCS={hmac}; locale=en"
+            req = Request(self.API_URL, headers=headers)
+            with urlopen(req, timeout=self.TIMEOUT) as resp:
+                data = json.loads(resp.read())
+                return self._parse_response(data)
+        except HTTPError as e:
+            if e.code in (401, 403):
+                return {"error": "invalid API token"}
+            return None
+        except (URLError, TimeoutError):
+            return None
+        except Exception as e:
+            print(f"    MiniMax API error: {e}")
+            return None
+
+    def _fetch_from_browser_cookie(self, hmac: str, locale: str):
         """Call MiniMax coding_plan API with HMACCCS browser cookie."""
-        hmac = cookies.get("HMACCCS", "")
-        locale = cookies.get("locale", "en")
         try:
             req = Request(self.API_URL, headers={
                 "Cookie": f"HMACCCS={hmac}; locale={locale}",
@@ -1509,6 +1548,16 @@ class MiniMaxDataFetcher:
             })
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 data = json.loads(resp.read())
+                return self._parse_response(data)
+        except HTTPError as e:
+            if e.code in (401, 403):
+                return {"error": "session expired; please re-login in browser"}
+            return None
+        except (URLError, TimeoutError):
+            return None
+        except Exception as e:
+            print(f"    MiniMax error: {e}")
+            return None
         except HTTPError as e:
             if e.code in (401, 403):
                 print(f"    MiniMax: session expired (HTTP {e.code})")
@@ -2854,7 +2903,7 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#9A9AB0").pack(side="left", padx=(4, 0))
 
         mm_hint = ctk.CTkLabel(self,
-                               text="Make sure you're logged in at minimaxi.com",
+                               text="Make sure you.re logged in at minimaxi.com / platform.minimax.io",
                                font=("Segoe UI", 10), text_color="#9A9AB0",
                                anchor="w")
         mm_hint.pack(fill="x", padx=20, pady=(0, 2))
@@ -3008,14 +3057,14 @@ class SettingsPopup(ctk.CTkToplevel):
 
     def _test_minimax(self):
         # Try browser cookie first, then fall back to API token
-        browser_cookies = _CookieDecryptor.get_cookies(".minimaxi.com", "HMACCCS", "locale")
+        browser_cookies = _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
         token = self._mm_entry.get().strip() or SettingsPopup._load_token("minimax_token")
 
         def do_test_cookie():
             hmac = browser_cookies.get("HMACCCS", "")
             locale = browser_cookies.get("locale", "en")
             try:
-                req = Request("https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains",
+                req = Request("https://api.minimax.io/v1/api/openplatform/coding_plan/remains",
                              headers={"Cookie": f"HMACCCS={hmac}; locale={locale}",
                                       "MM-API-Source": "CodexBar"})
                 with urlopen(req, timeout=10) as resp:
@@ -3030,8 +3079,8 @@ class SettingsPopup(ctk.CTkToplevel):
 
         def do_test_token(tok):
             try:
-                req = Request("https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains",
-                             headers={"Authorization": f"Bearer {tok}", "MM-API-Source": "CodexBar"})
+                req = Request("https://api.minimax.io/v1/api/openplatform/coding_plan/remains",
+                             headers={"Authorization": f"Bearer {tok}", "MM-API-Source": "web"})
                 with urlopen(req, timeout=10) as resp:
                     json.loads(resp.read())
                 return "✓ API token works", "#2E9E5A"
