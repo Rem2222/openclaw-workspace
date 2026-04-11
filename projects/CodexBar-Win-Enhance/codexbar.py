@@ -911,8 +911,18 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         },
         "zai": {
             "logo": "zai-logo.png",
-            "accent": (74, 108, 247),  # ZA_ACCENT #4A6CF7
+            "accent": (74, 108, 247),  # ZA_ACCENT
             "green": (74, 108, 247),
+        },
+        "minimax": {
+            "logo": "minimax-logo.png",
+            "accent": (255, 106, 0),  # MM_ACCENT
+            "green": (255, 106, 0),
+        },
+        "opencode": {
+            "logo": "opencode-logo.png",
+            "accent": (0, 212, 170),  # OC_ACCENT
+            "green": (0, 212, 170),
         },
     }
 
@@ -2679,6 +2689,95 @@ class CodexBarPopup(ctk.CTkToplevel):
 # App  (tkinter main loop + pystray background)
 # ─────────────────────────────────────────────
 
+
+    # ── MiniMax panel ──────────────────────────────────────────
+
+    def _build_minimax_panel(self, parent):
+        d = self._minimax
+        available = not d.get("error") and d.get("available", False)
+
+        for color, h in [("#FFF8F0", 4), ("#FFF5EB", 3), ("#FFF2E6", 3)]:
+            ctk.CTkFrame(parent, fg_color=color, height=h, corner_radius=0).pack(fill="x")
+
+        hero = ctk.CTkFrame(parent, fg_color="transparent")
+        hero.pack(fill="x", padx=22, pady=(4, 0))
+        row = ctk.CTkFrame(hero, fg_color="transparent")
+        row.pack(fill="x")
+        ctk.CTkLabel(row, text="MiniMax", font=("Segoe UI Semibold", 22),
+                     text_color="#FF6A00").pack(side="left")
+        plan = d.get("plan", "")
+        if plan and plan != "Unknown":
+            ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
+                         text_color="#FF6A00", fg_color="#FFE8D0",
+                         corner_radius=10).pack(side="right")
+
+        meta = ctk.CTkFrame(hero, fg_color="transparent")
+        meta.pack(fill="x", pady=(5, 0))
+        dot_color = "#FF6A00" if available else "#C0C0C0"
+        ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
+                     width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
+        ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
+                     text_color="#8B6914").pack(side="left")
+
+        if not available:
+            ctk.CTkFrame(parent, fg_color="#FFE0B2", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
+            nd = ctk.CTkFrame(parent, fg_color="transparent")
+            nd.pack(fill="x", padx=20, pady=(20, 8))
+            ctk.CTkLabel(nd, text=d.get("error", "MiniMax token not set"),
+                         font=("Segoe UI Semibold", 14),
+                         text_color="#3D2200").pack(pady=(0, 4))
+            ctk.CTkLabel(nd, text="Set MINIMAX_API_KEY to see usage",
+                         font=("Segoe UI", 11),
+                         text_color="#8B6914").pack(pady=(0, 12))
+            return
+
+        sp = d.get("session_used_pct", 0)
+        self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+
+    # ── OpenCode panel ─────────────────────────────────────────
+
+    def _build_opencode_panel(self, parent):
+        d = self._opencode
+        available = not d.get("error") and d.get("available", False)
+
+        for color, h in [("#0A2F2F", 4), ("#0D3535", 3), ("#103A3A", 3)]:
+            ctk.CTkFrame(parent, fg_color=color, height=h, corner_radius=0).pack(fill="x")
+
+        hero = ctk.CTkFrame(parent, fg_color="transparent")
+        hero.pack(fill="x", padx=22, pady=(4, 0))
+        row = ctk.CTkFrame(hero, fg_color="transparent")
+        row.pack(fill="x")
+        ctk.CTkLabel(row, text="OpenCode", font=("Segoe UI Semibold", 22),
+                     text_color="#00D4AA").pack(side="left")
+        plan = d.get("plan", "")
+        if plan and plan != "Unknown":
+            ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
+                         text_color="#00D4AA", fg_color="#1A4A4A",
+                         corner_radius=10).pack(side="right")
+
+        meta = ctk.CTkFrame(hero, fg_color="transparent")
+        meta.pack(fill="x", pady=(5, 0))
+        dot_color = "#00D4AA" if available else "#555555"
+        ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
+                     width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
+        ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
+                     text_color="#A0DDD0").pack(side="left")
+
+        if not available:
+            ctk.CTkFrame(parent, fg_color="#1A4A4A", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
+            nd = ctk.CTkFrame(parent, fg_color="transparent")
+            nd.pack(fill="x", padx=20, pady=(20, 8))
+            ctk.CTkLabel(nd, text=d.get("error", "OpenCode cookie not set"),
+                         font=("Segoe UI Semibold", 14),
+                         text_color="#E0FFF8").pack(pady=(0, 4))
+            ctk.CTkLabel(nd, text="Set OPENCODE_COOKIE to see usage",
+                         font=("Segoe UI", 11),
+                         text_color="#A0DDD0").pack(pady=(0, 12))
+            return
+
+        sp = d.get("session_used_pct", 0)
+        self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+
 class SettingsPopup(ctk.CTkToplevel):
     """Settings window for API tokens."""
 
@@ -3026,16 +3125,17 @@ class CodexBarApp:
 
     def _set_tray_icon(self, provider):
         try:
-            p = provider if provider in ("openai", "zai") else "claude"
-            # Get session percentage for the active provider
-            if p == "claude":
-                sp = self.fetcher.data.get("session_used_pct", 0)
-            elif p == "openai":
-                sp = self.codex_data.get("session_used_pct", 0) if self.codex_data else 0
-            elif p == "zai":
-                sp = self.zai_data.get("session_used_pct", 0) if self.zai_data else 0
-            else:
-                sp = 0
+            # Map provider to data source
+            provider_map = {
+                "claude": (self.fetcher.data, "session_used_pct"),
+                "openai": (self.codex_data, "session_used_pct"),
+                "zai": (self.zai_data, "session_used_pct"),
+                "minimax": (self.minimax_data, "session_used_pct"),
+                "opencode": (self.opencode_data, "session_used_pct"),
+            }
+            p = provider if provider in provider_map else "claude"
+            data_src, key = provider_map.get(p, (self.fetcher.data, "session_used_pct"))
+            sp = data_src.get(key, 0) if data_src else 0
             self.tray.icon = make_icon(sp=sp, provider=p)
         except Exception:
             pass
