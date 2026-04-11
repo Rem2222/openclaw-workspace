@@ -1349,6 +1349,8 @@ class ZaiDataFetcher:
         return result
 
 
+VERSION = "2.1.3"
+
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
 # ─────────────────────────────────────────────
@@ -1357,10 +1359,10 @@ class MiniMaxDataFetcher:
     """Fetch usage quota from MiniMax API.
 
     Uses Bearer token from env var MINIMAX_API_KEY.
-    Endpoint: https://api.minimax.chat/v1/api/openplatform/coding_plan/remains
+    Endpoint: https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains
     """
 
-    API_URL = "https://api.minimax.chat/v1/api/openplatform/coding_plan/remains"
+    API_URL = "https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains"
     TIMEOUT = 10
 
     @staticmethod
@@ -1383,9 +1385,19 @@ class MiniMaxDataFetcher:
             "available": False,
         }
 
+    @staticmethod
+    def _load_token():
+        try:
+            if SettingsPopup.CONFIG_PATH.exists():
+                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+                return data.get("minimax_token", "") or os.environ.get("MINIMAX_API_KEY", "")
+        except Exception:
+            pass
+        return os.environ.get("MINIMAX_API_KEY", "")
+
     def fetch(self):
         d = self._empty()
-        token = os.environ.get("MINIMAX_API_KEY", "")
+        token = self._load_token()
         if not token:
             d["error"] = "MINIMAX_API_KEY not set"
             return d
@@ -2519,6 +2531,10 @@ class CodexBarPopup(ctk.CTkToplevel):
             corner_radius=8, width=70, command=self._do_refresh)
         self._refresh_btn.pack(side="right", padx=2)
 
+        # version label on far left
+        vl = ctk.CTkLabel(row, text=f"v{VERSION}", font=("Segoe UI", 10), text_color="#5A5A6A")
+        vl.pack(side="left", padx=(0, 8))
+
     # ── helpers ──
 
     def _open_url(self, url):
@@ -2861,7 +2877,7 @@ class SettingsPopup(ctk.CTkToplevel):
         threading.Thread(target=do_test, daemon=True).start()
 
     def _test_minimax(self):
-        token = self._mm_entry.get().strip()
+        token = SettingsPopup._load_token("minimax_token")
         if not token:
             self._mm_result.configure(text="✗ Enter a token first", text_color="#E04040")
             return
@@ -2870,7 +2886,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self.update_idletasks()
         def do_test():
             try:
-                req = Request("https://api.minimax.chat/v1/api/openplatform/coding_plan/remains",
+                req = Request("https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains",
                              headers={"Authorization": f"Bearer {token}", "MM-API-Source": "CodexBar"})
                 with urlopen(req, timeout=10) as resp:
                     json.loads(resp.read())
