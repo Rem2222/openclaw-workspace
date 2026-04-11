@@ -951,7 +951,7 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         pass  # Circle already drawn above
 
     # Draw percentage text centered on icon with thick dark outline for visibility
-    if pct > 0:
+    if True:
         try:
             # Larger font for better visibility (20pt for 64x64 icon)
             font_size = max(18, sz // 3)
@@ -2336,8 +2336,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         track = ctk.CTkFrame(sec, fg_color=self.CL_TRACK, height=8, corner_radius=4)
         track.pack(fill="x", pady=(4, 3))
         track.pack_propagate(False)
-        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(
-            relx=0, rely=0, relwidth=max(pct / 100, 0.015), relheight=1)
+        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(relx=0, rely=0, relwidth=max(pct / 100, 0.015) if pct > 0 else 0, relheight=1)
         if reset and reset != "unknown":
             ctk.CTkLabel(sec, text=f"Resets {reset}", font=("Segoe UI", 11),
                          text_color=self.CL_TERTIARY, anchor="w").pack(fill="x")
@@ -2471,8 +2470,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         track = ctk.CTkFrame(sec, fg_color=self.OA_TRACK, height=8, corner_radius=4)
         track.pack(fill="x", pady=(4, 3))
         track.pack_propagate(False)
-        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(
-            relx=0, rely=0, relwidth=max(pct / 100, 0.015), relheight=1)
+        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(relx=0, rely=0, relwidth=max(pct / 100, 0.015) if pct > 0 else 0, relheight=1)
         if reset and reset != "unknown":
             ctk.CTkLabel(sec, text=f"Resets {reset}", font=("Segoe UI", 11),
                          text_color=self.OA_TERTIARY, anchor="w").pack(fill="x")
@@ -2599,8 +2597,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         track = ctk.CTkFrame(sec, fg_color=self.ZA_TRACK, height=8, corner_radius=4)
         track.pack(fill="x", pady=(4, 3))
         track.pack_propagate(False)
-        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(
-            relx=0, rely=0, relwidth=max(pct / 100, 0.015), relheight=1)
+        ctk.CTkFrame(track, fg_color=color, corner_radius=4, height=8).place(relx=0, rely=0, relwidth=max(pct / 100, 0.015) if pct > 0 else 0, relheight=1)
         if reset and reset != "unknown":
             ctk.CTkLabel(sec, text=f"Resets in {reset}", font=("Segoe UI", 11),
                          text_color=self.ZA_TERTIARY, anchor="w").pack(fill="x")
@@ -2881,7 +2878,22 @@ class SettingsPopup(ctk.CTkToplevel):
             mm_row, show="*", placeholder_text="Enter MiniMax API token...",
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", border_color="#D8DCE8")
-        self._mm_entry.pack(side="left", fill="x", expand=True)
+        self._mm_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        if saved_mm:
+            self._mm_entry.insert(0, saved_mm)
+
+        self._mm_test_btn = ctk.CTkButton(
+            mm_row, text="Test", font=("Segoe UI Semibold", 12),
+            width=60, height=30, corner_radius=6,
+            fg_color="#FF6A00", hover_color="#E05A00",
+            text_color="#FFFFFF", command=self._test_minimax)
+        self._mm_test_btn.pack(side="left")
+
+        self._mm_result = ctk.CTkLabel(
+            self, text="", font=("Segoe UI", 11),
+            text_color="#5A607A", anchor="w")
+        self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
+
         if saved_mm:
             self._mm_entry.insert(0, saved_mm)
 
@@ -2899,9 +2911,21 @@ class SettingsPopup(ctk.CTkToplevel):
             oc_row, show="*", placeholder_text="Paste browser cookie header...",
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", border_color="#D8DCE8")
-        self._oc_entry.pack(side="left", fill="x", expand=True)
+        self._oc_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
         if saved_oc:
             self._oc_entry.insert(0, saved_oc)
+
+        self._oc_test_btn = ctk.CTkButton(
+            oc_row, text="Test", font=("Segoe UI Semibold", 12),
+            width=60, height=30, corner_radius=6,
+            fg_color="#00D4AA", hover_color="#00B090",
+            text_color="#FFFFFF", command=self._test_opencode)
+        self._oc_test_btn.pack(side="left")
+
+        self._oc_result = ctk.CTkLabel(
+            self, text="", font=("Segoe UI", 11),
+            text_color="#5A607A", anchor="w")
+        self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
         self._token_entry.focus_set()
 
@@ -2966,6 +2990,55 @@ class SettingsPopup(ctk.CTkToplevel):
                 self.after(0, lambda: self._test_btn.configure(
                     text="Test", state="normal"))
 
+        threading.Thread(target=do_test, daemon=True).start()
+
+    def _test_minimax(self):
+        token = self._mm_entry.get().strip()
+        if not token:
+            self._mm_result.configure(text="✗ Enter a token first", text_color="#E04040")
+            return
+        self._mm_test_btn.configure(text="...", state="disabled")
+        self._mm_result.configure(text="Testing...", text_color="#5A607A")
+        self.update_idletasks()
+        def do_test():
+            try:
+                req = Request("https://api.minimax.chat/v1/api/openplatform/coding_plan/remains",
+                             headers={"Authorization": f"Bearer {token}", "MM-API-Source": "CodexBar"})
+                with urlopen(req, timeout=10) as resp:
+                    json.loads(resp.read())
+                self.after(0, lambda: self._mm_result.configure(text="✓ Token valid", text_color="#2E9E5A"))
+            except HTTPError as e:
+                msg = "✗ Invalid token" if e.code in (401, 403) else f"✗ HTTP {e.code}"
+                self.after(0, lambda: self._mm_result.configure(text=msg, text_color="#E04040"))
+            except Exception:
+                self.after(0, lambda: self._mm_result.configure(text="✗ Connection error", text_color="#E04040"))
+            finally:
+                self.after(0, lambda: self._mm_test_btn.configure(text="Test", state="normal"))
+        threading.Thread(target=do_test, daemon=True).start()
+
+    def _test_opencode(self):
+        cookie = self._oc_entry.get().strip()
+        if not cookie:
+            self._oc_result.configure(text="✗ Enter a cookie first", text_color="#E04040")
+            return
+        self._oc_test_btn.configure(text="...", state="disabled")
+        self._oc_result.configure(text="Testing...", text_color="#5A607A")
+        self.update_idletasks()
+        def do_test():
+            try:
+                req = Request("https://api.opencode.ai/v1/workspaces",
+                             headers={"Cookie": cookie,
+                                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
+                with urlopen(req, timeout=10) as resp:
+                    json.loads(resp.read())
+                self.after(0, lambda: self._oc_result.configure(text="✓ Cookie valid", text_color="#2E9E5A"))
+            except HTTPError as e:
+                msg = "✗ Invalid cookie" if e.code in (401, 403) else f"✗ HTTP {e.code}"
+                self.after(0, lambda: self._oc_result.configure(text=msg, text_color="#E04040"))
+            except Exception:
+                self.after(0, lambda: self._oc_result.configure(text="✗ Connection error", text_color="#E04040"))
+            finally:
+                self.after(0, lambda: self._oc_test_btn.configure(text="Test", state="normal"))
         threading.Thread(target=do_test, daemon=True).start()
 
     def _save_and_close(self):
@@ -3096,6 +3169,8 @@ class CodexBarApp:
             self.fetcher.data,
             codex_data=self.codex_data,
             zai_data=self.zai_data,
+            minimax_data=self.minimax_data,
+            opencode_data=self.opencode_data,
             on_close=self._on_popup_closed,
             on_refresh=lambda: self.root.after(0, self._do_refresh),
             on_quit=lambda: self.root.after(0, self._do_quit),
@@ -3120,7 +3195,7 @@ class CodexBarApp:
 
     def _on_tab_switch(self, tab):
         # Store the active provider for icon refresh
-        self._active_provider = tab if tab in ("openai", "zai") else "claude"
+        self._active_provider = tab if tab in ("openai", "zai", "minimax", "opencode") else "claude"
         self._set_tray_icon(tab)
 
     def _set_tray_icon(self, provider):
