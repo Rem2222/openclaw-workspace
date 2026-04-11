@@ -1435,7 +1435,7 @@ class MiniMaxDataFetcher:
     """
 
     TIMEOUT = 15
-    API_URL = "https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains"
+    API_URL = "https://api.minimax.io/v1/api/openplatform/coding_plan/remains"
 
     def __init__(self):
         self.data = self._empty()
