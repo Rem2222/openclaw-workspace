@@ -965,14 +965,14 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
             text_x = (sz - text_w) // 2
             text_y = (sz - text_h) // 2 - 2
             
-            # Draw thick dark outline by drawing text multiple times with offsets
-            outline_color = (0, 0, 0, 255)  # Solid black outline
+            # Draw thick white outline by drawing text multiple times with offsets
+            outline_color = (255, 255, 255, 255)  # Solid white outline for contrast
             for ox in [-2, -1, 0, 1, 2]:
                 for oy in [-2, -1, 0, 1, 2]:
                     if abs(ox) + abs(oy) <= 3:  # Circular outline pattern
                         d.text((text_x + ox, text_y + oy), text, font=font, fill=outline_color)
-            # Draw white text on top
-            d.text((text_x, text_y), text, font=font, fill=(255, 255, 255, 255))
+            # Draw black text on top (visible on any colored circle)
+            d.text((text_x, text_y), text, font=font, fill=(0, 0, 0, 255))
         except Exception:
             pass
 
@@ -1338,6 +1338,363 @@ class ZaiDataFetcher:
 
 
 # ─────────────────────────────────────────────
+# MiniMax data fetcher  (added by Romul)
+# ─────────────────────────────────────────────
+
+class MiniMaxDataFetcher:
+    """Fetch usage quota from MiniMax API.
+
+    Uses Bearer token from env var MINIMAX_API_KEY.
+    Endpoint: https://api.minimax.chat/v1/api/openplatform/coding_plan/remains
+    """
+
+    API_URL = "https://api.minimax.chat/v1/api/openplatform/coding_plan/remains"
+    TIMEOUT = 10
+
+    @staticmethod
+    def _empty():
+        return {
+            "provider": "MiniMax",
+            "plan": "Unknown",
+            "updated": "Never",
+            "source": "none",
+            "session_used_pct": 0,
+            "session_reset": "unknown",
+            "weekly_used_pct": 0,
+            "weekly_reset": "unknown",
+            "cost_today": 0,
+            "cost_today_tokens": "0",
+            "cost_30d": 0,
+            "cost_30d_tokens": "0",
+            "model": "",
+            "error": None,
+            "available": False,
+        }
+
+    def fetch(self):
+        d = self._empty()
+        token = os.environ.get("MINIMAX_API_KEY", "")
+        if not token:
+            d["error"] = "MINIMAX_API_KEY not set"
+            return d
+
+        d["available"] = True
+        result = self._fetch_from_api(token)
+        if result is not None:
+            d.update(result)
+            d["source"] = "api"
+        else:
+            d["error"] = d.get("error") or "API request failed"
+
+        d["updated"] = datetime.now().strftime("Updated %H:%M")
+        return d
+
+    def _fetch_from_api(self, token):
+        """Call MiniMax coding_plan API. Returns partial dict or None on error."""
+        try:
+            req = Request(self.API_URL, headers={
+                "Authorization": f"Bearer {token}",
+                "MM-API-Source": "CodexBar",
+                "Accept": "application/json",
+            })
+            with urlopen(req, timeout=self.TIMEOUT) as resp:
+                data = json.loads(resp.read())
+        except HTTPError as e:
+            if e.code in (401, 403):
+                print(f"    MiniMax: auth error {e.code}")
+                return {"error": "Invalid credentials"}
+            else:
+                print(f"    MiniMax: HTTP {e.code}")
+            return None
+        except (URLError, TimeoutError) as e:
+            print(f"    MiniMax: connection error: {e}")
+            return None
+        except Exception as e:
+            print(f"    MiniMax: error: {e}")
+            return None
+
+        # Parse MiniMax response structure:
+        # {"base_resp": {"status_code": 0, "status_msg": "success"},
+        #  "data": {"current_subscribe_title": "...", "plan_name": "...",
+        #           "model_remains": [{...}]}}
+        result = {}
+        try:
+            base_resp = data.get("base_resp", {})
+            status_code = base_resp.get("status_code", -1)
+            status_msg = base_resp.get("status_msg", "unknown error")
+
+            if status_code != 0:
+                # status_code == 1004 → invalid credentials
+                if status_code == 1004:
+                    print(f"    MiniMax: invalid credentials (1004)")
+                    return {"error": "Invalid credentials"}
+                print(f"    MiniMax: API error {status_code}: {status_msg}")
+                return {"error": f"API error {status_code}: {status_msg}"}
+
+            data_root = data.get("data", {})
+            result["plan"] = data_root.get("current_subscribe_title",
+                            data_root.get("plan_name", "Unknown"))
+
+            model_remains = data_root.get("model_remains", [])
+            if model_remains:
+                # Use first entry for session usage
+                mr = model_remains[0]
+                total = mr.get("current_interval_total_count", 0)
+                usage_count = mr.get("current_interval_usage_count", 0)
+                used = total - usage_count
+                used_pct = (used / total * 100) if total > 0 else 0
+                result["session_used_pct"] = min(100, round(used_pct))
+
+                # Reset time from end_time
+                end_time = mr.get("end_time")
+                if end_time:
+                    # end_time is Unix ms if > 1e12, otherwise seconds
+                    ts = end_time / 1000 if end_time > 1e12 else end_time
+                    delta_sec = ts - datetime.now().timestamp()
+                    if delta_sec < 0:
+                        delta_sec = 0
+                    h, m = divmod(int(delta_sec) // 60, 60)
+                    result["session_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
+
+            result["source"] = "api"
+            return result
+        except Exception as e:
+            print(f"    MiniMax: parse error: {e}")
+            return None
+
+
+# ─────────────────────────────────────────────
+# OpenCode data fetcher  (cookie-based)
+# ─────────────────────────────────────────────
+
+class OpenCodeDataFetcher:
+    """Fetch usage quota from OpenCode.ai via browser cookies.
+
+    Uses cookie header from browser (not API token).
+    Two-step process:
+    1. Get workspace_id from POST to /_server
+    2. Get usage data from POST to /_server with workspace_id
+    """
+
+    API_URL = "https://opencode.ai/_server"
+    TIMEOUT = 15
+    # Default serverID to query workspaces
+    DEFAULT_SERVER_ID = "def39973159c7f0483d8793a822b8dbb10d067e12c65455fcb4608459ba0234f"
+    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+
+    # Percent keys to try (in order)
+    PERCENT_KEYS = ["usagePercent", "usedPercent", "percentUsed", "percent", "utilization", "utilizationPercent"]
+    # Reset keys to try (in order)
+    RESET_KEYS = ["resetInSec", "resetInSeconds", "resetIn", "resetAt", "resetsAt", "nextReset"]
+
+    # Cookie storage (set via settings or env)
+    _cookie_header = None
+
+    @classmethod
+    def set_cookie(cls, cookie_header: str):
+        """Store cookie header for subsequent requests."""
+        cls._cookie_header = cookie_header
+
+    @staticmethod
+    def _empty():
+        return {
+            "provider": "OpenCode",
+            "plan": "Go",
+            "updated": "Never",
+            "source": "none",
+            "session_used_pct": 0,
+            "session_reset": "unknown",
+            "weekly_used_pct": 0,
+            "weekly_reset": "unknown",
+            "cost_today": 0,
+            "cost_today_tokens": "0",
+            "cost_30d": 0,
+            "cost_30d_tokens": "0",
+            "model": "",
+            "error": None,
+            "available": False,
+        }
+
+    def fetch(self):
+        d = self._empty()
+
+        # Get cookie from storage or env
+        cookie = self._cookie_header or os.environ.get("OPENCODE_COOKIE", "")
+        if not cookie:
+            d["error"] = "cookie not set"
+            return d
+
+        d["available"] = True
+
+        # Step 1: Get workspace IDs
+        workspaces = self._get_workspaces(cookie)
+        if not workspaces:
+            d["error"] = "invalid credentials"
+            d["source"] = "none"
+            return d
+
+        # Step 2: Get usage for first workspace
+        for ws_id in workspaces:
+            result = self._get_usage(cookie, ws_id)
+            if result:
+                d.update(result)
+                d["source"] = "api"
+                break
+        else:
+            d["error"] = "parse failed"
+
+        d["updated"] = datetime.now().strftime("Updated %H:%M")
+        return d
+
+    def _get_workspaces(self, cookie: str):
+        """Get list of workspace IDs from OpenCode API.
+        Returns list of workspace IDs or None on error.
+        """
+        try:
+            req = Request(self.API_URL,
+                          data=json.dumps({"serverID": self.DEFAULT_SERVER_ID}).encode(),
+                          headers={
+                              "Cookie": cookie,
+                              "User-Agent": self.USER_AGENT,
+                              "Accept": "application/json, text/plain, */*",
+                              "Content-Type": "application/json",
+                          },
+                          method="POST")
+            with urlopen(req, timeout=self.TIMEOUT) as resp:
+                content = resp.read().decode("utf-8", errors="replace")
+
+            # Parse workspace IDs (UUID-like strings)
+            # Pattern: 8-4-4-4-12 hex characters
+            uuid_pattern = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+            workspaces = re.findall(uuid_pattern, content, re.I)
+            return list(set(workspaces)) if workspaces else None
+
+        except HTTPError as e:
+            if e.code in (401, 403):
+                print(f"    OpenCode: auth error {e.code}")
+                return None
+            else:
+                print(f"    OpenCode: HTTP {e.code}")
+                return None
+        except (URLError, TimeoutError) as e:
+            print(f"    OpenCode: connection error: {e}")
+            return None
+        except Exception as e:
+            print(f"    OpenCode: error: {e}")
+            return None
+
+    def _get_usage(self, cookie: str, workspace_id: str):
+        """Get usage data for a workspace.
+        Returns partial dict with usage info or None on error.
+        """
+        try:
+            req = Request(self.API_URL,
+                          data=json.dumps({"serverID": workspace_id}).encode(),
+                          headers={
+                              "Cookie": cookie,
+                              "User-Agent": self.USER_AGENT,
+                              "Accept": "application/json, text/plain, */*",
+                              "Content-Type": "application/json",
+                          },
+                          method="POST")
+            with urlopen(req, timeout=self.TIMEOUT) as resp:
+                content = resp.read().decode("utf-8", errors="replace")
+
+            # Try to parse as JSON first
+            try:
+                data = json.loads(content)
+                return self._parse_usage_json(data)
+            except json.JSONDecodeError:
+                # Fall back to text parsing
+                return self._parse_usage_text(content)
+
+        except HTTPError as e:
+            if e.code in (401, 403):
+                print(f"    OpenCode: auth error {e.code}")
+            else:
+                print(f"    OpenCode: HTTP {e.code}")
+            return None
+        except (URLError, TimeoutError) as e:
+            print(f"    OpenCode: connection error: {e}")
+            return None
+        except Exception as e:
+            print(f"    OpenCode: error: {e}")
+            return None
+
+    def _parse_usage_json(self, data):
+        """Parse JSON response for usage data."""
+        result = {}
+
+        # Try to find percent value
+        for key in self.PERCENT_KEYS:
+            if key in data:
+                try:
+                    pct = float(data[key])
+                    result["session_used_pct"] = min(100, max(0, int(pct)))
+                    break
+                except (ValueError, TypeError):
+                    pass
+
+        # Try to find reset value
+        for key in self.RESET_KEYS:
+            if key in data:
+                try:
+                    if "Sec" in key or "sec" in key or "In" in key:
+                        # Seconds value
+                        secs = int(data[key])
+                        h, m = divmod(secs // 60, 60)
+                        if h >= 24:
+                            result["session_reset"] = f"{h // 24}d {h % 24}h"
+                        else:
+                            result["session_reset"] = f"{h}h {m:02d}m"
+                    else:
+                        # Timestamp or other format
+                        result["session_reset"] = str(data[key])
+                    break
+                except (ValueError, TypeError):
+                    pass
+
+        # Look for nested usage data
+        if "usage" in data and isinstance(data["usage"], dict):
+            usage = data["usage"]
+            for key in self.PERCENT_KEYS:
+                if key in usage:
+                    try:
+                        pct = float(usage[key])
+                        result["session_used_pct"] = min(100, max(0, int(pct)))
+                        break
+                    except (ValueError, TypeError):
+                        pass
+
+        if "plan" in data:
+            result["plan"] = str(data["plan"])
+
+        return result if result else None
+
+    def _parse_usage_text(self, content: str):
+        """Parse text response for usage data (fallback)."""
+        result = {}
+
+        # Try to extract percent: "X%" or "percent: X" patterns
+        pct_match = re.search(r'(\d+(?:\.\d+)?)\s*%', content)
+        if not pct_match:
+            pct_match = re.search(r'(?:percent|usage|used)[:\s]+(\d+(?:\.\d+)?)', content, re.I)
+        if pct_match:
+            try:
+                pct = float(pct_match.group(1))
+                result["session_used_pct"] = min(100, max(0, int(pct)))
+            except ValueError:
+                pass
+
+        # Try to extract reset time
+        reset_match = re.search(r'(?:reset|resets?|resetIn)[:\s]+(\d+(?:\.\d+)?|\w+)', content, re.I)
+        if reset_match:
+            result["session_reset"] = reset_match.group(1)
+
+        return result if result else None
+
+
+# ─────────────────────────────────────────────
 # Native popup window - Multi-provider
 # ─────────────────────────────────────────────
 
@@ -1387,10 +1744,36 @@ class CodexBarPopup(ctk.CTkToplevel):
     OA_HOVER    = "#333333"
     OA_CARD     = "#2F2F2F"
 
+    # ── MiniMax palette (warm orange) ──
+    MM_BG       = "#FFF8F0"
+    MM_SURFACE  = "#FFE8D0"
+    MM_ACCENT   = "#FF6A00"
+    MM_TEXT     = "#3D2200"
+    MM_SECOND   = "#8B6B4A"
+    MM_TERTIARY = "#A89070"
+    MM_LITE     = "#FFEBD6"
+    MM_TRACK    = "#F0E0D0"
+    MM_DIVIDER  = "#E8D8C8"
+    MM_HOVER    = "#F5E0CC"
+    MM_CARD     = "#FFF0E0"
+
+    # ── OpenCode palette (dark teal) ──
+    OC_BG       = "#0A2F2F"
+    OC_SURFACE  = "#1A4A4A"
+    OC_ACCENT   = "#00D4AA"
+    OC_TEXT     = "#E0FFF8"
+    OC_SECOND   = "#A0D0C0"
+    OC_TERTIARY = "#608880"
+    OC_LITE     = "#1A4A4A"
+    OC_TRACK    = "#2A5A5A"
+    OC_DIVIDER  = "#3A6A6A"
+    OC_HOVER    = "#3A5A5A"
+    OC_CARD     = "#2A4A4A"
+
     def __init__(self, master, claude_data, codex_data=None, *,
                  on_close=None, on_refresh=None, on_quit=None,
                  on_tab_switch=None, on_settings=None,
-                 zai_data=None):
+                 zai_data=None, minimax_data=None, opencode_data=None):
         super().__init__(master)
         self._claude = claude_data
         self._codex = codex_data or CodexDataFetcher._empty()
@@ -1399,6 +1782,8 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._on_quit = on_quit
         self._on_settings = on_settings
         self._zai = zai_data or ZaiDataFetcher._empty()
+        self._minimax = minimax_data or MiniMaxDataFetcher._empty()
+        self._opencode = opencode_data or OpenCodeDataFetcher._empty()
         self._on_tab_switch = on_tab_switch
         self._active_tab = SettingsPopup.load_last_tab()
 
@@ -1421,6 +1806,12 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._zai_tab_icon = ctk.CTkImage(zai_tab, size=(18, 18)) if zai_tab else None
         zai_big = _load_logo("zai-logo.png", 32)
         self._zai_logo_big = ctk.CTkImage(zai_big, size=(32, 32)) if zai_big else None
+
+        # MiniMax & OpenCode - text-only tabs (no logos)
+        self._mm_tab_icon = None
+        self._mm_logo_big = None
+        self._oc_tab_icon = None
+        self._oc_logo_big = None
 
         self._build_ui()
 
@@ -1526,9 +1917,9 @@ class CodexBarPopup(ctk.CTkToplevel):
         """Instant swap while window is invisible."""
         tab = self._active_tab
 
-        # Reset all tab buttons to inactive (use track color for visibility inboth modes)
+        # Reset all tab buttons to inactive (use track color for visibility in both modes)
         track_bg = self.CL_TRACK  # Will be updated per-tab below
-        for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn):
+        for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn, self._mm_tab_btn, self._oc_tab_btn):
             btn.configure(fg_color=self.CL_TRACK)  # Visible background
 
         # tab button + footer styles
@@ -1542,12 +1933,25 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.OA_BG, self.OA_TRACK, self.OA_DIVIDER,
                 self.OA_GREEN, "#0D8A6A", self.OA_HOVER)
             self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
-        else:  # zai
+        elif tab == "zai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            # Active Z.AI tab: white text on accent background
             self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_ACCENT_LT, text_color=self.ZA_PRIMARY)
+        elif tab == "minimax":
+            bg, track, divider, accent, accent_hover, hover = (
+                self.MM_BG, self.MM_TRACK, self.MM_DIVIDER,
+                self.MM_ACCENT, "#E05A00", self.MM_HOVER)
+            self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_LITE)
+        elif tab == "opencode":
+            bg, track, divider, accent, accent_hover, hover = (
+                self.OC_BG, self.OC_TRACK, self.OC_DIVIDER,
+                self.OC_ACCENT, "#00B090", self.OC_HOVER)
+            self._oc_tab_btn.configure(fg_color=self.OC_SURFACE, hover_color=self.OC_SURFACE)
+        else:
+            bg, track, divider, accent, accent_hover, hover = (
+                self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
+                self.CL_ACCENT, "#C4654A", self.CL_HOVER)
 
         # Ensure inactive tabs have proper styling with visible background
         if tab != "claude":
@@ -1555,8 +1959,11 @@ class CodexBarPopup(ctk.CTkToplevel):
         if tab != "openai":
             self._oa_tab_btn.configure(fg_color=track, hover_color=hover)
         if tab != "zai":
-            # Inactive Z.AI tab: accent text on track background
             self._zai_tab_btn.configure(fg_color=track, hover_color=hover, text_color=self.ZA_ACCENT)
+        if tab != "minimax":
+            self._mm_tab_btn.configure(fg_color=track, hover_color=hover)
+        if tab != "opencode":
+            self._oc_tab_btn.configure(fg_color=track, hover_color=hover)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -1564,19 +1971,23 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._footer_frame.configure(fg_color=bg)
         self._footer_divider.configure(fg_color=divider)
         self._dash_btn.configure(text_color=accent, hover_color=hover)
-        self._quit_btn.configure(text_color=self.ZA_TERTIARY if tab == "zai" else (self.OA_TERTIARY if tab == "openai" else self.CL_TERTIARY), hover_color=hover)
+        self._quit_btn.configure(text_color=self.ZA_TERTIARY if tab == "zai" else (self.OA_TERTIARY if tab == "openai" else (self.MM_TERTIARY if tab == "minimax" else (self.OC_TERTIARY if tab == "opencode" else self.CL_TERTIARY))), hover_color=hover)
         self._refresh_btn.configure(fg_color=accent, hover_color=accent_hover)
 
         # swap frames
-        for frame in (self._claude_frame, self._openai_frame, self._zai_frame):
+        for frame in (self._claude_frame, self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
             frame.pack_forget()
         self._footer_frame.pack_forget()
         if tab == "claude":
             self._claude_frame.pack(fill="both", expand=True)
         elif tab == "openai":
             self._openai_frame.pack(fill="both", expand=True)
-        else:
+        elif tab == "zai":
             self._zai_frame.pack(fill="both", expand=True)
+        elif tab == "minimax":
+            self._minimax_frame.pack(fill="both", expand=True)
+        elif tab == "opencode":
+            self._opencode_frame.pack(fill="both", expand=True)
         self._footer_frame.pack(fill="x", side="bottom")
 
         # resize to fixed height + reposition anchored to bottom
@@ -1698,6 +2109,32 @@ class CodexBarPopup(ctk.CTkToplevel):
             command=lambda: self._switch_tab("zai"))
         self._zai_tab_btn.pack(side="left", padx=(1, 2), pady=2)
 
+        # ── MiniMax tab button (orange) ──
+        self._mm_tab_btn = ctk.CTkButton(
+            tab_inner,
+            text="MM",
+            image=None,
+            font=("Segoe UI Semibold", 10),
+            text_color=self.MM_ACCENT,
+            fg_color=self.CL_TRACK,
+            hover_color=self.MM_HOVER,
+            corner_radius=8, height=26, width=34,
+            command=lambda: self._switch_tab("minimax"))
+        self._mm_tab_btn.pack(side="left", padx=(1, 2), pady=2)
+
+        # ── OpenCode tab button (teal) ──
+        self._oc_tab_btn = ctk.CTkButton(
+            tab_inner,
+            text="OC",
+            image=None,
+            font=("Segoe UI Semibold", 10),
+            text_color=self.OC_ACCENT,
+            fg_color=self.CL_TRACK,
+            hover_color=self.OC_HOVER,
+            corner_radius=8, height=26, width=34,
+            command=lambda: self._switch_tab("opencode"))
+        self._oc_tab_btn.pack(side="left", padx=(1, 2), pady=2)
+
         # ── CLAUDE CONTENT ──
         self._claude_frame = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0)
         self._build_claude_panel(self._claude_frame)
@@ -1713,10 +2150,20 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._build_zai_panel(self._zai_frame)
         # starts hidden
 
+        # ── MiniMax CONTENT ──
+        self._minimax_frame = ctk.CTkFrame(self, fg_color=self.MM_BG, corner_radius=0)
+        self._build_minimax_panel(self._minimax_frame)
+        # starts hidden
+
+        # ── OpenCode CONTENT ──
+        self._opencode_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
+        self._build_opencode_panel(self._opencode_frame)
+        # starts hidden
+
         # ── measure all panel heights to equalize later ──
         self.update_idletasks()
         heights = [self._claude_frame.winfo_reqheight()]
-        for frame in (self._openai_frame, self._zai_frame):
+        for frame in (self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
             frame.pack(fill="both", expand=True)
             self.update_idletasks()
             heights.append(frame.winfo_reqheight())
@@ -2264,7 +2711,7 @@ class SettingsPopup(ctk.CTkToplevel):
     def __init__(self, master, on_save=None):
         super().__init__(master)
         self.title("CodexBar Settings")
-        self.geometry("380x200")
+        self.geometry("420x380")
         self.resizable(False, False)
         self.configure(fg_color="#F8FAFE")
         self.attributes("-topmost", True)
@@ -2321,21 +2768,57 @@ class SettingsPopup(ctk.CTkToplevel):
             text_color="#5A607A", command=self.destroy
         ).pack(side="right", padx=(0, 8))
 
+        # ── MiniMax section ──
+        mm_header = ctk.CTkFrame(self, fg_color="transparent")
+        mm_header.pack(fill="x", padx=20, pady=(12, 4))
+        ctk.CTkLabel(mm_header, text="MiniMax API Token",
+                     font=("Segoe UI Semibold", 13),
+                     text_color="#FF6A00").pack(side="left")
+
+        mm_row = ctk.CTkFrame(self, fg_color="transparent")
+        mm_row.pack(fill="x", padx=20, pady=4)
+        saved_mm = self._load_token("minimax_token")
+        self._mm_entry = ctk.CTkEntry(
+            mm_row, show="*", placeholder_text="Enter MiniMax API token...",
+            font=("Segoe UI", 12), height=30, corner_radius=6,
+            fg_color="#FFFFFF", border_color="#D8DCE8")
+        self._mm_entry.pack(side="left", fill="x", expand=True)
+        if saved_mm:
+            self._mm_entry.insert(0, saved_mm)
+
+        # ── OpenCode section ──
+        oc_header = ctk.CTkFrame(self, fg_color="transparent")
+        oc_header.pack(fill="x", padx=20, pady=(12, 4))
+        ctk.CTkLabel(oc_header, text="OpenCode Cookie",
+                     font=("Segoe UI Semibold", 13),
+                     text_color="#00D4AA").pack(side="left")
+
+        oc_row = ctk.CTkFrame(self, fg_color="transparent")
+        oc_row.pack(fill="x", padx=20, pady=4)
+        saved_oc = self._load_token("opencode_cookie")
+        self._oc_entry = ctk.CTkEntry(
+            oc_row, show="*", placeholder_text="Paste browser cookie header...",
+            font=("Segoe UI", 12), height=30, corner_radius=6,
+            fg_color="#FFFFFF", border_color="#D8DCE8")
+        self._oc_entry.pack(side="left", fill="x", expand=True)
+        if saved_oc:
+            self._oc_entry.insert(0, saved_oc)
+
         self._token_entry.focus_set()
 
     @classmethod
-    def _load_token(cls):
+    def _load_token(cls, key="zai_token"):
         """Load saved z.ai token from config file."""
         try:
             if cls.CONFIG_PATH.exists():
                 data = json.loads(cls.CONFIG_PATH.read_text())
-                return data.get("zai_token", "")
+                return data.get(key, "")
         except Exception:
             pass
         return ""
 
-    def save_token(self):
-        """Save z.ai token to config file and set env var."""
+    def save_all_tokens(self):
+        """Save all tokens to config file and set env vars."""
         try:
             self.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
             data = {}
@@ -2345,8 +2828,12 @@ class SettingsPopup(ctk.CTkToplevel):
                 except Exception:
                     pass
             data["zai_token"] = self._token_entry.get().strip()
+            data["minimax_token"] = self._mm_entry.get().strip()
+            data["opencode_cookie"] = self._oc_entry.get().strip()
             self.CONFIG_PATH.write_text(json.dumps(data, indent=2))
             os.environ["ZAI_API_TOKEN"] = data.get("zai_token", "")
+            os.environ["MINIMAX_API_KEY"] = data.get("minimax_token", "")
+            os.environ["OPENCODE_COOKIE"] = data.get("opencode_cookie", "")
         except Exception:
             pass
 
@@ -2383,8 +2870,7 @@ class SettingsPopup(ctk.CTkToplevel):
         threading.Thread(target=do_test, daemon=True).start()
 
     def _save_and_close(self):
-        token = self._token_entry.get().strip()
-        self.save_token(token)
+        self.save_all_tokens()
         if self._on_save:
             self._on_save()
         self.destroy()
@@ -2395,6 +2881,8 @@ class CodexBarApp:
         self.fetcher = ClaudeDataFetcher()
         self.codex_fetcher = CodexDataFetcher()
         self.zai_fetcher = ZaiDataFetcher()          # added by Romul
+        self.minimax_fetcher = MiniMaxDataFetcher()  # added by Romul
+        self.opencode_fetcher = OpenCodeDataFetcher()  # added by Romul
         self.root = None
         self.tray = None
         self.popup = None
@@ -2402,12 +2890,20 @@ class CodexBarApp:
         self.running = True
         self.codex_data = None
         self.zai_data = None                          # added by Romul
+        self.minimax_data = None                      # added by Romul
+        self.opencode_data = None                     # added by Romul
         self._active_provider = "claude"  # Track currently active provider for icon
 
         # Load saved tokens on startup
         saved = SettingsPopup._load_token()
         if saved:
             os.environ.setdefault("ZAI_API_TOKEN", saved)
+        saved_mm = SettingsPopup._load_token("minimax_token")
+        if saved_mm:
+            os.environ.setdefault("MINIMAX_API_KEY", saved_mm)
+        saved_oc = SettingsPopup._load_token("opencode_cookie")
+        if saved_oc:
+            os.environ.setdefault("OPENCODE_COOKIE", saved_oc)
 
     def start(self):
         print("[CodexBar] Fetching your real usage data...\n")
@@ -2427,6 +2923,22 @@ class CodexBarApp:
         except Exception as e:
             print(f"[CodexBar] Z.AI fetch err: {e}")
             self.zai_data = ZaiDataFetcher._empty()
+
+        # --- MiniMax fetch (added by Romul) ---
+        try:
+            self.minimax_data = self.minimax_fetcher.fetch()
+            print(f"[CodexBar] MiniMax: {'available' if not self.minimax_data.get('error') else self.minimax_data.get('error')}")
+        except Exception as e:
+            print(f"[CodexBar] MiniMax fetch err: {e}")
+            self.minimax_data = MiniMaxDataFetcher._empty()
+
+        # --- OpenCode fetch (added by Romul) ---
+        try:
+            self.opencode_data = self.opencode_fetcher.fetch()
+            print(f"[CodexBar] OpenCode: {'available' if not self.opencode_data.get('error') else self.opencode_data.get('error')}")
+        except Exception as e:
+            print(f"[CodexBar] OpenCode fetch err: {e}")
+            self.opencode_data = OpenCodeDataFetcher._empty()
 
         # ── hidden tkinter root ──
         ctk.set_appearance_mode("light")
@@ -2539,6 +3051,14 @@ class CodexBarApp:
                 pass
             try:                                       # added by Romul
                 self.zai_data = self.zai_fetcher.fetch()
+            except Exception:
+                pass
+            try:
+                self.minimax_data = self.minimax_fetcher.fetch()
+            except Exception:
+                pass
+            try:
+                self.opencode_data = self.opencode_fetcher.fetch()
             except Exception:
                 pass
             # Update tray icon with current session percentage for active provider
