@@ -110,6 +110,32 @@ class _CookieDecryptor:
                 print(f"    {name} cookie err: {e}")
         return None, None
 
+    @classmethod
+    def get_cookies(cls, host: str, *cookie_names: str) -> dict:
+        """Return ``{cookie_name: value}`` for arbitrary cookies from any browser.
+
+        Searches Chrome, Edge, and Brave for cookies matching ``host`` and the
+        given ``cookie_names``.  Handles v10 (AES-GCM), v20 (App-Bound, skipped),
+        and legacy DPAPI encryption.  Returns an empty dict if no cookies are found.
+        """
+        result = {}
+        for name, user_data in cls.BROWSERS:
+            cookie_db   = user_data / "Default" / "Network" / "Cookies"
+            local_state = user_data / "Local State"
+            if not cookie_db.exists() or not local_state.exists():
+                continue
+            try:
+                master_key = cls._master_key(local_state)
+                if master_key is None:
+                    continue
+                found = cls._read_cookies(cookie_db, master_key, host, *cookie_names)
+                if found:
+                    result.update(found)
+                    break  # one browser is enough
+            except Exception as e:
+                print(f"    {name} get_cookies err: {e}")
+        return result
+
     # ── DPAPI via ctypes ────────────────────────
 
     class _BLOB(ctypes.Structure):
@@ -299,6 +325,52 @@ class _CookieDecryptor:
             if not enc_val or len(enc_val) < 4:
                 return None
             return cls._decrypt_value(enc_val, master_key)
+        finally:
+            try:
+                os.unlink(tmp.name)
+            except OSError:
+                pass
+
+    @classmethod
+    def _read_cookies(cls, cookie_db: Path, master_key: bytes,
+                      host: str, *cookie_names: str) -> dict:
+        """Query arbitrary cookies from the SQLite DB and decrypt them."""
+        if not cookie_names:
+            return {}
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+        tmp.close()
+        result = {}
+        try:
+            try:
+                shutil.copy2(cookie_db, tmp.name)
+            except (PermissionError, OSError):
+                cls._copy_locked_file(cookie_db, tmp.name)
+
+            conn = sqlite3.connect(tmp.name)
+            conn.text_factory = bytes
+            placeholders = ",".join("?" * len(cookie_names))
+            rows = conn.execute(
+                f"SELECT name, encrypted_value, value "
+                f"FROM cookies "
+                f"WHERE host_key = ? AND name IN ({placeholders}) "
+                f"ORDER BY last_access_utc DESC",
+                (host,) + cookie_names
+            ).fetchall()
+            conn.close()
+            for row in rows:
+                cname, enc_val, plain_val = row
+                cname_str = cname.decode("utf-8", errors="replace") if isinstance(cname, bytes) else cname
+                # plaintext cookie
+                if plain_val and plain_val != b"":
+                    result[cname_str] = plain_val.decode("utf-8", errors="replace")
+                    continue
+                # encrypted cookie
+                if not enc_val or len(enc_val) < 4:
+                    continue
+                dec = cls._decrypt_value(enc_val, master_key)
+                if dec:
+                    result[cname_str] = dec
+            return result
         finally:
             try:
                 os.unlink(tmp.name)
@@ -1349,17 +1421,20 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.1.6"
+VERSION = "2.2.0"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
 # ─────────────────────────────────────────────
 
 class MiniMaxDataFetcher:
-    """Fetch usage quota from MiniMax API.
+    """Fetch usage quota from MiniMax AI via browser cookies.
 
-    Uses Bearer token from env var MINIMAX_API_KEY.
-    Endpoint: https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains
+    MiniMax's /coding_plan/remains API requires a browser session cookie
+    (HMACCCS from .minimaxi.com), not a raw API token.  Falls back to
+    "requires browser login" when no cookie is found.
+
+    Matches the CodexBar macOS v0.20 approach: cookie extraction + API fetch.
     """
 
     API_URL = "https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains"
@@ -1385,8 +1460,14 @@ class MiniMaxDataFetcher:
             "available": False,
         }
 
+    @classmethod
+    def _load_cookies_from_browser(cls) -> dict:
+        """Return {cookie_name: value} for HMACCCS and locale from .minimaxi.com."""
+        return _CookieDecryptor.get_cookies(".minimaxi.com", "HMACCCS", "locale")
+
     @staticmethod
     def _load_token():
+        """Load manually saved token from settings (fallback only, not used for auth)."""
         try:
             if SettingsPopup.CONFIG_PATH.exists():
                 data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
@@ -1397,27 +1478,32 @@ class MiniMaxDataFetcher:
 
     def fetch(self):
         d = self._empty()
-        token = self._load_token()
-        if not token:
-            d["error"] = "MINIMAX_API_KEY not set"
-            return d
 
-        d["available"] = True
-        result = self._fetch_from_api(token)
-        if result is not None:
-            d.update(result)
-            d["source"] = "api"
+        # Try browser cookie first (primary auth method)
+        cookies = self._load_cookies_from_browser()
+        if cookies and cookies.get("HMACCCS"):
+            d["available"] = True
+            result = self._fetch_from_browser_cookie(cookies)
+            if result is not None:
+                d.update(result)
+                d["source"] = "browser_cookie"
+            else:
+                d["error"] = d.get("error") or "browser cookie request failed"
         else:
-            d["error"] = d.get("error") or "API request failed"
+            # No browser cookie — show as unavailable (not an error)
+            d["error"] = "browser cookie not found; please login to minimaxi.com"
+            d["available"] = False
 
         d["updated"] = datetime.now().strftime("Updated %H:%M")
         return d
 
-    def _fetch_from_api(self, token):
-        """Call MiniMax coding_plan API. Returns partial dict or None on error."""
+    def _fetch_from_browser_cookie(self, cookies: dict):
+        """Call MiniMax coding_plan API with HMACCCS browser cookie."""
+        hmac = cookies.get("HMACCCS", "")
+        locale = cookies.get("locale", "en")
         try:
             req = Request(self.API_URL, headers={
-                "Authorization": f"Bearer {token}",
+                "Cookie": f"HMACCCS={hmac}; locale={locale}",
                 "MM-API-Source": "CodexBar",
                 "Accept": "application/json",
             })
@@ -1425,8 +1511,8 @@ class MiniMaxDataFetcher:
                 data = json.loads(resp.read())
         except HTTPError as e:
             if e.code in (401, 403):
-                print(f"    MiniMax: auth error {e.code}")
-                return {"error": "Invalid credentials"}
+                print(f"    MiniMax: session expired (HTTP {e.code})")
+                return {"error": "session expired; please re-login in browser"}
             else:
                 print(f"    MiniMax: HTTP {e.code}")
             return None
@@ -1437,10 +1523,6 @@ class MiniMaxDataFetcher:
             print(f"    MiniMax: error: {e}")
             return None
 
-        # Parse MiniMax response structure:
-        # {"base_resp": {"status_code": 0, "status_msg": "success"},
-        #  "data": {"current_subscribe_title": "...", "plan_name": "...",
-        #           "model_remains": [{...}]}}
         result = {}
         try:
             base_resp = data.get("base_resp", {})
@@ -1448,7 +1530,6 @@ class MiniMaxDataFetcher:
             status_msg = base_resp.get("status_msg", "unknown error")
 
             if status_code != 0:
-                # status_code == 1004 → invalid credentials
                 if status_code == 1004:
                     print(f"    MiniMax: invalid credentials (1004)")
                     return {"error": "Invalid credentials"}
@@ -1461,17 +1542,14 @@ class MiniMaxDataFetcher:
 
             model_remains = data_root.get("model_remains", [])
             if model_remains:
-                # Use first entry for session usage
                 mr = model_remains[0]
                 total = mr.get("max_calls", 0)
                 used_calls = mr.get("used_calls", 0)
                 used_pct = (used_calls / total * 100) if total > 0 else 0
                 result["session_used_pct"] = min(100, round(used_pct))
 
-                # Reset time from end_time
                 end_time = mr.get("end_time")
                 if end_time:
-                    # end_time is Unix ms if > 1e12, otherwise seconds
                     ts = end_time / 1000 if end_time > 1e12 else end_time
                     delta_sec = ts - datetime.now().timestamp()
                     if delta_sec < 0:
@@ -1479,7 +1557,7 @@ class MiniMaxDataFetcher:
                     h, m = divmod(int(delta_sec) // 60, 60)
                     result["session_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
 
-            result["source"] = "api"
+            result["source"] = "browser_cookie"
             return result
         except Exception as e:
             print(f"    MiniMax: parse error: {e}")
@@ -1487,24 +1565,41 @@ class MiniMaxDataFetcher:
 
 
 # ─────────────────────────────────────────────
-# OpenCode data fetcher  (cookie-based)
+# OpenCode data fetcher  (cookie-based, auto-read from browser)
 # ─────────────────────────────────────────────
 
 class OpenCodeDataFetcher:
-    """Fetch usage quota from OpenCode.ai via browser cookies.
+    """Fetch usage quota from OpenCode.ai via browser cookies (auto-read).
 
-    The workspace page at opencode.ai/workspace/<id>/go contains embedded JSON
-    with rollingUsage, weeklyUsage, and monthlyUsage data in inline scripts.
+    Reads ``auth`` and ``oc_locale`` cookies from .opencode.ai in Chrome, Edge, or
+    Brave, then fetches the workspace page to extract embedded usage data.
+
+    Matches the CodexBar macOS v0.20 approach: cookie extraction + workspace page parsing.
     """
 
     TIMEOUT = 15
-    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+    USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "Chrome/131.0.0.0 Safari/537.36")
 
-    _cookie_header = None
+    _cookie_header = None  # manually set cookie (fallback)
+
+    @classmethod
+    def _load_cookies_from_browser(cls) -> str | None:
+        """Extract auth cookie from .opencode.ai in any browser. Returns cookie header or None."""
+        cookies = _CookieDecryptor.get_cookies(".opencode.ai", "auth", "oc_locale")
+        if not cookies:
+            return None
+        # Build header: auth=<value>; oc_locale=<value>
+        parts = []
+        if "auth" in cookies and cookies["auth"]:
+            parts.append(f"auth={cookies['auth']}")
+        if "oc_locale" in cookies and cookies["oc_locale"]:
+            parts.append(f"oc_locale={cookies['oc_locale']}")
+        return "; ".join(parts) if parts else None
 
     @staticmethod
-    def _load_cookie():
-        """Load cookie from settings file or env var."""
+    def _load_cookie_from_settings() -> str:
+        """Load manually saved cookie from settings file (fallback)."""
         try:
             if SettingsPopup.CONFIG_PATH.exists():
                 data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
@@ -1527,30 +1622,45 @@ class OpenCodeDataFetcher:
             "cost_30d": 0, "cost_30d_tokens": "0", "model": "", "error": None, "available": False,
         }
 
+    @staticmethod
+    def _workspace_url() -> str:
+        # Try to load saved workspace_id, default to the known one
+        try:
+            if SettingsPopup.CONFIG_PATH.exists():
+                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+                ws_id = data.get("opencode_workspace_id", "").strip()
+                if ws_id:
+                    return f"https://opencode.ai/workspace/{ws_id}/go"
+        except Exception:
+            pass
+        # Fallback to hardcoded workspace (also used in old code)
+        return "https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go"
+
     def fetch(self):
         d = self._empty()
-        cookie = self._cookie_header or self._load_cookie()
+
+        # Priority: manual cookie > browser cookie
+        cookie = self._cookie_header or self._load_cookie_from_settings()
         if not cookie:
-            d["error"] = "cookie not set"
+            # Try auto-read from browser
+            cookie = self._load_cookies_from_browser()
+        if not cookie:
+            d["error"] = "cookie not found in browser; please login at opencode.ai"
             return d
         d["available"] = True
 
         import re as _re
+        url = self._workspace_url()
+
+        # Normalise to auth= prefix if raw session key passed
+        cookie_header = cookie if cookie.startswith("auth=") else f"auth={cookie}"
 
         try:
-            # Add auth= prefix if cookie value starts with Fe26 (raw session key)
-            cookie_header = f"auth={cookie}" if cookie.startswith("Fe26") else cookie
-            req = Request(
-                "https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
-                headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT}
-            )
+            req = Request(url, headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT})
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 html = resp.read().decode("utf-8", errors="replace")
 
-            # Parse embedded JS data: rollingUsage, weeklyUsage, monthlyUsage
-            # Format: rollingUsage:$R[31]={status:"ok",resetInSec:N,usagePercent:N}
             def _parse_usage(html, label):
-                # Use word boundary anchor to avoid greedy match bleeding across labels
                 pattern = r'\\b' + label + r'[^}]*?resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
                 m = _re.search(pattern, html)
                 if m:
@@ -1568,7 +1678,7 @@ class OpenCodeDataFetcher:
             monthly_pct, monthly_reset = _parse_usage(html, "monthlyUsage")
 
             if monthly_pct is None and weekly_pct is None and session_pct is None:
-                d["error"] = "no usage data found"
+                d["error"] = "no usage data found in page"
                 return d
 
             d["session_used_pct"] = session_pct if session_pct is not None else 0
@@ -1582,7 +1692,7 @@ class OpenCodeDataFetcher:
 
         except HTTPError as e:
             if e.code in (401, 403):
-                d["error"] = "invalid cookie"
+                d["error"] = "session expired; please re-login in browser"
             else:
                 d["error"] = f"HTTP {e.code}"
         except Exception as e:
@@ -2609,7 +2719,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             ctk.CTkLabel(nd, text=d.get("error", "MiniMax token not set"),
                          font=("Segoe UI Semibold", 14),
                          text_color="#3D2200").pack(pady=(0, 4))
-            ctk.CTkLabel(nd, text="Set MINIMAX_API_KEY to see usage",
+            ctk.CTkLabel(nd, text="Auto-reads cookies from browser (login to minimaxi.com)",
                          font=("Segoe UI", 11),
                          text_color="#8B6914").pack(pady=(0, 12))
             return
@@ -2653,7 +2763,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             ctk.CTkLabel(nd, text=d.get("error", "OpenCode cookie not set"),
                          font=("Segoe UI Semibold", 14),
                          text_color="#E0FFF8").pack(pady=(0, 4))
-            ctk.CTkLabel(nd, text="Set OPENCODE_COOKIE to see usage",
+            ctk.CTkLabel(nd, text="Auto-reads cookies from browser (or set OPENCODE_COOKIE)",
                          font=("Segoe UI", 11),
                          text_color="#A0DDD0").pack(pady=(0, 12))
             return
@@ -2693,7 +2803,7 @@ class SettingsPopup(ctk.CTkToplevel):
     def __init__(self, master, on_save=None):
         super().__init__(master)
         self.title("CodexBar Settings")
-        self.geometry("420x520")
+        self.geometry("420x560")
         self.resizable(False, False)
         self.configure(fg_color="#F8FAFE")
         self.attributes("-topmost", True)
@@ -2735,15 +2845,25 @@ class SettingsPopup(ctk.CTkToplevel):
         # ── MiniMax section ──
         mm_header = ctk.CTkFrame(self, fg_color="transparent")
         mm_header.pack(fill="x", padx=20, pady=(12, 4))
-        ctk.CTkLabel(mm_header, text="MiniMax API Token",
+        ctk.CTkLabel(mm_header, text="MiniMax",
                      font=("Segoe UI Semibold", 13),
                      text_color="#FF6A00").pack(side="left")
+        ctk.CTkLabel(mm_header,
+                     text=" Auto-reads cookies from browser",
+                     font=("Segoe UI", 10),
+                     text_color="#9A9AB0").pack(side="left", padx=(4, 0))
+
+        mm_hint = ctk.CTkLabel(self,
+                               text="Make sure you're logged in at minimaxi.com",
+                               font=("Segoe UI", 10), text_color="#9A9AB0",
+                               anchor="w")
+        mm_hint.pack(fill="x", padx=20, pady=(0, 2))
 
         mm_row = ctk.CTkFrame(self, fg_color="transparent")
         mm_row.pack(fill="x", padx=20, pady=4)
         saved_mm = self._load_token("minimax_token")
         self._mm_entry = ctk.CTkEntry(
-            mm_row, show="*", placeholder_text="Enter MiniMax API token...",
+            mm_row, show="*", placeholder_text="API token (fallback)",
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", border_color="#D8DCE8")
         self._mm_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
@@ -2762,21 +2882,28 @@ class SettingsPopup(ctk.CTkToplevel):
             text_color="#5A607A", anchor="w")
         self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
 
-        if saved_mm:
-            self._mm_entry.insert(0, saved_mm)
-
         # ── OpenCode section ──
         oc_header = ctk.CTkFrame(self, fg_color="transparent")
         oc_header.pack(fill="x", padx=20, pady=(12, 4))
-        ctk.CTkLabel(oc_header, text="OpenCode Cookie",
+        ctk.CTkLabel(oc_header, text="OpenCode",
                      font=("Segoe UI Semibold", 13),
                      text_color="#00D4AA").pack(side="left")
+        ctk.CTkLabel(oc_header,
+                     text=" Auto-reads cookies from browser",
+                     font=("Segoe UI", 10),
+                     text_color="#9A9AB0").pack(side="left", padx=(4, 0))
+
+        oc_hint = ctk.CTkLabel(self,
+                               text="Make sure you're logged in at opencode.ai",
+                               font=("Segoe UI", 10), text_color="#9A9AB0",
+                               anchor="w")
+        oc_hint.pack(fill="x", padx=20, pady=(0, 2))
 
         oc_row = ctk.CTkFrame(self, fg_color="transparent")
         oc_row.pack(fill="x", padx=20, pady=4)
         saved_oc = self._load_token("opencode_cookie")
         self._oc_entry = ctk.CTkEntry(
-            oc_row, show="*", placeholder_text="Paste browser cookie header...",
+            oc_row, show="*", placeholder_text="Cookie (fallback; auto-read if blank)",
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", border_color="#D8DCE8")
         self._oc_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
@@ -2880,66 +3007,116 @@ class SettingsPopup(ctk.CTkToplevel):
         threading.Thread(target=do_test, daemon=True).start()
 
     def _test_minimax(self):
+        # Try browser cookie first, then fall back to API token
+        browser_cookies = _CookieDecryptor.get_cookies(".minimaxi.com", "HMACCCS", "locale")
         token = self._mm_entry.get().strip() or SettingsPopup._load_token("minimax_token")
-        if not token:
-            self._mm_result.configure(text="✗ Enter a token first", text_color="#E04040")
-            return
-        self._mm_test_btn.configure(text="...", state="disabled")
-        self._mm_result.configure(text="Testing...", text_color="#5A607A")
-        self.update_idletasks()
-        def do_test():
+
+        def do_test_cookie():
+            hmac = browser_cookies.get("HMACCCS", "")
+            locale = browser_cookies.get("locale", "en")
             try:
                 req = Request("https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains",
-                             headers={"Authorization": f"Bearer {token}", "MM-API-Source": "CodexBar"})
+                             headers={"Cookie": f"HMACCCS={hmac}; locale={locale}",
+                                      "MM-API-Source": "CodexBar"})
                 with urlopen(req, timeout=10) as resp:
                     json.loads(resp.read())
-                self.after(0, lambda: self._mm_result.configure(text="✓ Token valid", text_color="#2E9E5A"))
+                return "✓ Browser cookie works", "#2E9E5A"
             except HTTPError as e:
-                msg = "✗ Invalid token" if e.code in (401, 403) else f"✗ HTTP {e.code}"
-                self.after(0, lambda: self._mm_result.configure(text=msg, text_color="#E04040"))
+                if e.code in (401, 403):
+                    return "✗ Session expired; re-login in browser", "#E04040"
+                return f"✗ HTTP {e.code}", "#E04040"
+            except Exception as e:
+                return f"✗ {type(e).__name__}", "#E04040"
+
+        def do_test_token(tok):
+            try:
+                req = Request("https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains",
+                             headers={"Authorization": f"Bearer {tok}", "MM-API-Source": "CodexBar"})
+                with urlopen(req, timeout=10) as resp:
+                    json.loads(resp.read())
+                return "✓ API token works", "#2E9E5A"
+            except HTTPError as e:
+                if e.code in (401, 403):
+                    return "✗ Invalid token", "#E04040"
+                return f"✗ HTTP {e.code}", "#E04040"
             except Exception:
-                self.after(0, lambda: self._mm_result.configure(text="✗ Connection error", text_color="#E04040"))
-            finally:
-                self.after(0, lambda: self._mm_test_btn.configure(text="Test", state="normal"))
-        threading.Thread(target=do_test, daemon=True).start()
+                return "✗ Connection error", "#E04040"
+
+        def run():
+            self._mm_test_btn.configure(text="...", state="disabled")
+            self.update_idletasks()
+
+            if browser_cookies.get("HMACCCS"):
+                self._mm_result.configure(text="Testing browser cookie...", text_color="#5A607A")
+                self.update_idletasks()
+                msg, color = do_test_cookie()
+                self.after(0, lambda m=msg, c=color:
+                    self._mm_result.configure(text=m, text_color=c))
+            elif token:
+                self._mm_result.configure(text="Testing API token...", text_color="#5A607A")
+                self.update_idletasks()
+                msg, color = do_test_token(token)
+                self.after(0, lambda m=msg, c=color:
+                    self._mm_result.configure(text=m, text_color=c))
+            else:
+                self.after(0, lambda: self._mm_result.configure(
+                    text="✗ No browser cookie; enter API token", text_color="#E04040"))
+
+            self.after(0, lambda: self._mm_test_btn.configure(text="Test", state="normal"))
+
+        threading.Thread(target=run, daemon=True).start()
 
     def _test_opencode(self):
+        # Try browser cookies first, then fall back to manual entry
+        browser_cookies = _CookieDecryptor.get_cookies(".opencode.ai", "auth", "oc_locale")
         raw = self._oc_entry.get().strip()
-        if not raw:
-            self._oc_result.configure(text="✗ Enter token or cookie first", text_color="#E04040")
-            return
-        self._oc_test_btn.configure(text="...", state="disabled")
-        self._oc_result.configure(text="Testing...", text_color="#5A607A")
-        self.update_idletasks()
-        def do_test():
+
+        def do_test(cookie_header):
             try:
-                # Try as Bearer token first (Authorization header)
-                req = Request("https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
-                             headers={"Authorization": f"Bearer {raw}",
-                                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
-                with urlopen(req, timeout=10) as resp:
-                    json.loads(resp.read())
-                self.after(0, lambda: self._oc_result.configure(text="✓ Token accepted", text_color="#2E9E5A"))
-            except HTTPError:
-                # Try as Cookie — add auth= prefix if raw value starts with Fe26
-                try:
-                    cookie_val = f"auth={raw}" if raw.startswith("Fe26") else raw
-                    req2 = Request("https://opencode.ai/workspace/wrk_01KMQEY05J8B7SBJW3HH57JNVY/go",
-                                 headers={"Cookie": cookie_val,
-                                          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
-                    with urlopen(req2, timeout=10) as resp:
-                        json.loads(resp.read())
-                    self.after(0, lambda: self._oc_result.configure(text="✓ Cookie accepted", text_color="#2E9E5A"))
-                except HTTPError as e:
-                    msg = "✗ Invalid" if e.code in (401, 403) else f"✗ HTTP {e.code}"
-                    self.after(0, lambda: self._oc_result.configure(text=msg, text_color="#E04040"))
-                except Exception as e:
-                    self.after(0, lambda: self._oc_result.configure(text=f"✗ {type(e).__name__}", text_color="#E04040"))
+                url = OpenCodeDataFetcher._workspace_url()
+                req = Request(url, headers={"Cookie": cookie_header,
+                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
+                with urlopen(req, timeout=15) as resp:
+                    html = resp.read().decode("utf-8", errors="replace")
+                    if "rollingUsage" in html or "weeklyUsage" in html:
+                        return "✓ Browser cookie works", "#2E9E5A"
+                    return "✓ Connected (no usage data)", "#5A607A"
+            except HTTPError as e:
+                if e.code in (401, 403):
+                    return "✗ Session expired; re-login in browser", "#E04040"
+                return f"✗ HTTP {e.code}", "#E04040"
             except Exception as e:
-                self.after(0, lambda: self._oc_result.configure(text=f"✗ {type(e).__name__}", text_color="#E04040"))
-            finally:
-                self.after(0, lambda: self._oc_test_btn.configure(text="Test", state="normal"))
-        threading.Thread(target=do_test, daemon=True).start()
+                return f"✗ {type(e).__name__}: {e}", "#E04040"
+
+        def run():
+            self._oc_test_btn.configure(text="...", state="disabled")
+            self._oc_result.configure(text="Testing browser cookie...", text_color="#5A607A")
+            self.update_idletasks()
+
+            # Try browser cookie
+            if browser_cookies.get("auth"):
+                parts = [f"auth={browser_cookies['auth']}"]
+                if browser_cookies.get("oc_locale"):
+                    parts.append(f"oc_locale={browser_cookies['oc_locale']}")
+                cookie_header = "; ".join(parts)
+                msg, color = do_test(cookie_header)
+                self.after(0, lambda m=msg, c=color:
+                    self._oc_result.configure(text=m, text_color=c))
+            elif raw:
+                # Fall back to manual entry
+                self._oc_result.configure(text="Testing manual cookie...", text_color="#5A607A")
+                self.update_idletasks()
+                cookie_header = raw if raw.startswith("auth=") else f"auth={raw}"
+                msg, color = do_test(cookie_header)
+                self.after(0, lambda m=msg, c=color:
+                    self._oc_result.configure(text=m, text_color=c))
+            else:
+                self.after(0, lambda: self._oc_result.configure(
+                    text="✗ No cookie; browser auto-read failed", text_color="#E04040"))
+
+            self.after(0, lambda: self._oc_test_btn.configure(text="Test", state="normal"))
+
+        threading.Thread(target=run, daemon=True).start()
 
     def _save_and_close(self):
         self.save_all_tokens()
