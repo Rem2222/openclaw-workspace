@@ -1435,7 +1435,7 @@ class MiniMaxDataFetcher:
     """
 
     TIMEOUT = 15
-    API_URL = "https://api.minimax.io/v1/api/openplatform/coding_plan/remains"
+    API_URL = "https://api.minimax-chat.com/v1/api/openplatform/coding_plan/remains"
 
     def __init__(self):
         self.data = self._empty()
@@ -1456,16 +1456,33 @@ class MiniMaxDataFetcher:
 
     @staticmethod
     def _settings_token() -> str:
+        # Read directly from settings.json - CodexBarApp writes this on startup
+        settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+        if not settings_path.exists():
+            settings_path = Path.home() / ".codexbar" / "settings.json"
         try:
-            data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
-            return data.get("minimax_token", "") or os.environ.get("MINIMAX_API_KEY", "")
+            if settings_path.exists():
+                data = json.loads(settings_path.read_text())
+                return data.get("minimax_token", "")
         except Exception:
             pass
         return os.environ.get("MINIMAX_API_KEY", "")
 
     def _load(self) -> dict:
         """Load bearer token (API key) or browser cookies from .minimax.io."""
-        token = os.environ.get("MINIMAX_API_KEY") or self._settings_token()
+        # First try env var (set by app on startup from settings.json)
+        token = os.environ.get("MINIMAX_API_KEY", "")
+        if not token:
+            # Try reading directly from settings.json
+            settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+            if not settings_path.exists():
+                settings_path = Path.home() / ".codexbar" / "settings.json"
+            try:
+                if settings_path.exists():
+                    data = json.loads(settings_path.read_text())
+                    token = data.get("minimax_token", "")
+            except Exception:
+                pass
         if token:
             return {"__bearer_token__": token}
         return _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
@@ -1494,6 +1511,7 @@ class MiniMaxDataFetcher:
 
     def _call_api(self, token: str, hmac: str, locale: str):
         """Call /coding_plan/remains with Bearer token or HMACCCS cookie."""
+        print(f"    MiniMax API call: URL={self.API_URL}, token={'YES' if token else 'EMPTY'}, hmac={'YES' if hmac else 'EMPTY'}")
         try:
             headers = {
                 "Authorization": f"Bearer {token}" if token else None,
@@ -1506,6 +1524,8 @@ class MiniMaxDataFetcher:
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 raw = json.loads(resp.read())
         except HTTPError as e:
+            body = e.read().decode()[:200] if e.response else ""
+            print(f"    MiniMax HTTP {e.code}: {body}")
             if e.code in (401, 403):
                 return {"error": "invalid token or expired"}
             return None
