@@ -1745,19 +1745,24 @@ class OpenCodeDataFetcher:
                 html = resp.read().decode("utf-8", errors="replace")
 
             def _parse_usage(html, label):
-                pattern = r'\\b' + label + r'[^}]*?resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
+                # HTML: rollingUsage:$R[31]={"status":"ok","resetInSec":3600,"usagePercent":15}
+                pattern = label + r':\$R\[\d+\]=(\{.+?\})'
                 m = _re.search(pattern, html)
-                self._log(f"  _parse_usage({label}): match={m is not None}")
                 if m:
-                    secs, pct = int(m.group(1)), int(m.group(2))
-                    self._log(f"    -> secs={secs}, pct={pct}")
-                    h, mn = divmod(secs // 60, 60)
-                    if h >= 24:
-                        reset = f"{h // 24}d {h % 24}h"
-                    else:
-                        reset = f"{h}h {mn:02d}m"
-                    return pct, reset
-                self._log(f"    -> no match")
+                    try:
+                        data = json.loads(m.group(1))
+                        secs = int(data.get("resetInSec", 0))
+                        pct = int(data.get("usagePercent", 0))
+                        self._log(f"  {label}: secs={secs}, pct={pct}")
+                        h, mn = divmod(secs // 60, 60)
+                        if h >= 24:
+                            reset = f"{h // 24}d {h % 24}h"
+                        else:
+                            reset = f"{h}h {mn:02d}m"
+                        return pct, reset
+                    except Exception as e:
+                        self._log(f"  {label}: JSON parse error: {e}")
+                self._log(f"  {label}: no match")
                 return None, "unknown"
 
             session_pct, session_reset = _parse_usage(html, "rollingUsage")
@@ -2268,6 +2273,12 @@ class CodexBarPopup(ctk.CTkToplevel):
         # Apply initial tab state based on saved tab
         if self._active_tab != "claude":
             self._claude_frame.pack_forget()
+            # Reset ALL tab buttons to inactive state first
+            self._cl_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
+            self._oa_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
+            self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
+            self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
             if self._active_tab == "openai":
                 self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
                 self._cl_tab_btn.configure(fg_color=self.OA_TRACK)
@@ -3301,6 +3312,19 @@ class SettingsPopup(ctk.CTkToplevel):
 
 class CodexBarApp:
     def __init__(self):
+        # Kill any existing CodexBar process
+        try:
+            import subprocess as _subprocess
+            procs = _subprocess.run(['tasklist', '/FI', 'IMAGENAME eq codexbar.exe', '/NH'],
+                                   capture_output=True, text=True).stdout
+            for line in procs.split('\n'):
+                if 'codexbar.exe' in line:
+                    _subprocess.run(['taskkill', '/F', '/IM', 'codexbar.exe'],
+                                   capture_output=True)
+                    break
+        except Exception:
+            pass
+
         self.fetcher = ClaudeDataFetcher()
         self.codex_fetcher = CodexDataFetcher()
         self.zai_fetcher = ZaiDataFetcher()          # added by Romul
