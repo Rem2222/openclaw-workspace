@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.12"
+VERSION = "2.2.13"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2018,12 +2018,12 @@ class CodexBarPopup(ctk.CTkToplevel):
             bg, track, divider, accent, accent_hover, hover = (
                 self.MM_BG, self.MM_TRACK, self.MM_DIVIDER,
                 self.MM_ACCENT, "#E05A00", self.MM_HOVER)
-            self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_LITE)
+            self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_LITE, text_color="#FFFFFF")
         elif tab == "opencode":
             bg, track, divider, accent, accent_hover, hover = (
                 self.OC_BG, self.OC_TRACK, self.OC_DIVIDER,
                 self.OC_ACCENT, "#00B090", self.OC_HOVER)
-            self._oc_tab_btn.configure(fg_color=self.OC_SURFACE, hover_color=self.OC_SURFACE)
+            self._oc_tab_btn.configure(fg_color=self.OC_SURFACE, hover_color=self.OC_SURFACE, text_color="#FFFFFF")
         else:
             bg, track, divider, accent, accent_hover, hover = (
                 self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
@@ -2153,10 +2153,10 @@ class CodexBarPopup(ctk.CTkToplevel):
             tab_inner,
             text="CL" if not self._cl_tab_icon else "",
             image=self._cl_tab_icon,
-            font=("Segoe UI Semibold", 10),
-            text_color="#D97757",
+            font=("Segoe UI Semibold", 11),
+            text_color="#8B4513",
             fg_color=self.CL_LITE,
-            hover_color=self.CL_LITE,
+            hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("claude"))
         self._cl_tab_btn.pack(side="left", padx=(2, 1), pady=2)
@@ -2165,8 +2165,8 @@ class CodexBarPopup(ctk.CTkToplevel):
             tab_inner,
             text="Codex" if not self._oa_tab_icon else "",
             image=self._oa_tab_icon,
-            font=("Segoe UI Semibold", 10),
-            text_color="#10A37F",
+            font=("Segoe UI Semibold", 11),
+            text_color="#1E7A56",
             fg_color=self.CL_TRACK,
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=48,
@@ -2178,7 +2178,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="Z.AI",
             image=None,  # Always show text, no image
             font=("Segoe UI Semibold", 11),
-            text_color=self.ZA_ACCENT,
+            text_color="#3A6A8A",
             fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=42,
@@ -2190,10 +2190,10 @@ class CodexBarPopup(ctk.CTkToplevel):
             tab_inner,
             text="MM",
             image=None,
-            font=("Segoe UI Semibold", 10),
-            text_color=self.MM_ACCENT,
+            font=("Segoe UI Semibold", 11),
+            text_color="#CC5500",
             fg_color=self.CL_TRACK,
-            hover_color=self.MM_HOVER,
+            hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("minimax"))
         self._mm_tab_btn.pack(side="left", padx=(1, 2), pady=2)
@@ -2203,10 +2203,10 @@ class CodexBarPopup(ctk.CTkToplevel):
             tab_inner,
             text="OC",
             image=None,
-            font=("Segoe UI Semibold", 10),
-            text_color=self.OC_ACCENT,
+            font=("Segoe UI Semibold", 11),
+            text_color="#006655",
             fg_color=self.CL_TRACK,
-            hover_color=self.OC_HOVER,
+            hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("opencode"))
         self._oc_tab_btn.pack(side="left", padx=(1, 2), pady=2)
@@ -2279,7 +2279,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._dash_btn.configure(text_color=self.ZA_ACCENT)
                 self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
             elif self._active_tab == "minimax":
-                self._mm_tab_btn.configure(fg_color=self.MM_ACCENT, hover_color=self.MM_ACCENT)
+                self._mm_tab_btn.configure(fg_color=self.MM_ACCENT, hover_color=self.MM_ACCENT, text_color="#FFFFFF")
                 self._cl_tab_btn.configure(fg_color=self.MM_TRACK)
                 self._oa_tab_btn.configure(fg_color=self.MM_TRACK)
                 self._zai_tab_btn.configure(fg_color=self.MM_TRACK)
@@ -2292,7 +2292,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._dash_btn.configure(text_color=self.MM_ACCENT)
                 self._refresh_btn.configure(fg_color=self.MM_ACCENT)
             elif self._active_tab == "opencode":
-                self._oc_tab_btn.configure(fg_color=self.OC_ACCENT, hover_color=self.OC_ACCENT)
+                self._oc_tab_btn.configure(fg_color=self.OC_ACCENT, hover_color=self.OC_ACCENT, text_color="#FFFFFF")
                 self._cl_tab_btn.configure(fg_color=self.OC_TRACK)
                 self._oa_tab_btn.configure(fg_color=self.OC_TRACK)
                 self._zai_tab_btn.configure(fg_color=self.OC_TRACK)
