@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.11"
+VERSION = "2.2.12"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2278,6 +2278,32 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
                 self._dash_btn.configure(text_color=self.ZA_ACCENT)
                 self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
+            elif self._active_tab == "minimax":
+                self._mm_tab_btn.configure(fg_color=self.MM_ACCENT, hover_color=self.MM_ACCENT)
+                self._cl_tab_btn.configure(fg_color=self.MM_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.MM_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.MM_TRACK)
+                self._tab_bar.configure(fg_color=self.MM_BG)
+                self._tab_inner.configure(fg_color=self.MM_TRACK)
+                self.configure(fg_color=self.MM_BG)
+                self._minimax_frame.pack(fill="both", expand=True)
+                self._footer_frame.configure(fg_color=self.MM_BG)
+                self._footer_divider.configure(fg_color=self.MM_DIVIDER)
+                self._dash_btn.configure(text_color=self.MM_ACCENT)
+                self._refresh_btn.configure(fg_color=self.MM_ACCENT)
+            elif self._active_tab == "opencode":
+                self._oc_tab_btn.configure(fg_color=self.OC_ACCENT, hover_color=self.OC_ACCENT)
+                self._cl_tab_btn.configure(fg_color=self.OC_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.OC_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.OC_TRACK)
+                self._tab_bar.configure(fg_color=self.OC_BG)
+                self._tab_inner.configure(fg_color=self.OC_TRACK)
+                self.configure(fg_color=self.OC_BG)
+                self._opencode_frame.pack(fill="both", expand=True)
+                self._footer_frame.configure(fg_color=self.OC_BG)
+                self._footer_divider.configure(fg_color=self.OC_DIVIDER)
+                self._dash_btn.configure(text_color=self.OC_ACCENT)
+                self._refresh_btn.configure(fg_color=self.OC_ACCENT)
 
 
     # ═══════════════════════════════════════
