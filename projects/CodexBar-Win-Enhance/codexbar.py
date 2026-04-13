@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.24"
+VERSION = "2.2.25"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2174,7 +2174,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         tab_bar.pack_propagate(False)
         self._tab_bar = tab_bar
 
-        self._tab_inner = ctk.CTkFrame(tab_bar, fg_color=self.CL_TRACK, corner_radius=9)
+        self._tab_inner = ctk.CTkFrame(tab_bar, fg_color=self.CL_TRACK, corner_radius=0)
         self._tab_inner.pack(side="left", padx=14, pady=4)
         tab_inner = self._tab_inner
 
