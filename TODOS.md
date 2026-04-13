@@ -21,3 +21,9 @@
 - [ ] Исправить zai-search MCP: SSE content type error — API возвращает не text/event-stream
   - Проблема: `https://api.z.ai/api/mcp/web_search_prime/mcp` возвращает `Invalid content type`
   - Возможно решение: использовать другую версию API или добавить header Accept: text/event-stream
+
+## Linear webhook уведомления [future]
+- Настроить webhook в Linear для отправки комментариев в OpenClaw
+- Варианты: Telegram bot, email, или OpenClaw webhook endpoint
+- Решить: все комментарии или только @mention
+- Зависит от: поддержка Linear вебхуков
