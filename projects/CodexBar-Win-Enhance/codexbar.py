@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.6"
+VERSION = "2.2.7"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3098,7 +3098,12 @@ class SettingsPopup(ctk.CTkToplevel):
                 req = Request("https://api.minimax.io/v1/api/openplatform/coding_plan/remains",
                              headers={"Authorization": f"Bearer {tok}", "MM-API-Source": "web"})
                 with urlopen(req, timeout=10) as resp:
-                    json.loads(resp.read())
+                    data = json.loads(resp.read())
+                # Check API-level status code (not just HTTP status)
+                base = data.get("base_resp", {})
+                if base.get("status_code", -1) != 0:
+                    msg = base.get("status_msg", "API error")
+                    return f"✗ {msg}", "#E04040"
                 return "✓ API token works", "#2E9E5A"
             except HTTPError as e:
                 if e.code in (401, 403):
