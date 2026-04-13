@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.20"
+VERSION = "2.2.21"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1933,6 +1933,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.bind("<FocusOut>", self._on_focus_out)
         self.focus_force()
         self.after(40, self._animate_in, 0)
+        print(f"[POPUP] Init complete, geometry={self.geometry()}, state={self.state()}, alpha={self.attributes('-alpha')}", flush=True)
 
     # ── DWM ──
 
@@ -3441,6 +3442,8 @@ class CodexBarApp:
     # ── popup ──
 
     def _show_popup(self):
+        import sys
+        print(f"[POPUP] _show_popup called, popup={self.popup}", flush=True)
         if self.popup is not None:
             try:
                 self.popup.destroy()
@@ -3448,6 +3451,7 @@ class CodexBarApp:
                 pass
             self.popup = None
 
+        print("[POPUP] Creating CodexBarPopup...", flush=True)
         self.popup = CodexBarPopup(
             self.root,
             self.fetcher.data,
