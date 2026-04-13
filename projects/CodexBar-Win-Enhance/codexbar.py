@@ -2771,6 +2771,16 @@ class CodexBarPopup(ctk.CTkToplevel):
                          text_color="#8B6914").pack(pady=(0, 12))
             return
 
+        # DEBUG: show all received fields
+        dbg = ctk.CTkFrame(parent, fg_color="#1a1a1a")
+        dbg.pack(fill="x", padx=20, pady=(0, 10))
+        ctk.CTkLabel(dbg, text="DEBUG DATA:", font=("Consolas", 10),
+                     text_color="#00FF00").pack(anchor="w")
+        for k, v in d.items():
+            if k not in ("provider",):
+                ctk.CTkLabel(dbg, text=f"  {k}: {v}", font=("Consolas", 9),
+                             text_color="#00FF00").pack(anchor="w")
+
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
 
