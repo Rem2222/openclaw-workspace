@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.14"
+VERSION = "2.2.18"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2025,38 +2025,39 @@ class CodexBarPopup(ctk.CTkToplevel):
         for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn, self._mm_tab_btn, self._oc_tab_btn):
             btn.configure(fg_color=self.CL_TRACK)  # Visible background
 
-        # tab button + footer styles
+        # tab button + footer styles — unified white+blue theme
+        # Active tab: ZA_TRACK bg (#E4E8F0), white text. Footer/buttons: ZA_ACCENT blue
         if tab == "claude":
             bg, track, divider, accent, accent_hover, hover = (
-                self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
-                self.CL_ACCENT, "#C4654A", self.CL_HOVER)
-            self._cl_tab_btn.configure(fg_color=self.CL_LITE, hover_color=self.CL_LITE)
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "openai":
             bg, track, divider, accent, accent_hover, hover = (
-                self.OA_BG, self.OA_TRACK, self.OA_DIVIDER,
-                self.OA_GREEN, "#0D8A6A", self.OA_HOVER)
-            self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "zai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_ACCENT_LT, text_color=self.ZA_PRIMARY)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "minimax":
             bg, track, divider, accent, accent_hover, hover = (
-                self.MM_BG, self.MM_TRACK, self.MM_DIVIDER,
-                self.MM_ACCENT, "#E05A00", self.MM_HOVER)
-            self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_LITE, text_color="#FFFFFF")
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "opencode":
             bg, track, divider, accent, accent_hover, hover = (
-                self.OC_BG, self.OC_TRACK, self.OC_DIVIDER,
-                self.OC_ACCENT, "#00B090", self.OC_HOVER)
-            self._oc_tab_btn.configure(fg_color=self.OC_SURFACE, hover_color=self.OC_SURFACE, text_color="#FFFFFF")
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         else:
             bg, track, divider, accent, accent_hover, hover = (
-                self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
-                self.CL_ACCENT, "#C4654A", self.CL_HOVER)
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
 
-        # All inactive tabs: unified Z.AI style (ZA_TRACK bg, ZA_PRIMARY text)
+# All inactive tabs: unified Z.AI style (ZA_TRACK bg, ZA_PRIMARY text)
         if tab != "claude":
             self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "openai":
@@ -2073,9 +2074,9 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.configure(fg_color=bg)
         self._footer_frame.configure(fg_color=bg)
         self._footer_divider.configure(fg_color=divider)
-        self._dash_btn.configure(text_color=accent, hover_color=hover)
+        self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
         self._quit_btn.configure(text_color=self.ZA_PRIMARY, hover_color=hover)
-        self._refresh_btn.configure(fg_color=accent, hover_color=accent_hover)
+        self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
 
         # swap frames
         for frame in (self._claude_frame, self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
@@ -2278,72 +2279,50 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._build_footer(self._footer_frame)
         self._footer_frame.pack(fill="x", side="bottom")
 
-        # Apply initial tab state based on saved tab
+        # Apply initial tab state based on saved tab — unified Z.AI white+blue theme
         if self._active_tab != "claude":
             self._claude_frame.pack_forget()
-            # Reset ALL tab buttons to inactive state first
-            self._cl_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
-            self._oa_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
-            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
-            self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
-            self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
+            # Reset ALL tab buttons to inactive state (ZA_TRACK, ZA_PRIMARY text)
+            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            # Footer buttons: unified blue (ZA_ACCENT) everywhere
+            self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
+            self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
             if self._active_tab == "openai":
-                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_HOVER, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._tab_bar.configure(fg_color=self.OA_BG)
-                self._tab_inner.configure(fg_color=self.OA_TRACK)
-                self.configure(fg_color=self.OA_BG)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
                 self._openai_frame.pack(fill="both", expand=True)
-                self._footer_frame.configure(fg_color=self.OA_BG)
+                self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
-                self._dash_btn.configure(text_color=self.OA_GREEN)
-                self._refresh_btn.configure(fg_color=self.OA_GREEN)
             elif self._active_tab == "zai":
-                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
                 self._zai_frame.pack(fill="both", expand=True)
                 self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
-                self._dash_btn.configure(text_color=self.ZA_ACCENT)
-                self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
             elif self._active_tab == "minimax":
-                self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_HOVER, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._tab_bar.configure(fg_color=self.MM_BG)
-                self._tab_inner.configure(fg_color=self.MM_TRACK)
-                self.configure(fg_color=self.MM_BG)
+                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
                 self._minimax_frame.pack(fill="both", expand=True)
-                self._footer_frame.configure(fg_color=self.MM_BG)
+                self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
-                self._dash_btn.configure(text_color=self.MM_ACCENT)
-                self._refresh_btn.configure(fg_color=self.MM_ACCENT)
             elif self._active_tab == "opencode":
-                self._oc_tab_btn.configure(fg_color=self.OC_LITE, hover_color=self.OC_HOVER, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
-                self._tab_bar.configure(fg_color=self.OC_BG)
-                self._tab_inner.configure(fg_color=self.OC_TRACK)
-                self.configure(fg_color=self.OC_BG)
+                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
                 self._opencode_frame.pack(fill="both", expand=True)
-                self._footer_frame.configure(fg_color=self.OC_BG)
+                self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
-                self._dash_btn.configure(text_color=self.OC_ACCENT)
-                self._refresh_btn.configure(fg_color=self.OC_ACCENT)
-
 
     # ═══════════════════════════════════════
     # CLAUDE PANEL
