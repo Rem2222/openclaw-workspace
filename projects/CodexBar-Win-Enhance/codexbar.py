@@ -1643,6 +1643,16 @@ class MiniMaxDataFetcher:
 
 
 class OpenCodeDataFetcher:
+    LOG_FILE = "opencode_debug.log"
+
+    def _log(self, *args):
+        try:
+            log_path = Path(__file__).parent / self.LOG_FILE
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(" ".join(str(a) for a in args) + "\n")
+        except Exception:
+            pass
+
     """Fetch usage quota from OpenCode.ai via browser cookies (auto-read).
 
     Reads ``auth`` and ``oc_locale`` cookies from .opencode.ai in Chrome, Edge, or
