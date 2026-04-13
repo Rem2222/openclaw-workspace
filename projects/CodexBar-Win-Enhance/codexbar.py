@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.21"
+VERSION = "2.2.22"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2032,27 +2032,27 @@ class CodexBarPopup(ctk.CTkToplevel):
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._cl_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+            self._cl_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "openai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._oa_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+            self._oa_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "zai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._zai_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+            self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "minimax":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._mm_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+            self._mm_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "opencode":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
-            self._oc_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+            self._oc_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         else:
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
@@ -2293,7 +2293,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
             self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
             if self._active_tab == "openai":
-                self._oa_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+                self._oa_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
@@ -2301,7 +2301,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
             elif self._active_tab == "zai":
-                self._zai_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
@@ -2309,7 +2309,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
             elif self._active_tab == "minimax":
-                self._mm_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+                self._mm_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
@@ -2317,7 +2317,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
             elif self._active_tab == "opencode":
-                self._oc_tab_btn.configure(fg_color=accent, hover_color=accent_hover, text_color="#FFFFFF")
+                self._oc_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
