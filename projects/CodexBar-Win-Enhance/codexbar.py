@@ -1803,19 +1803,22 @@ class CodexBarPopup(ctk.CTkToplevel):
     WIDTH = 370
     FINAL_ALPHA = 0.94
 
-    # ── Claude palette ──
-    CL_BG       = "#FFFFFF"
-    CL_SURFACE  = "#FAF9F7"
-    CL_PRIMARY  = "#191918"
-    CL_SECOND   = "#6F6E77"
-    CL_TERTIARY = "#A8A7B0"
+   
+    # ── Claude palette (white+blue — unified Z.AI style, warm accent) ──
+    CL_BG       = "#F8FAFE"
+    CL_SURFACE  = "#EEF2F8"
+    CL_PRIMARY  = "#1A1A2E"
+    CL_SECOND   = "#5A607A"
+    CL_TERTIARY = "#8E94AE"
     CL_ACCENT   = "#D97757"
+    CL_ACCENT_LT= "#E8EDFE"
     CL_LITE     = "#FCEEE8"
     CL_BADGE_FG = "#C25B3B"
-    CL_BADGE_BG = "#FDF0EB"
-    CL_TRACK    = "#F0EFED"
-    CL_DIVIDER  = "#ECEAE6"
-    CL_HOVER    = "#F5F3EF"
+    CL_BADGE_BG = "#FCEEE8"
+    CL_TRACK    = "#E4E8F0"
+    CL_DIVIDER  = "#D8DCE8"
+    CL_HOVER    = "#EAEFF8"
+    CL_CARD     = "#F0F3FA"
 
     # ── Z.AI palette (blue-toned) ──
     ZA_BG       = "#F8FAFE"
@@ -1830,44 +1833,45 @@ class CodexBarPopup(ctk.CTkToplevel):
     ZA_HOVER    = "#EAEFF8"
     ZA_CARD     = "#F0F3FA"
 
-    # ── OpenAI palette ──
-    OA_BG       = "#212121"
-    OA_SURFACE  = "#2A2A2A"
-    OA_PRIMARY  = "#ECECEC"
-    OA_SECOND   = "#A0A0A0"
-    OA_TERTIARY = "#6E6E6E"
+    # ── OpenAI palette (white+blue — unified Z.AI style) ──
+    OA_BG       = "#F8FAFE"
+    OA_SURFACE  = "#EEF2F8"
+    OA_PRIMARY  = "#1A1A2E"
+    OA_SECOND   = "#5A607A"
+    OA_TERTIARY = "#8E94AE"
     OA_GREEN    = "#10A37F"
-    OA_GREEN_LT = "#1A3A2F"
-    OA_TRACK    = "#3A3A3A"
-    OA_DIVIDER  = "#333333"
-    OA_HOVER    = "#333333"
-    OA_CARD     = "#2F2F2F"
+    OA_GREEN_LT = "#E8EDFE"
+    OA_TRACK    = "#E4E8F0"
+    OA_DIVIDER  = "#D8DCE8"
+    OA_HOVER    = "#EAEFF8"
+    OA_CARD     = "#F0F3FA"
 
-    # ── MiniMax palette (warm orange) ──
-    MM_BG       = "#FFF8F0"
-    MM_SURFACE  = "#FFE8D0"
+    # ── MiniMax palette (white+blue — unified Z.AI style, orange accent) ──
+    MM_BG       = "#F8FAFE"
+    MM_SURFACE  = "#EEF2F8"
     MM_ACCENT   = "#FF6A00"
-    MM_TEXT     = "#3D2200"
-    MM_SECOND   = "#8B6B4A"
-    MM_TERTIARY = "#A89070"
-    MM_LITE     = "#FFEBD6"
-    MM_TRACK    = "#F0E0D0"
-    MM_DIVIDER  = "#E8D8C8"
-    MM_HOVER    = "#F5E0CC"
-    MM_CARD     = "#FFF0E0"
+    MM_TEXT     = "#1A1A2E"
+    MM_SECOND   = "#5A607A"
+    MM_TERTIARY = "#8E94AE"
+    MM_LITE     = "#FFE8D0"
+    MM_TRACK    = "#E4E8F0"
+    MM_DIVIDER  = "#D8DCE8"
+    MM_HOVER    = "#EAEFF8"
+    MM_CARD     = "#F0F3FA"
 
-    # ── OpenCode palette (dark teal) ──
-    OC_BG       = "#0A2F2F"
-    OC_SURFACE  = "#1A4A4A"
+    # ── OpenCode palette (white+blue — unified Z.AI style, teal accent) ──
+    OC_BG       = "#F8FAFE"
+    OC_SURFACE  = "#EEF2F8"
     OC_ACCENT   = "#00D4AA"
-    OC_TEXT     = "#E0FFF8"
-    OC_SECOND   = "#A0D0C0"
-    OC_TERTIARY = "#608880"
-    OC_LITE     = "#1A4A4A"
-    OC_TRACK    = "#2A5A5A"
-    OC_DIVIDER  = "#3A6A6A"
-    OC_HOVER    = "#3A5A5A"
-    OC_CARD     = "#2A4A4A"
+    OC_TEXT     = "#1A1A2E"
+    OC_SECOND   = "#5A607A"
+    OC_TERTIARY = "#8E94AE"
+    OC_LITE     = "#E8EDFE"
+    OC_TRACK    = "#E4E8F0"
+    OC_DIVIDER  = "#D8DCE8"
+    OC_HOVER    = "#EAEFF8"
+    OC_CARD     = "#F0F3FA"
+
 
     def __init__(self, master, claude_data, codex_data=None, *,
                  on_close=None, on_refresh=None, on_quit=None,
@@ -2052,17 +2056,17 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
                 self.CL_ACCENT, "#C4654A", self.CL_HOVER)
 
-        # Ensure inactive tabs have proper styling with their OWN track colors
+        # All inactive tabs: unified Z.AI style (ZA_TRACK bg, ZA_PRIMARY text)
         if tab != "claude":
-            self._cl_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
+            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "openai":
-            self._oa_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
+            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "zai":
-            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "minimax":
-            self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
+            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "opencode":
-            self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
+            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -2070,7 +2074,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._footer_frame.configure(fg_color=bg)
         self._footer_divider.configure(fg_color=divider)
         self._dash_btn.configure(text_color=accent, hover_color=hover)
-        self._quit_btn.configure(text_color=self.ZA_TERTIARY if tab == "zai" else (self.OA_TERTIARY if tab == "openai" else (self.MM_TERTIARY if tab == "minimax" else (self.OC_TERTIARY if tab == "opencode" else self.CL_TERTIARY))), hover_color=hover)
+        self._quit_btn.configure(text_color=self.ZA_PRIMARY, hover_color=hover)
         self._refresh_btn.configure(fg_color=accent, hover_color=accent_hover)
 
         # swap frames
@@ -2177,7 +2181,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="CL" if not self._cl_tab_icon else "",
             image=self._cl_tab_icon,
             font=("Segoe UI Semibold", 11),
-            text_color="#8B4513",
+            text_color="#1A1A2E",
             fg_color=self.CL_LITE,
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
@@ -2189,7 +2193,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="Codex" if not self._oa_tab_icon else "",
             image=self._oa_tab_icon,
             font=("Segoe UI Semibold", 11),
-            text_color="#1E7A56",
+            text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=48,
@@ -2201,7 +2205,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="Z.AI",
             image=None,  # Always show text, no image
             font=("Segoe UI Semibold", 11),
-            text_color="#3A6A8A",
+            text_color="#1A1A2E",
             fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=42,
@@ -2214,7 +2218,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="MM",
             image=None,
             font=("Segoe UI Semibold", 11),
-            text_color="#CC5500",
+            text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
@@ -2227,7 +2231,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             text="OC",
             image=None,
             font=("Segoe UI Semibold", 11),
-            text_color="#006655",
+            text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
             hover_color=self.CL_HOVER,
             corner_radius=8, height=26, width=34,
@@ -2284,25 +2288,25 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
             self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
             if self._active_tab == "openai":
-                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
-                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
-                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_HOVER, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
                 self._tab_bar.configure(fg_color=self.OA_BG)
                 self._tab_inner.configure(fg_color=self.OA_TRACK)
                 self.configure(fg_color=self.OA_BG)
                 self._openai_frame.pack(fill="both", expand=True)
                 self._footer_frame.configure(fg_color=self.OA_BG)
-                self._footer_divider.configure(fg_color=self.OA_DIVIDER)
+                self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
                 self._dash_btn.configure(text_color=self.OA_GREEN)
                 self._refresh_btn.configure(fg_color=self.OA_GREEN)
             elif self._active_tab == "zai":
-                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
-                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
-                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT_LT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
@@ -2312,31 +2316,31 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._dash_btn.configure(text_color=self.ZA_ACCENT)
                 self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
             elif self._active_tab == "minimax":
-                self._mm_tab_btn.configure(fg_color=self.MM_ACCENT, hover_color=self.MM_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
-                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
+                self._mm_tab_btn.configure(fg_color=self.MM_LITE, hover_color=self.MM_HOVER, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
                 self._tab_bar.configure(fg_color=self.MM_BG)
                 self._tab_inner.configure(fg_color=self.MM_TRACK)
                 self.configure(fg_color=self.MM_BG)
                 self._minimax_frame.pack(fill="both", expand=True)
                 self._footer_frame.configure(fg_color=self.MM_BG)
-                self._footer_divider.configure(fg_color=self.MM_DIVIDER)
+                self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
                 self._dash_btn.configure(text_color=self.MM_ACCENT)
                 self._refresh_btn.configure(fg_color=self.MM_ACCENT)
             elif self._active_tab == "opencode":
-                self._oc_tab_btn.configure(fg_color=self.OC_ACCENT, hover_color=self.OC_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
-                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._oc_tab_btn.configure(fg_color=self.OC_LITE, hover_color=self.OC_HOVER, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+                self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
                 self._tab_bar.configure(fg_color=self.OC_BG)
                 self._tab_inner.configure(fg_color=self.OC_TRACK)
                 self.configure(fg_color=self.OC_BG)
                 self._opencode_frame.pack(fill="both", expand=True)
                 self._footer_frame.configure(fg_color=self.OC_BG)
-                self._footer_divider.configure(fg_color=self.OC_DIVIDER)
+                self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
                 self._dash_btn.configure(text_color=self.OC_ACCENT)
                 self._refresh_btn.configure(fg_color=self.OC_ACCENT)
 
