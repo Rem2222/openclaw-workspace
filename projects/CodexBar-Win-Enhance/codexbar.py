@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.23"
+VERSION = "2.2.24"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2031,44 +2031,44 @@ class CodexBarPopup(ctk.CTkToplevel):
         if tab == "claude":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._cl_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "openai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._oa_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "zai":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "minimax":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._mm_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         elif tab == "opencode":
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._oc_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         else:
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
-                self.ZA_ACCENT, "#3A5CE5", self.ZA_HOVER)
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
 
 # All inactive tabs: unified Z.AI style (ZA_TRACK bg, ZA_PRIMARY text)
         if tab != "claude":
-            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "openai":
-            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "zai":
-            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "minimax":
-            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "opencode":
-            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -2077,7 +2077,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._footer_divider.configure(fg_color=divider)
         self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
         self._quit_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
-        self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
+        self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
 
         # swap frames
         for frame in (self._claude_frame, self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
@@ -2185,7 +2185,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             font=("Segoe UI Semibold", 11),
             text_color="#1A1A2E",
             fg_color=self.CL_LITE,
-            hover_color="#3A5CE5",
+            hover_color=self.ZA_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("claude"))
         self._cl_tab_btn.pack(side="left", padx=(2, 1), pady=2)
@@ -2197,7 +2197,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             font=("Segoe UI Semibold", 11),
             text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
-            hover_color="#3A5CE5",
+            hover_color=self.ZA_HOVER,
             corner_radius=8, height=26, width=48,
             command=lambda: self._switch_tab("openai"))
         self._oa_tab_btn.pack(side="left", padx=(1, 1), pady=2)
@@ -2209,7 +2209,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             font=("Segoe UI Semibold", 11),
             text_color="#1A1A2E",
             fg_color=self.CL_TRACK,  # Visible background in both light/dark modes
-            hover_color="#3A5CE5",
+            hover_color=self.ZA_HOVER,
             corner_radius=8, height=26, width=42,
             command=lambda: self._switch_tab("zai"))
         self._zai_tab_btn.pack(side="left", padx=(1, 2), pady=2)
@@ -2222,7 +2222,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             font=("Segoe UI Semibold", 11),
             text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
-            hover_color="#3A5CE5",
+            hover_color=self.ZA_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("minimax"))
         self._mm_tab_btn.pack(side="left", padx=(1, 2), pady=2)
@@ -2235,7 +2235,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             font=("Segoe UI Semibold", 11),
             text_color="#1A1A2E",
             fg_color=self.CL_TRACK,
-            hover_color="#3A5CE5",
+            hover_color=self.ZA_HOVER,
             corner_radius=8, height=26, width=34,
             command=lambda: self._switch_tab("opencode"))
         self._oc_tab_btn.pack(side="left", padx=(1, 2), pady=2)
@@ -2284,14 +2284,14 @@ class CodexBarPopup(ctk.CTkToplevel):
         if self._active_tab != "claude":
             self._claude_frame.pack_forget()
             # Reset ALL tab buttons to inactive state (ZA_TRACK, ZA_PRIMARY text)
-            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
-            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
-            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
-            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
-            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color="#3A5CE5", text_color=self.ZA_PRIMARY)
+            self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+            self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
             # Footer buttons: unified blue (ZA_ACCENT) everywhere
             self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
-            self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
+            self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
             if self._active_tab == "openai":
                 self._oa_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
                 self._tab_bar.configure(fg_color=self.ZA_BG)
@@ -2337,13 +2337,8 @@ class CodexBarPopup(ctk.CTkToplevel):
         has_data = d["source"] != "none"
         has_cost = d["cost_today"] > 0 or d["cost_30d"] > 0
 
-        # warm gradient flare
-        for color, h in [
-            ("#FCEEE8", 4), ("#FDF1EC", 3), ("#FDF4F0", 3),
-            ("#FEF6F3", 3), ("#FEF8F6", 2), ("#FFFCFB", 2),
-        ]:
-            ctk.CTkFrame(parent, fg_color=color, height=h,
-                         corner_radius=0).pack(fill="x")
+        # unified header
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
 
         # header
         hero = ctk.CTkFrame(parent, fg_color="transparent")
@@ -2362,7 +2357,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        ctk.CTkFrame(meta, fg_color="#5CB176", corner_radius=4,
+        ctk.CTkFrame(meta, fg_color=self.ZA_ACCENT, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d["updated"], font=("Segoe UI", 12),
                      text_color=self.CL_SECOND).pack(side="left")
@@ -2418,7 +2413,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             ctk.CTkButton(nd, text="Install Claude Code",
                           font=("Segoe UI Semibold", 13),
                           text_color="#FFFFFF", fg_color=self.CL_ACCENT,
-                          hover_color="#C4654A", corner_radius=10,
+                          hover_color=self.ZA_TERTIARY, corner_radius=10,
                           height=38, width=200,
                           command=lambda: self._open_url(
                               "https://docs.anthropic.com/en/docs/claude-code/overview")
@@ -2464,13 +2459,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         has_data = d["source"] not in ("none", "config")
         has_cost = d["cost_today"] > 0 or d["cost_30d"] > 0
 
-        # subtle dark gradient flare (dark → slightly lighter → dark)
-        for color, h in [
-            ("#2A2E2C", 4), ("#282C2A", 3), ("#262A28", 3),
-            ("#252826", 3), ("#242725", 2), ("#232524", 2),
-        ]:
-            ctk.CTkFrame(parent, fg_color=color, height=h,
-                         corner_radius=0).pack(fill="x")
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
 
         # header
         hero = ctk.CTkFrame(parent, fg_color="transparent")
@@ -2514,7 +2503,7 @@ class CodexBarPopup(ctk.CTkToplevel):
             ctk.CTkButton(nd, text="Install Codex",
                           font=("Segoe UI Semibold", 13),
                           text_color="#FFFFFF", fg_color=self.OA_GREEN,
-                          hover_color="#0D8A6A", corner_radius=10,
+                          hover_color=self.ZA_HOVER, corner_radius=10,
                           height=38, width=200,
                           command=lambda: self._open_url(
                               "https://github.com/openai/codex")
@@ -2596,12 +2585,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         has_data = d["source"] not in ("none", "config")
 
         # subtle gradient flare (light blue tones)
-        for color, h in [
-            ("#EDF1FB", 4), ("#EEF2FA", 3), ("#F0F3F9", 3),
-            ("#F2F5FA", 3), ("#F4F6FA", 2), ("#F6F8FB", 2),
-        ]:
-            ctk.CTkFrame(parent, fg_color=color, height=h,
-                         corner_radius=0).pack(fill="x")
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
 
         # header
         hero = ctk.CTkFrame(parent, fg_color="transparent")
@@ -2738,7 +2722,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._dash_btn = ctk.CTkButton(
             row, text="Dashboard", font=("Segoe UI", 12),
             text_color=self.CL_ACCENT, fg_color="transparent",
-            hover_color="#3A5CE5", anchor="w", height=30,
+            hover_color=self.ZA_HOVER, anchor="w", height=30,
             corner_radius=8, width=80,
             command=lambda: self._open_url(
                 {"openai": "https://platform.openai.com/usage",
@@ -2749,21 +2733,21 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._quit_btn = ctk.CTkButton(
             row, text="Quit", font=("Segoe UI", 12),
             text_color=self.CL_TERTIARY, fg_color="transparent",
-            hover_color="#3A5CE5", anchor="center", height=30,
+            hover_color=self.ZA_HOVER, anchor="center", height=30,
             corner_radius=8, width=50, command=self._do_quit)
         self._quit_btn.pack(side="right", padx=2)
 
         self._settings_btn = ctk.CTkButton(
             row, text="⚙", font=("Segoe UI", 14),
             text_color=self.CL_SECOND, fg_color="transparent",
-            hover_color="#3A5CE5", anchor="center", height=30,
+            hover_color=self.ZA_HOVER, anchor="center", height=30,
             corner_radius=8, width=36, command=self._do_settings)
         self._settings_btn.pack(side="right", padx=2)
 
         self._refresh_btn = ctk.CTkButton(
             row, text="Refresh", font=("Segoe UI Semibold", 12),
             text_color="#FFFFFF", fg_color=self.CL_ACCENT,
-            hover_color="#C4654A", anchor="center", height=30,
+            hover_color=self.ZA_TERTIARY, anchor="center", height=30,
             corner_radius=8, width=70, command=self._do_refresh)
         self._refresh_btn.pack(side="right", padx=2)
 
@@ -2828,7 +2812,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        dot_color = "#FF6A00" if available else "#C0C0C0"
+        dot_color = "#FF6A00" if available else self.ZA_TERTIARY
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
@@ -2870,28 +2854,28 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_PRIMARY, fg_color="#1A4A4A",
+                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        dot_color = "#00D4AA" if available else "#555555"
+        dot_color = self.ZA_ACCENT if available else self.ZA_TERTIARY
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
-                     text_color="#A0DDD0").pack(side="left")
+                     text_color=self.ZA_TERTIARY).pack(side="left")
 
         # Debug panel
         if not available:
-            ctk.CTkFrame(parent, fg_color="#1A4A4A", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
+            ctk.CTkFrame(parent, fg_color=self.ZA_ACCENT_LT, height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
             nd = ctk.CTkFrame(parent, fg_color="transparent")
             nd.pack(fill="x", padx=20, pady=(20, 8))
             ctk.CTkLabel(nd, text=d.get("error", "OpenCode cookie not set"),
                          font=("Segoe UI Semibold", 14),
-                         text_color="#E0FFF8").pack(pady=(0, 4))
+                         text_color=self.ZA_PRIMARY).pack(pady=(0, 4))
             ctk.CTkLabel(nd, text="Auto-reads cookies from browser (or set OPENCODE_COOKIE)",
                          font=("Segoe UI", 11),
-                         text_color="#A0DDD0").pack(pady=(0, 12))
+                         text_color=self.ZA_TERTIARY).pack(pady=(0, 12))
             return
 
         sp = d.get("session_used_pct", 0)
@@ -2966,7 +2950,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._test_btn = ctk.CTkButton(
             row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=32, corner_radius=6,
-            fg_color="#4A6CF7", hover_color="#3B5BE0",
+            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
             text_color="#FFFFFF", command=self._test_token)
         self._test_btn.pack(side="left")
 
@@ -2985,11 +2969,11 @@ class SettingsPopup(ctk.CTkToplevel):
         ctk.CTkLabel(mm_header,
                      text=" Auto-reads cookies from browser",
                      font=("Segoe UI", 10),
-                     text_color="#9A9AB0").pack(side="left", padx=(4, 0))
+                     text_color=self.ZA_TERTIARY).pack(side="left", padx=(4, 0))
 
         mm_hint = ctk.CTkLabel(self,
                                text="Make sure you.re logged in at minimaxi.com / platform.minimax.io",
-                               font=("Segoe UI", 10), text_color="#9A9AB0",
+                               font=("Segoe UI", 10), text_color=self.ZA_TERTIARY,
                                anchor="w")
         mm_hint.pack(fill="x", padx=20, pady=(0, 2))
 
@@ -3007,7 +2991,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._mm_test_btn = ctk.CTkButton(
             mm_row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=30, corner_radius=6,
-            fg_color="#FF6A00", hover_color="#E05A00",
+            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
             text_color="#FFFFFF", command=self._test_minimax)
         self._mm_test_btn.pack(side="left")
 
@@ -3025,11 +3009,11 @@ class SettingsPopup(ctk.CTkToplevel):
         ctk.CTkLabel(oc_header,
                      text=" Auto-reads cookies from browser",
                      font=("Segoe UI", 10),
-                     text_color="#9A9AB0").pack(side="left", padx=(4, 0))
+                     text_color=self.ZA_TERTIARY).pack(side="left", padx=(4, 0))
 
         oc_hint = ctk.CTkLabel(self,
                                text="Make sure you're logged in at opencode.ai",
-                               font=("Segoe UI", 10), text_color="#9A9AB0",
+                               font=("Segoe UI", 10), text_color=self.ZA_TERTIARY,
                                anchor="w")
         oc_hint.pack(fill="x", padx=20, pady=(0, 2))
 
@@ -3047,7 +3031,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._oc_test_btn = ctk.CTkButton(
             oc_row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=30, corner_radius=6,
-            fg_color="#00D4AA", hover_color="#00B090",
+            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
             text_color="#FFFFFF", command=self._test_opencode)
         self._oc_test_btn.pack(side="left")
 
@@ -3066,14 +3050,14 @@ class SettingsPopup(ctk.CTkToplevel):
         ctk.CTkButton(
             bottom_row, text="Save", font=("Segoe UI Semibold", 12),
             width=100, height=34, corner_radius=6,
-            fg_color="#4A6CF7", hover_color="#3B5BE0",
+            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
             text_color="#FFFFFF", command=self._save_and_close
         ).pack(side="right")
 
         ctk.CTkButton(
             bottom_row, text="Cancel", font=("Segoe UI", 12),
             width=80, height=34, corner_radius=6,
-            fg_color="transparent", hover_color="#EEF2F8",
+            fg_color="transparent", hover_color=self.ZA_HOVER,
             text_color=self.ZA_TERTIARY, command=self.destroy
         ).pack(side="right", padx=(0, 8))
 
