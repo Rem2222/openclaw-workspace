@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.5"
+VERSION = "2.2.6"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2759,6 +2759,16 @@ class CodexBarPopup(ctk.CTkToplevel):
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
                      text_color="#8B6914").pack(side="left")
 
+        # DEBUG: show all received fields (always, even on error)
+        dbg = ctk.CTkFrame(parent, fg_color="#1a1a1a")
+        dbg.pack(fill="x", padx=20, pady=(0, 10))
+        ctk.CTkLabel(dbg, text=f"DEBUG (avail={available}):", font=("Consolas", 10),
+                     text_color="#00FF00").pack(anchor="w")
+        for k, v in d.items():
+            if k not in ("provider",):
+                ctk.CTkLabel(dbg, text=f"  {k}: {v}", font=("Consolas", 9),
+                             text_color="#00FF00").pack(anchor="w")
+
         if not available:
             ctk.CTkFrame(parent, fg_color="#FFE0B2", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
             nd = ctk.CTkFrame(parent, fg_color="transparent")
@@ -2770,16 +2780,6 @@ class CodexBarPopup(ctk.CTkToplevel):
                          font=("Segoe UI", 11),
                          text_color="#8B6914").pack(pady=(0, 12))
             return
-
-        # DEBUG: show all received fields
-        dbg = ctk.CTkFrame(parent, fg_color="#1a1a1a")
-        dbg.pack(fill="x", padx=20, pady=(0, 10))
-        ctk.CTkLabel(dbg, text="DEBUG DATA:", font=("Consolas", 10),
-                     text_color="#00FF00").pack(anchor="w")
-        for k, v in d.items():
-            if k not in ("provider",):
-                ctk.CTkLabel(dbg, text=f"  {k}: {v}", font=("Consolas", 9),
-                             text_color="#00FF00").pack(anchor="w")
 
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
