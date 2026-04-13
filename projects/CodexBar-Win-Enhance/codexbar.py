@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.13"
+VERSION = "2.2.14"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1737,14 +1737,17 @@ class OpenCodeDataFetcher:
             def _parse_usage(html, label):
                 pattern = r'\\b' + label + r'[^}]*?resetInSec:(\\d+)[^}]*?usagePercent:(\\d+)'
                 m = _re.search(pattern, html)
+                self._log(f"  _parse_usage({label}): match={m is not None}")
                 if m:
                     secs, pct = int(m.group(1)), int(m.group(2))
+                    self._log(f"    -> secs={secs}, pct={pct}")
                     h, mn = divmod(secs // 60, 60)
                     if h >= 24:
                         reset = f"{h // 24}d {h % 24}h"
                     else:
                         reset = f"{h}h {mn:02d}m"
                     return pct, reset
+                self._log(f"    -> no match")
                 return None, "unknown"
 
             session_pct, session_reset = _parse_usage(html, "rollingUsage")
@@ -1752,6 +1755,7 @@ class OpenCodeDataFetcher:
             monthly_pct, monthly_reset = _parse_usage(html, "monthlyUsage")
 
             if monthly_pct is None and weekly_pct is None and session_pct is None:
+                self._log(f"ERROR: no usage data. session={session_pct}, weekly={weekly_pct}, monthly={monthly_pct}")
                 d["error"] = "no usage data found in page"
                 return d
 
@@ -2863,6 +2867,12 @@ class CodexBarPopup(ctk.CTkToplevel):
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
                      text_color="#A0DDD0").pack(side="left")
+
+        # Debug panel
+        dbg = ctk.CTkFrame(parent, fg_color="#0A1A0A", corner_radius=6)
+        dbg.pack(fill="x", padx=20, pady=(4, 4))
+        ctk.CTkLabel(dbg, text=f'src={d.get("source","?")} avail={available} err={d.get("error","")}',
+                     font=("Courier New", 9), text_color="#00FF88").pack(padx=8, pady=4)
 
         if not available:
             ctk.CTkFrame(parent, fg_color="#1A4A4A", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
