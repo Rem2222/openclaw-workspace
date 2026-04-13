@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.27"
+VERSION = "2.2.25"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2174,7 +2174,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         tab_bar.pack_propagate(False)
         self._tab_bar = tab_bar
 
-        self._tab_inner = ctk.CTkFrame(tab_bar, fg_color=self.CL_TRACK, corner_radius=0)
+        self._tab_inner = ctk.CTkFrame(tab_bar, fg_color=self.CL_TRACK, corner_radius=9)
         self._tab_inner.pack(side="left", padx=14, pady=4)
         tab_inner = self._tab_inner
 
@@ -2476,12 +2476,12 @@ class CodexBarPopup(ctk.CTkToplevel):
         if d["model"]:
             plan_text = d["model"]
         ctk.CTkLabel(row, text=f"  {plan_text}  ", font=("Segoe UI Semibold", 11),
-                     text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
+                     text_color=self.OA_GREEN, fg_color=self.OA_GREEN_LT,
                      corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        dot_color = self.ZA_ACCENT if available else self.ZA_TERTIARY
+        dot_color = self.OA_GREEN if available else self.OA_TERTIARY
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d["updated"], font=("Segoe UI", 12),
@@ -2496,13 +2496,13 @@ class CodexBarPopup(ctk.CTkToplevel):
             nd.pack(fill="x", padx=20, pady=(20, 8))
             ctk.CTkLabel(nd, text="Codex not detected",
                          font=("Segoe UI Semibold", 14),
-                         text_color=self.ZA_PRIMARY).pack(pady=(0, 4))
+                         text_color=self.OA_PRIMARY).pack(pady=(0, 4))
             ctk.CTkLabel(nd, text="Install the CLI to see your usage",
                          font=("Segoe UI", 11),
-                         text_color=self.ZA_SECOND).pack(pady=(0, 12))
+                         text_color=self.OA_SECOND).pack(pady=(0, 12))
             ctk.CTkButton(nd, text="Install Codex",
                           font=("Segoe UI Semibold", 13),
-                          text_color="#FFFFFF", fg_color=self.ZA_ACCENT,
+                          text_color="#FFFFFF", fg_color=self.OA_GREEN,
                           hover_color=self.ZA_HOVER, corner_radius=10,
                           height=38, width=200,
                           command=lambda: self._open_url(
@@ -2807,12 +2807,12 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
+                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        dot_color = self.ZA_ACCENT if available else self.ZA_TERTIARY
+        dot_color = "#FF6A00" if available else self.ZA_TERTIARY
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
@@ -2854,7 +2854,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
+                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
