@@ -177,6 +177,44 @@ const result = await linear.issueCreate({
 
 ---
 
+### Комментарии (проверка новых)
+
+#### `checkRecentComments(minutes?)`
+Проверить комменты за последние N минут. Используется для cron-задач.
+
+**CLI:** `python3 linear_api.py check-comments [minutes]`
+
+**Returns:** 
+```json
+{
+  "comments": [
+    {
+      "id": "...",
+      "body": "текст комментария",
+      "createdAt": "2026-04-13T...",
+      "issue": { "id": "...", "identifier": "REM-26", "title": "...", "url": "..." },
+      "actor": { "name": "Роман", "email": "..." }
+    }
+  ],
+  "checked_at": "2026-04-13T...",
+  "since": "2026-04-13T..."
+}
+```
+
+**Пример использования в cron:**
+```bash
+python3 linear_api.py check-comments 2
+```
+
+#### `checkCommentsForIssue(issueId, sinceMinutes?)`
+Проверить комменты на конкретной задаче за последние N минут.
+
+**CLI:** `python3 linear_api.py check-issue-comments <issue_id> [minutes]`
+
+**Returns:** `{ issue: {identifier, title}, comments: [...] }`
+
+---
+
 ## Workflow (рабочий процесс)
 
 ### Запуск нового проекта:

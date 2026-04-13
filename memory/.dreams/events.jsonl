@@ -1,0 +1,2 @@
+{"type":"memory.recall.recorded","timestamp":"2026-04-13T11:05:42.542Z","query":"VPS SSH пароль access credentials","resultCount":1,"results":[{"path":"memory/2026-04-11.md","startLine":1,"endLine":27,"score":0.4837255770378813}]}
+{"type":"memory.recall.recorded","timestamp":"2026-04-13T11:05:57.338Z","query":"SSH VPS пароль root access server","resultCount":1,"results":[{"path":"memory/2026-04-11.md","startLine":1,"endLine":27,"score":0.44324690179024356}]}

@@ -345,6 +345,97 @@ def attachment_create(issue_id: str, title: str, url: str, subtitle: str = "") -
     return result.get("attachment", {})
 
 
+def check_recent_comments(minutes: int = 5) -> dict:
+    """Check for comments created in the last N minutes
+    
+    Args:
+        minutes: Number of minutes to look back (default 5)
+    
+    Returns:
+        { comments: [{ id, body, createdAt, issue: { id, identifier, title }, actor: { name } }] }
+    """
+    from datetime import datetime, timedelta
+    since = (datetime.utcnow() - timedelta(minutes=minutes)).isoformat() + "Z"
+    
+    query = """
+    query commentsSince($since: DateTime!) {
+      comments(first: 50, filter: { createdAt: { gte: $since } }) {
+        nodes {
+          id
+          body
+          createdAt
+          issue {
+            id
+            identifier
+            title
+            url
+          }
+          actor {
+            name
+            email
+          }
+        }
+      }
+    }
+    """
+    variables = {"since": since}
+    data = _query(query, variables)
+    comments = data.get("data", {}).get("comments", {}).get("nodes", [])
+    
+    # Filter out bot's own comments (we'll identify by name or lack of actor)
+    filtered = []
+    for c in comments:
+        actor_name = c.get("actor", {}).get("name", "")
+        # Skip empty comments or bot comments
+        if c.get("body", "").strip() and actor_name and "Rom" not in actor_name and "romul" not in actor_name.lower():
+            filtered.append(c)
+    
+    return {"comments": filtered, "checked_at": datetime.utcnow().isoformat(), "since": since}
+
+
+def check_comments_for_issue(issue_id: str, since_minutes: int = 60) -> dict:
+    """Check for new comments on a specific issue since N minutes ago
+    
+    Args:
+        issue_id: Linear issue ID
+        since_minutes: Number of minutes to look back
+    
+    Returns:
+        { comments: [...] }
+    """
+    from datetime import datetime, timedelta
+    since = (datetime.utcnow() - timedelta(minutes=since_minutes)).isoformat() + "Z"
+    
+    query = """
+    query issueComments($issueId: String!, $since: DateTime!) {
+      issue(id: $issueId) {
+        identifier
+        title
+        comments(first: 20, filter: { createdAt: { gte: $since } }) {
+          nodes {
+            id
+            body
+            createdAt
+            actor {
+              name
+            }
+          }
+        }
+      }
+    }
+    """
+    variables = {"issueId": issue_id, "since": since}
+    data = _query(query, variables)
+    issue_data = data.get("data", {}).get("issue", {})
+    comments = issue_data.get("comments", {}).get("nodes", [])
+    
+    return {
+        "issue": {"identifier": issue_data.get("identifier"), "title": issue_data.get("title")},
+        "comments": comments,
+        "checked_at": datetime.utcnow().isoformat()
+    }
+
+
 # ============ CLI Interface ============
 
 if __name__ == "__main__":
@@ -424,6 +515,17 @@ if __name__ == "__main__":
             url = sys.argv[4]
             subtitle = sys.argv[5] if len(sys.argv) > 5 else ""
             result = attachment_create(issue_id, title, url, subtitle)
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+
+        elif cmd == "check-comments":
+            minutes = int(sys.argv[2]) if len(sys.argv) > 2 else 5
+            result = check_recent_comments(minutes)
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+
+        elif cmd == "check-issue-comments":
+            issue_id = sys.argv[2]
+            minutes = int(sys.argv[3]) if len(sys.argv) > 3 else 60
+            result = check_comments_for_issue(issue_id, minutes)
             print(json.dumps(result, indent=2, ensure_ascii=False))
 
         else:

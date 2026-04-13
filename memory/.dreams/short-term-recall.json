@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-13T11:05:57.338Z",
+  "entries": {
+    "memory:memory/2026-04-11.md:1:27": {
+      "key": "memory:memory/2026-04-11.md:1:27",
+      "path": "memory/2026-04-11.md",
+      "startLine": 1,
+      "endLine": 27,
+      "source": "memory",
+      "snippet": "d credentials\"",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "totalScore": 0.9269724788281248,
+      "maxScore": 0.4837255770378813,
+      "firstRecalledAt": "2026-04-13T11:05:42.542Z",
+      "lastRecalledAt": "2026-04-13T11:05:57.338Z",
+      "queryHashes": [
+        "eebab66c52c5",
+        "2b116af4897a"
+      ],
+      "recallDays": [
+        "2026-04-13"
+      ],
+      "conceptTags": [
+        "credentials"
+      ]
+    }
+  }
+}
