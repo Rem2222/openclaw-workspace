@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.4"
+VERSION = "2.2.5"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3018,17 +3018,21 @@ class SettingsPopup(ctk.CTkToplevel):
     def save_all_tokens(self):
         """Save all tokens to config file and set env vars."""
         try:
-            self.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            # Use same path logic as _load(): LOCALAPPDATA first (Windows), then ~/.codexbar/
+            settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+            if not settings_path.parent.exists():
+                settings_path = Path.home() / ".codexbar" / "settings.json"
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
             data = {}
-            if self.CONFIG_PATH.exists():
+            if settings_path.exists():
                 try:
-                    data = json.loads(self.CONFIG_PATH.read_text())
+                    data = json.loads(settings_path.read_text())
                 except Exception:
                     pass
             data["zai_token"] = self._token_entry.get().strip()
             data["minimax_token"] = self._mm_entry.get().strip()
             data["opencode_cookie"] = self._oc_entry.get().strip()
-            self.CONFIG_PATH.write_text(json.dumps(data, indent=2))
+            settings_path.write_text(json.dumps(data, indent=2))
             os.environ["ZAI_API_TOKEN"] = data.get("zai_token", "")
             os.environ["MINIMAX_API_KEY"] = data.get("minimax_token", "")
             os.environ["OPENCODE_COOKIE"] = data.get("opencode_cookie", "")
