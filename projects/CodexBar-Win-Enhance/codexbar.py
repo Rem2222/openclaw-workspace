@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.8"
+VERSION = "2.2.9"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3055,9 +3055,31 @@ class SettingsPopup(ctk.CTkToplevel):
                     data = json.loads(settings_path.read_text())
                 except Exception:
                     pass
-            data["zai_token"] = self._token_entry.get().strip()
-            data["minimax_token"] = self._mm_entry.get().strip()
-            data["opencode_cookie"] = self._oc_entry.get().strip()
+
+            zai_tok = self._token_entry.get().strip()
+            mm_tok = self._mm_entry.get().strip()
+            oc_cook = self._oc_entry.get().strip()
+
+            # Guard against duplicated tokens (if same string concatenated >2x, truncate to first occurrence)
+            def dedup(tok):
+                if not tok:
+                    return tok
+                # If token is repeated 2+ times (e.g. "abcabcabc"), keep only first
+                mid = len(tok) // 2
+                first_half = tok[:mid]
+                if tok == first_half * 2 or tok == first_half * 3:
+                    return first_half
+                # Also check via repetition
+                for n in [2, 3, 4]:
+                    candidate = tok[:len(tok)//n]
+                    if len(tok) % len(candidate) == 0 and candidate * n == tok:
+                        return candidate
+                return tok
+
+            data["zai_token"] = dedup(zai_tok)
+            data["minimax_token"] = dedup(mm_tok)
+            data["opencode_cookie"] = oc_cook
+
             settings_path.write_text(json.dumps(data, indent=2))
             os.environ["ZAI_API_TOKEN"] = data.get("zai_token", "")
             os.environ["MINIMAX_API_KEY"] = data.get("minimax_token", "")
