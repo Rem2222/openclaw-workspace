@@ -1588,6 +1588,16 @@ class MiniMaxDataFetcher:
         wpct = min(100, round(w_used / w_total * 100)) if w_total > 0 else 0
         result["weekly_used_pct"] = wpct
 
+        # Weekly reset time (if available)
+        weekly_end = cp.get("current_weekly_end_time") or cp.get("week_end_time")
+        if weekly_end:
+            ts = weekly_end / 1000 if weekly_end > 1e12 else weekly_end
+            remaining = max(0, ts - datetime.now().timestamp())
+            h, m = divmod(int(remaining // 60), 60)
+            result["weekly_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
+        else:
+            result["weekly_reset"] = "—"
+
         end = cp.get("end_time")
         if end:
             ts = end / 1000 if end > 1e12 else end
@@ -2763,6 +2773,10 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+
+        wp = d.get("weekly_used_pct", 0)
+        if wp > 0:
+            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
 
     # ── OpenCode panel ─────────────────────────────────────────
 
