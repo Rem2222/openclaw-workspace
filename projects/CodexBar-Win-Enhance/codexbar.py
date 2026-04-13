@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.10"
+VERSION = "2.2.11"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2862,8 +2862,12 @@ class SettingsPopup(ctk.CTkToplevel):
     def load_last_tab(cls):
         """Load last active tab from settings file."""
         try:
-            if cls.CONFIG_PATH.exists():
-                data = json.loads(cls.CONFIG_PATH.read_text())
+            # Use same path logic as _load(): LOCALAPPDATA first (Windows), then ~/.codexbar/
+            settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+            if not settings_path.parent.exists():
+                settings_path = Path.home() / ".codexbar" / "settings.json"
+            if settings_path.exists():
+                data = json.loads(settings_path.read_text())
                 return data.get("last_tab", "claude")
         except Exception:
             pass
@@ -2873,12 +2877,16 @@ class SettingsPopup(ctk.CTkToplevel):
     def save_last_tab(cls, tab):
         """Save last active tab to settings file."""
         try:
-            cls.CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            # Use same path logic as save_all_tokens(): LOCALAPPDATA first (Windows), then ~/.codexbar/
+            settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+            if not settings_path.parent.exists():
+                settings_path = Path.home() / ".codexbar" / "settings.json"
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
             data = {}
-            if cls.CONFIG_PATH.exists():
-                data = json.loads(cls.CONFIG_PATH.read_text())
+            if settings_path.exists():
+                data = json.loads(settings_path.read_text())
             data["last_tab"] = tab
-            cls.CONFIG_PATH.write_text(json.dumps(data, indent=2))
+            settings_path.write_text(json.dumps(data, indent=2))
         except Exception:
             pass
 
