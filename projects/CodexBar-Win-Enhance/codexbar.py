@@ -3312,13 +3312,27 @@ class SettingsPopup(ctk.CTkToplevel):
 
 class CodexBarApp:
     def __init__(self):
-        # Kill any existing CodexBar window
+        # Kill any existing CodexBar process using PID file
+        import os as _os
+        lock_file = _os.path.join(_os.environ.get('LOCALAPPDATA', _os.path.expanduser('~')),
+                                  'CodexBar', 'codexbar.lock')
         try:
-            import subprocess as _subprocess
-            # Find window by title (CodexBar sets window title to "CodexBar")
-            _subprocess.run(['taskkill', '/F',
-                           '/FI', 'WINDOWTITLE eq *CodexBar*'],
-                          capture_output=True)
+            _os.makedirs(_os.path.dirname(lock_file), exist_ok=True)
+            if _os.path.exists(lock_file):
+                old_pid = int(open(lock_file).read().strip())
+                try:
+                    _os.kill(old_pid, 0)  # check if alive
+                    # Still alive - kill it
+                    import subprocess as _subprocess
+                    _subprocess.run(['taskkill', '/F', '/PID', str(old_pid)],
+                                  capture_output=True)
+                except (OSError, ProcessLookupError, ValueError):
+                    pass  # stale PID, not alive
+        except Exception:
+            pass
+        try:
+            with open(lock_file, 'w') as f:
+                f.write(str(_os.getpid()))
         except Exception:
             pass
 
