@@ -2052,17 +2052,17 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.CL_BG, self.CL_TRACK, self.CL_DIVIDER,
                 self.CL_ACCENT, "#C4654A", self.CL_HOVER)
 
-        # Ensure inactive tabs have proper styling with visible background
+        # Ensure inactive tabs have proper styling with their OWN track colors
         if tab != "claude":
-            self._cl_tab_btn.configure(fg_color=track, hover_color=hover)
+            self._cl_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
         if tab != "openai":
-            self._oa_tab_btn.configure(fg_color=track, hover_color=hover)
+            self._oa_tab_btn.configure(fg_color=self.OA_TRACK, hover_color=self.OA_TRACK, text_color=self.OA_TRACK)
         if tab != "zai":
-            self._zai_tab_btn.configure(fg_color=track, hover_color=hover, text_color=self.ZA_ACCENT)
+            self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
         if tab != "minimax":
-            self._mm_tab_btn.configure(fg_color=track, hover_color=hover)
+            self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
         if tab != "opencode":
-            self._oc_tab_btn.configure(fg_color=track, hover_color=hover)
+            self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -2284,9 +2284,11 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._mm_tab_btn.configure(fg_color=self.MM_TRACK, hover_color=self.MM_TRACK, text_color=self.MM_TRACK)
             self._oc_tab_btn.configure(fg_color=self.OC_TRACK, hover_color=self.OC_TRACK, text_color=self.OC_TRACK)
             if self._active_tab == "openai":
-                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT)
-                self._cl_tab_btn.configure(fg_color=self.OA_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.OA_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.OA_GREEN_LT, hover_color=self.OA_GREEN_LT, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
+                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
                 self._tab_bar.configure(fg_color=self.OA_BG)
                 self._tab_inner.configure(fg_color=self.OA_TRACK)
                 self.configure(fg_color=self.OA_BG)
@@ -2296,9 +2298,11 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._dash_btn.configure(text_color=self.OA_GREEN)
                 self._refresh_btn.configure(fg_color=self.OA_GREEN)
             elif self._active_tab == "zai":
-                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT)
-                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_ACCENT, text_color="#FFFFFF")
+                self._cl_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
+                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
                 self._tab_bar.configure(fg_color=self.ZA_BG)
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
@@ -2309,9 +2313,10 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._refresh_btn.configure(fg_color=self.ZA_ACCENT)
             elif self._active_tab == "minimax":
                 self._mm_tab_btn.configure(fg_color=self.MM_ACCENT, hover_color=self.MM_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.MM_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.MM_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.MM_TRACK)
+                self._cl_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
+                self._oc_tab_btn.configure(fg_color=self.OC_TRACK, text_color=self.OC_TRACK)
                 self._tab_bar.configure(fg_color=self.MM_BG)
                 self._tab_inner.configure(fg_color=self.MM_TRACK)
                 self.configure(fg_color=self.MM_BG)
@@ -2322,9 +2327,10 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._refresh_btn.configure(fg_color=self.MM_ACCENT)
             elif self._active_tab == "opencode":
                 self._oc_tab_btn.configure(fg_color=self.OC_ACCENT, hover_color=self.OC_ACCENT, text_color="#FFFFFF")
-                self._cl_tab_btn.configure(fg_color=self.OC_TRACK)
-                self._oa_tab_btn.configure(fg_color=self.OC_TRACK)
-                self._zai_tab_btn.configure(fg_color=self.OC_TRACK)
+                self._cl_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
+                self._oa_tab_btn.configure(fg_color=self.OA_TRACK, text_color=self.OA_TRACK)
+                self._zai_tab_btn.configure(fg_color=self.ZA_TRACK, text_color=self.ZA_TRACK)
+                self._mm_tab_btn.configure(fg_color=self.MM_TRACK, text_color=self.MM_TRACK)
                 self._tab_bar.configure(fg_color=self.OC_BG)
                 self._tab_inner.configure(fg_color=self.OC_TRACK)
                 self.configure(fg_color=self.OC_BG)
@@ -2894,11 +2900,6 @@ class CodexBarPopup(ctk.CTkToplevel):
                      text_color="#A0DDD0").pack(side="left")
 
         # Debug panel
-        dbg = ctk.CTkFrame(parent, fg_color="#0A1A0A", corner_radius=6)
-        dbg.pack(fill="x", padx=20, pady=(4, 4))
-        ctk.CTkLabel(dbg, text=f'src={d.get("source","?")} avail={available} err={d.get("error","")}',
-                     font=("Courier New", 9), text_color="#00FF88").pack(padx=8, pady=4)
-
         if not available:
             ctk.CTkFrame(parent, fg_color="#1A4A4A", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
             nd = ctk.CTkFrame(parent, fg_color="transparent")
