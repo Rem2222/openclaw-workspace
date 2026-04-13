@@ -2481,7 +2481,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
         meta.pack(fill="x", pady=(5, 0))
-        dot_color = self.OA_GREEN if available else self.OA_TERTIARY
+        dot_color = self.ZA_ACCENT if available else self.OA_TERTIARY
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d["updated"], font=("Segoe UI", 12),
@@ -2502,7 +2502,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                          text_color=self.OA_SECOND).pack(pady=(0, 12))
             ctk.CTkButton(nd, text="Install Codex",
                           font=("Segoe UI Semibold", 13),
-                          text_color="#FFFFFF", fg_color=self.OA_GREEN,
+                          text_color="#FFFFFF", fg_color=self.ZA_ACCENT,
                           hover_color=self.ZA_HOVER, corner_radius=10,
                           height=38, width=200,
                           command=lambda: self._open_url(
