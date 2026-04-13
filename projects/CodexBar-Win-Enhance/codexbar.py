@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.22"
+VERSION = "2.2.23"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2076,7 +2076,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._footer_frame.configure(fg_color=bg)
         self._footer_divider.configure(fg_color=divider)
         self._dash_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
-        self._quit_btn.configure(text_color=self.ZA_PRIMARY, hover_color=hover)
+        self._quit_btn.configure(text_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
         self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color="#3A5CE5")
 
         # swap frames
@@ -2768,7 +2768,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._refresh_btn.pack(side="right", padx=2)
 
         # version label on far left
-        vl = ctk.CTkLabel(row, text=f"v{VERSION}", font=("Segoe UI", 10), text_color="#5A5A6A")
+        vl = ctk.CTkLabel(row, text=f"v{VERSION}", font=("Segoe UI", 10), text_color=self.ZA_TERTIARY)
         vl.pack(side="left", padx=(0, 8))
 
     # ── helpers ──
@@ -2812,8 +2812,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         d = self._minimax
         available = not d.get("error") and d.get("available", False)
 
-        for color, h in [("#FFF8F0", 4), ("#FFF5EB", 3), ("#FFF2E6", 3)]:
-            ctk.CTkFrame(parent, fg_color=color, height=h, corner_radius=0).pack(fill="x")
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
 
         hero = ctk.CTkFrame(parent, fg_color="transparent")
         hero.pack(fill="x", padx=22, pady=(4, 0))
@@ -2824,7 +2823,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_PRIMARY, fg_color="#FFE8D0",
+                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
@@ -2833,18 +2832,18 @@ class CodexBarPopup(ctk.CTkToplevel):
         ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
-                     text_color="#8B6914").pack(side="left")
+                     text_color=self.ZA_PRIMARY).pack(side="left")
 
         if not available:
-            ctk.CTkFrame(parent, fg_color="#FFE0B2", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
+            ctk.CTkFrame(parent, fg_color=self.ZA_ACCENT_LT, height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
             nd = ctk.CTkFrame(parent, fg_color="transparent")
             nd.pack(fill="x", padx=20, pady=(20, 8))
             ctk.CTkLabel(nd, text=d.get("error", "MiniMax token not set"),
                          font=("Segoe UI Semibold", 14),
-                         text_color="#3D2200").pack(pady=(0, 4))
+                         text_color=self.ZA_PRIMARY).pack(pady=(0, 4))
             ctk.CTkLabel(nd, text="Auto-reads cookies from browser (login to minimaxi.com)",
                          font=("Segoe UI", 11),
-                         text_color="#8B6914").pack(pady=(0, 12))
+                         text_color=self.ZA_PRIMARY).pack(pady=(0, 12))
             return
 
         sp = d.get("session_used_pct", 0)
@@ -2860,8 +2859,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         d = self._opencode
         available = not d.get("error") and d.get("available", False)
 
-        for color, h in [("#0A2F2F", 4), ("#0D3535", 3), ("#103A3A", 3)]:
-            ctk.CTkFrame(parent, fg_color=color, height=h, corner_radius=0).pack(fill="x")
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
 
         hero = ctk.CTkFrame(parent, fg_color="transparent")
         hero.pack(fill="x", padx=22, pady=(4, 0))
@@ -2975,7 +2973,7 @@ class SettingsPopup(ctk.CTkToplevel):
         # ── test result label ──
         self._test_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color="#5A607A", anchor="w")
+            text_color=self.ZA_TERTIARY, anchor="w")
         self._test_result.pack(fill="x", padx=20, pady=(4, 0))
 
         # ── MiniMax section ──
@@ -3015,7 +3013,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         self._mm_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color="#5A607A", anchor="w")
+            text_color=self.ZA_TERTIARY, anchor="w")
         self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
 
         # ── OpenCode section ──
@@ -3055,7 +3053,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         self._oc_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color="#5A607A", anchor="w")
+            text_color=self.ZA_TERTIARY, anchor="w")
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
         self._token_entry.focus_set()
@@ -3076,7 +3074,7 @@ class SettingsPopup(ctk.CTkToplevel):
             bottom_row, text="Cancel", font=("Segoe UI", 12),
             width=80, height=34, corner_radius=6,
             fg_color="transparent", hover_color="#EEF2F8",
-            text_color="#5A607A", command=self.destroy
+            text_color=self.ZA_TERTIARY, command=self.destroy
         ).pack(side="right", padx=(0, 8))
 
     @classmethod
@@ -3142,7 +3140,7 @@ class SettingsPopup(ctk.CTkToplevel):
             self._test_result.configure(text="✗ Enter a token first", text_color="#E04040")
             return
         self._test_btn.configure(text="...", state="disabled")
-        self._test_result.configure(text="Testing...", text_color="#5A607A")
+        self._test_result.configure(text="Testing...", text_color=self.ZA_TERTIARY)
         self.update_idletasks()
 
         def do_test():
@@ -3214,7 +3212,7 @@ class SettingsPopup(ctk.CTkToplevel):
             self.update_idletasks()
 
             if browser_cookies.get("HMACCCS"):
-                self._mm_result.configure(text="Testing browser cookie...", text_color="#5A607A")
+                self._mm_result.configure(text="Testing browser cookie...", text_color=self.ZA_TERTIARY)
                 self.update_idletasks()
                 msg, color = do_test_cookie()
                 self.after(0, lambda m=msg, c=color:
@@ -3223,7 +3221,7 @@ class SettingsPopup(ctk.CTkToplevel):
                 if "✓" in msg:
                     self.after(100, lambda: self.root._do_refresh())
             elif token:
-                self._mm_result.configure(text="Testing API token...", text_color="#5A607A")
+                self._mm_result.configure(text="Testing API token...", text_color=self.ZA_TERTIARY)
                 self.update_idletasks()
                 msg, color = do_test_token(token)
                 self.after(0, lambda m=msg, c=color:
@@ -3264,7 +3262,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         def run():
             self._oc_test_btn.configure(text="...", state="disabled")
-            self._oc_result.configure(text="Testing browser cookie...", text_color="#5A607A")
+            self._oc_result.configure(text="Testing browser cookie...", text_color=self.ZA_TERTIARY)
             self.update_idletasks()
 
             # Try browser cookie
@@ -3278,7 +3276,7 @@ class SettingsPopup(ctk.CTkToplevel):
                     self._oc_result.configure(text=m, text_color=c))
             elif raw:
                 # Fall back to manual entry
-                self._oc_result.configure(text="Testing manual cookie...", text_color="#5A607A")
+                self._oc_result.configure(text="Testing manual cookie...", text_color=self.ZA_TERTIARY)
                 self.update_idletasks()
                 cookie_header = raw if raw.startswith("auth=") else f"auth={raw}"
                 msg, color = do_test(cookie_header)
