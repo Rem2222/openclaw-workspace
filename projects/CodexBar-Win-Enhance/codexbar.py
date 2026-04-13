@@ -1745,23 +1745,27 @@ class OpenCodeDataFetcher:
                 html = resp.read().decode("utf-8", errors="replace")
 
             def _parse_usage(html, label):
-                # HTML: rollingUsage:$R[31]={"status":"ok","resetInSec":3600,"usagePercent":15}
-                pattern = label + r':\$R\[\d+\]=(\{.+?\})'
+                # HTML: rollingUsage:$R[31]={status:'ok',resetInSec:3600,usagePercent:15}
+                # Uses SINGLE QUOTES - json.loads can't parse, use regex extraction instead
+                pattern = label + r':\$R\[\d+\]=\{([^}]+)\}'
                 m = _re.search(pattern, html)
                 if m:
                     try:
-                        data = json.loads(m.group(1))
-                        secs = int(data.get("resetInSec", 0))
-                        pct = int(data.get("usagePercent", 0))
-                        self._log(f"  {label}: secs={secs}, pct={pct}")
-                        h, mn = divmod(secs // 60, 60)
-                        if h >= 24:
-                            reset = f"{h // 24}d {h % 24}h"
-                        else:
-                            reset = f"{h}h {mn:02d}m"
-                        return pct, reset
+                        fields = m.group(1)
+                        secs_m = _re.search(r'resetInSec:(\d+)', fields)
+                        pct_m = _re.search(r'usagePercent:(\d+)', fields)
+                        if secs_m and pct_m:
+                            secs = int(secs_m.group(1))
+                            pct = int(pct_m.group(1))
+                            self._log(f"  {label}: secs={secs}, pct={pct}")
+                            h, mn = divmod(secs // 60, 60)
+                            if h >= 24:
+                                reset = f"{h // 24}d {h % 24}h"
+                            else:
+                                reset = f"{h}h {mn:02d}m"
+                            return pct, reset
                     except Exception as e:
-                        self._log(f"  {label}: JSON parse error: {e}")
+                        self._log(f"  {label}: parse error: {e}")
                 self._log(f"  {label}: no match")
                 return None, "unknown"
 
