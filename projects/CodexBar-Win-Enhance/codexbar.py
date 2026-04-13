@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.9"
+VERSION = "2.2.10"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1605,12 +1605,17 @@ class MiniMaxDataFetcher:
             cp = items[0]
 
         total = cp.get("current_interval_total_count", 0) or cp.get("max_calls", 0)
-        used = cp.get("current_interval_usage_count", 0) or cp.get("used_calls", 0)
+        # MiniMax API returns remaining count in current_interval_usage_count (NOT used count!)
+        # So used = total - remaining, and remaining% = 100 - used%
+        remaining = cp.get("current_interval_usage_count", 0) or cp.get("used_calls", 0)
+        used = max(0, total - remaining)
         pct = min(100, round(used / total * 100)) if total > 0 else 0
         result["session_used_pct"] = pct
 
         w_total = cp.get("current_weekly_total_count", 0)
-        w_used = cp.get("current_weekly_usage_count", 0)
+        # MiniMax API: current_weekly_usage_count is also remaining, not used
+        w_remaining = cp.get("current_weekly_usage_count", 0)
+        w_used = max(0, w_total - w_remaining)
         wpct = min(100, round(w_used / w_total * 100)) if w_total > 0 else 0
         result["weekly_used_pct"] = wpct
 
@@ -2784,16 +2789,6 @@ class CodexBarPopup(ctk.CTkToplevel):
                      width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
         ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
                      text_color="#8B6914").pack(side="left")
-
-        # DEBUG: show all received fields (always, even on error)
-        dbg = ctk.CTkFrame(parent, fg_color="#1a1a1a")
-        dbg.pack(fill="x", padx=20, pady=(0, 10))
-        ctk.CTkLabel(dbg, text=f"DEBUG (avail={available}):", font=("Consolas", 10),
-                     text_color="#00FF00").pack(anchor="w")
-        for k, v in d.items():
-            if k not in ("provider",):
-                ctk.CTkLabel(dbg, text=f"  {k}: {v}", font=("Consolas", 9),
-                             text_color="#00FF00").pack(anchor="w")
 
         if not available:
             ctk.CTkFrame(parent, fg_color="#FFE0B2", height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
