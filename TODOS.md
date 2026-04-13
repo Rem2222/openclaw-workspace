@@ -27,3 +27,10 @@
 - Варианты: Telegram bot, email, или OpenClaw webhook endpoint
 - Решить: все комментарии или только @mention
 - Зависит от: поддержка Linear вебхуков
+
+## CodexBar UI glitch при открытии [bug]
+- При открытии основного окна sometimes показывает прозрачный/белый экран
+- Сквозь окно видно рабочий стол, остатки date picker "2023-04-13"
+- Кнопки tabs (CL, Codex, Z.AI и т.д.) и футер видны, центр не отрисовывается
+- Скорее всего CTk/CustomTkInter rendering issue
+- Может помочь: обновление графических драйверов или forced redraw
