@@ -1329,6 +1329,8 @@ class ZaiDataFetcher:
             "session_reset": "unknown",
             "weekly_used_pct": 0,
             "weekly_reset": "unknown",
+            "mcp_used_pct": 0,
+            "mcp_reset": "unknown",
             "cost_today": 0,
             "cost_today_tokens": "0",
             "cost_30d": 0,
@@ -1395,6 +1397,20 @@ class ZaiDataFetcher:
                 elif unit == 6:
                     result["weekly_used_pct"] = min(100, pct)
 
+            # Parse TIME_LIMIT (unit 5) for MCP servers usage
+            for lim in time_limits:
+                unit = lim.get("unit")
+                if unit == 5:  # MCP servers usage
+                    result["mcp_used_pct"] = min(100, lim.get("percentage", 0))
+                    ts_ms = lim.get("nextResetTime")
+                    if ts_ms:
+                        ts_sec = ts_ms / 1000
+                        delta = ts_sec - datetime.now().timestamp()
+                        if delta < 0:
+                            delta = 0
+                        h, m = divmod(int(delta) // 60, 60)
+                        result["mcp_reset"] = f"{h}h {m:02d}m" if h < 24 else f"{h // 24}d {h % 24}h"
+
             for lim in limits:
                 ts_ms = lim.get("nextResetTime")
                 if not ts_ms:
@@ -1421,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.2"
+VERSION = "2.2.3"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2573,6 +2589,10 @@ class CodexBarPopup(ctk.CTkToplevel):
 
             # Weekly quota bar
             self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
+
+            # MCP servers usage bar
+            mp = d.get("mcp_used_pct", 0)
+            self._zai_usage_bar(parent, "MCP Servers", mp, d.get("mcp_reset"))
 
         # Show plan level (monthly)
         plan_level = d.get("plan", "")
