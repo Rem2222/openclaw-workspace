@@ -3317,8 +3317,19 @@ class SettingsPopup(ctk.CTkToplevel):
 
 class CodexBarApp:
     def __init__(self):
-        # Kill any existing CodexBar process using PID file
-        import os as _os
+        # ── Single-instance mutex ──────────────────────────────────
+        import os as _os, ctypes as _ctypes, ctypes.wintypes as _wt
+        _MUTEX_NAME = "CodexBar_SingleInstance_Mutex"
+        _mutex = _ctypes.windll.kernel32.CreateMutexW(None, False, _MUTEX_NAME)
+        _err = _ctypes.windll.kernel32.GetLastError()
+        if _err == 183:  # ERROR_ALREADY_EXISTS — another instance running
+            import tkinter as _tk
+            _tk.Tk().withdraw()  # create root only for messagebox
+            _tk.messagebox.showwarning(
+                "CodexBar already running",
+                "CodexBar is already open. Close the existing window first.")
+            raise SystemExit(0)
+        # ── Kill stale lock file PID ────────────────────────────────
         lock_file = _os.path.join(_os.environ.get('LOCALAPPDATA', _os.path.expanduser('~')),
                                   'CodexBar', 'codexbar.lock')
         try:
@@ -3326,13 +3337,12 @@ class CodexBarApp:
             if _os.path.exists(lock_file):
                 old_pid = int(open(lock_file).read().strip())
                 try:
-                    _os.kill(old_pid, 0)  # check if alive
-                    # Still alive - kill it
+                    _os.kill(old_pid, 0)
                     import subprocess as _subprocess
                     _subprocess.run(['taskkill', '/F', '/PID', str(old_pid)],
-                                  capture_output=True)
-                except (OSError, ProcessLookupError, ValueError):
-                    pass  # stale PID, not alive
+                                  capture_output=True, timeout=3)
+                except (OSError, ProcessLookupError, ValueError, subprocess.TimeoutExpired):
+                    pass
         except Exception:
             pass
         try:
