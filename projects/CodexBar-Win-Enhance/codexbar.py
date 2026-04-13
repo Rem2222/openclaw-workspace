@@ -3312,16 +3312,13 @@ class SettingsPopup(ctk.CTkToplevel):
 
 class CodexBarApp:
     def __init__(self):
-        # Kill any existing CodexBar process
+        # Kill any existing CodexBar window
         try:
             import subprocess as _subprocess
-            procs = _subprocess.run(['tasklist', '/FI', 'IMAGENAME eq codexbar.exe', '/NH'],
-                                   capture_output=True, text=True).stdout
-            for line in procs.split('\n'):
-                if 'codexbar.exe' in line:
-                    _subprocess.run(['taskkill', '/F', '/IM', 'codexbar.exe'],
-                                   capture_output=True)
-                    break
+            # Find window by title (CodexBar sets window title to "CodexBar")
+            _subprocess.run(['taskkill', '/F',
+                           '/FI', 'WINDOWTITLE eq *CodexBar*'],
+                          capture_output=True)
         except Exception:
             pass
 
