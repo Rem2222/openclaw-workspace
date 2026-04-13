@@ -59,11 +59,37 @@ except: pass
 
 **При каждом heartbeat показывать:**
 ```bash
-# Проверить есть ли незавершенные задачи
-if [ -f ~/.openclaw/workspace/TODOS.md ]; then
-  echo "📝 Личные задачи:"
-  grep "\- \[ \]" ~/.openclaw/workspace/TODOS.md | sed 's/- \[ \]/  • /' || echo "  Нет активных задач"
-fi
+# Проверить есть ли незавершенные задачи в Linear
+TODO_STATUS=$(python3 << 'EOF'
+import subprocess, json
+query = """
+query {
+  projectWorkflowStates(projectId: "7723bcfa-ebd6-4841-acdd-9a65f2c0f13f") {
+    nodes { id name }
+  }
+  issues(first: 10, filter: { projectId: { eq: "7723bcfa-ebd6-4841-acdd-9a65f2c0f13f" }, state: { name: { neq: "Done" } } }) {
+    nodes { identifier title priority }
+  }
+}
+"""
+result = subprocess.run(["curl", "-s", "-X", "POST", "https://api.linear.app/graphql",
+  "-H", "Authorization: lin_api_64ssmuFiW5KjeTX8pmiG83nFiCma02PSa5R2oL1k",
+  "-H", "Content-Type: application/json",
+  "-d", json.dumps({"query": query})],
+  capture_output=True, text=True)
+try:
+  data = json.loads(result.stdout)
+  issues = data.get("data", {}).get("issues", {}).get("nodes", [])
+  if issues:
+    for i in issues:
+      print(f"  \U0001F4CB {i['identifier']}: {i['title']}")
+  else:
+    print("  Нет активных задач")
+except: print("  Не могу прочитать задачи")
+EOF
+)
+echo "📝 Активные задачи (Linear TODOTuda):"
+echo "$TODO_STATUS"
 ```
 
 ## 🧠 Self-Improvement
