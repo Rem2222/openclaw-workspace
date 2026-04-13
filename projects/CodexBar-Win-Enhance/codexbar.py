@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.3"
+VERSION = "2.2.4"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3113,12 +3113,19 @@ class SettingsPopup(ctk.CTkToplevel):
                 msg, color = do_test_cookie()
                 self.after(0, lambda m=msg, c=color:
                     self._mm_result.configure(text=m, text_color=c))
+                # If cookie test succeeded, refresh main panel
+                if "✓" in msg:
+                    self.after(100, lambda: self.root._do_refresh())
             elif token:
                 self._mm_result.configure(text="Testing API token...", text_color="#5A607A")
                 self.update_idletasks()
                 msg, color = do_test_token(token)
                 self.after(0, lambda m=msg, c=color:
                     self._mm_result.configure(text=m, text_color=c))
+                # If token test succeeded, save and refresh main panel
+                if "✓" in msg:
+                    self.after(100, lambda: (self.save_all_tokens(),
+                                             self.root._do_refresh()))
             else:
                 self.after(0, lambda: self._mm_result.configure(
                     text="✗ No browser cookie; enter API token", text_color="#E04040"))
