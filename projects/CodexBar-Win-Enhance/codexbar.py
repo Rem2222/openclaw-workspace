@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.7"
+VERSION = "2.2.8"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1452,9 +1452,19 @@ class MiniMaxDataFetcher:
 
     TIMEOUT = 15
     API_URL = "https://api.minimax.io/v1/api/openplatform/coding_plan/remains"
+    LOG_FILE = "minimax_debug.log"
 
     def __init__(self):
         self.data = self._empty()
+
+    def _log(self, *args):
+        """Write debug line to log file."""
+        try:
+            log_path = Path(__file__).parent / self.LOG_FILE
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(" ".join(str(a) for a in args) + "\n")
+        except Exception:
+            pass
 
     def _empty(self):
         return {
@@ -1505,23 +1515,31 @@ class MiniMaxDataFetcher:
 
     def fetch(self):
         d = self._empty()
+        self._log("=== MiniMax fetch() start")
         auth = self._load()
+        self._log("_load() returned:", auth)
         bearer = auth.get("__bearer_token__", "")
         hmac = auth.get("HMACCCS", "")
         locale = auth.get("locale", "en")
+        self._log(f"bearer={'YES' if bearer else 'EMPTY'}, hmac={'YES' if hmac else 'EMPTY'}")
 
         if bearer:
+            self._log("Using Bearer token")
             result = self._call_api(bearer, hmac, locale)
         elif hmac:
+            self._log("Using HMAC cookie")
             result = self._call_api(bearer, hmac, locale)
         else:
+            self._log("No auth available!")
             d["error"] = "no MiniMax auth; set token in Settings or login to browser"
             d["available"] = False
             d["updated"] = datetime.now().strftime("Updated %H:%M")
             return d
 
+        self._log(f"_call_api() returned: {result}")
         if result is not None:
             d.update(result)
+        self._log(f"Final d: {d}")
         d["updated"] = datetime.now().strftime("Updated %H:%M")
         return d
 
@@ -1536,26 +1554,34 @@ class MiniMaxDataFetcher:
                 "Accept": "application/json",
             }
             headers = {k: v for k, v in headers.items() if v is not None}
+            self._log(f"Request: GET {self.API_URL}")
+            self._log(f"Headers: {headers}")
             req = Request(self.API_URL, headers=headers)
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 raw = json.loads(resp.read())
+                self._log(f"Response OK, bytes: {len(json.dumps(raw))}")
+                self._log(f"Response preview: {str(raw)[:300]}")
         except HTTPError as e:
             body = e.read().decode()[:200] if e.response else ""
+            self._log(f"HTTPError {e.code}: {body}")
             print(f"    MiniMax HTTP {e.code}: {body}")
             if e.code in (401, 403):
                 return {"error": "invalid token or expired"}
             return None
         except Exception as e:
+            self._log(f"Exception: {e}")
             print(f"    MiniMax: {e}")
             return None
 
         return self._parse(raw)
 
     def _parse(self, data: dict):
+        self._log("_parse() received:", str(data)[:400])
         result = {}
         base = data.get("base_resp", {})
         if base.get("status_code", -1) != 0:
             msg = base.get("status_msg", "error")
+            self._log(f"API error: {msg}")
             return {"error": msg}
 
         items = data.get("data", {}).get("model_remains", [])
