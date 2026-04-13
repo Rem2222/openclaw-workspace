@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.25"
+VERSION = "2.2.26"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2476,7 +2476,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         if d["model"]:
             plan_text = d["model"]
         ctk.CTkLabel(row, text=f"  {plan_text}  ", font=("Segoe UI Semibold", 11),
-                     text_color=self.OA_GREEN, fg_color=self.OA_GREEN_LT,
+                     text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
                      corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
@@ -2807,7 +2807,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
+                         text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
@@ -2854,7 +2854,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         plan = d.get("plan", "")
         if plan and plan != "Unknown":
             ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
-                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
+                         text_color=self.ZA_ACCENT, fg_color=self.ZA_ACCENT_LT,
                          corner_radius=10).pack(side="right")
 
         meta = ctk.CTkFrame(hero, fg_color="transparent")
