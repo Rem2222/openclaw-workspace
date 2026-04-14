@@ -3378,7 +3378,7 @@ class FloatingWidget(ctk.CTkToplevel):
         
         self.provider_label = ctk.CTkLabel(
             self.label_frame, text=self.provider,
-            font=('Inter', 9), text_color='rgba(255,255,255,0.5)', fg_color='transparent'
+            font=('Inter', 9), text_color='#888888', fg_color='transparent'
         )
         self.provider_label.pack(anchor='center')
     
