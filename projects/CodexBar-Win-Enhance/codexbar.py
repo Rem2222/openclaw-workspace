@@ -2956,34 +2956,34 @@ class SettingsPopup(ctk.CTkToplevel):
         self._test_btn = ctk.CTkButton(
             row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=32, corner_radius=6,
-            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
+            fg_color="#4A6CF7", hover_color="#3A5CE5",
             text_color="#FFFFFF", command=self._test_token)
         self._test_btn.pack(side="left")
 
         # ── test result label ──
         self._test_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color=self.ZA_TERTIARY, anchor="w")
+            text_color="#8E94AE", anchor="w")
         self._test_result.pack(fill="x", padx=20, pady=(4, 0))
 
         # ── MiniMax section ──
-        mm_header = ctk.CTkFrame(self, fg_color="transparent")
+        mm_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
         mm_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(mm_header, text="MiniMax",
                      font=("Segoe UI Semibold", 13),
-                     text_color=self.ZA_PRIMARY).pack(side="left")
+                     text_color="#1A1A2E").pack(side="left")
         ctk.CTkLabel(mm_header,
                      text=" Auto-reads cookies from browser",
                      font=("Segoe UI", 10),
-                     text_color=self.ZA_TERTIARY).pack(side="left", padx=(4, 0))
+                     text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
         mm_hint = ctk.CTkLabel(self,
                                text="Make sure you.re logged in at minimaxi.com / platform.minimax.io",
-                               font=("Segoe UI", 10), text_color=self.ZA_TERTIARY,
+                               font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         mm_hint.pack(fill="x", padx=20, pady=(0, 2))
 
-        mm_row = ctk.CTkFrame(self, fg_color="transparent")
+        mm_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
         mm_row.pack(fill="x", padx=20, pady=4)
         saved_mm = self._load_token("minimax_token")
         self._mm_entry = ctk.CTkEntry(
@@ -2997,33 +2997,33 @@ class SettingsPopup(ctk.CTkToplevel):
         self._mm_test_btn = ctk.CTkButton(
             mm_row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=30, corner_radius=6,
-            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
+            fg_color="#4A6CF7", hover_color="#3A5CE5",
             text_color="#FFFFFF", command=self._test_minimax)
         self._mm_test_btn.pack(side="left")
 
         self._mm_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color=self.ZA_TERTIARY, anchor="w")
+            text_color="#8E94AE", anchor="w")
         self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
 
         # ── OpenCode section ──
-        oc_header = ctk.CTkFrame(self, fg_color="transparent")
+        oc_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
         oc_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(oc_header, text="OpenCode",
                      font=("Segoe UI Semibold", 13),
-                     text_color=self.ZA_PRIMARY).pack(side="left")
+                     text_color="#1A1A2E").pack(side="left")
         ctk.CTkLabel(oc_header,
                      text=" Auto-reads cookies from browser",
                      font=("Segoe UI", 10),
-                     text_color=self.ZA_TERTIARY).pack(side="left", padx=(4, 0))
+                     text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
         oc_hint = ctk.CTkLabel(self,
                                text="Make sure you're logged in at opencode.ai",
-                               font=("Segoe UI", 10), text_color=self.ZA_TERTIARY,
+                               font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         oc_hint.pack(fill="x", padx=20, pady=(0, 2))
 
-        oc_row = ctk.CTkFrame(self, fg_color="transparent")
+        oc_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
         oc_row.pack(fill="x", padx=20, pady=4)
         saved_oc = self._load_token("opencode_cookie")
         self._oc_entry = ctk.CTkEntry(
@@ -3037,44 +3037,44 @@ class SettingsPopup(ctk.CTkToplevel):
         self._oc_test_btn = ctk.CTkButton(
             oc_row, text="Test", font=("Segoe UI Semibold", 12),
             width=60, height=30, corner_radius=6,
-            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
+            fg_color="#4A6CF7", hover_color="#3A5CE5",
             text_color="#FFFFFF", command=self._test_opencode)
         self._oc_test_btn.pack(side="left")
 
         self._oc_result = ctk.CTkLabel(
             self, text="", font=("Segoe UI", 11),
-            text_color=self.ZA_TERTIARY, anchor="w")
+            text_color="#8E94AE", anchor="w")
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
         self._token_entry.focus_set()
 
         # ── DEBUG: version label ──
-        ver_frame = ctk.CTkFrame(self, fg_color=self.ZA_ACCENT_LT, height=24)
+        ver_frame = ctk.CTkFrame(self, fg_color="#FFE0B2", height=24)
         ver_frame.pack(fill="x", padx=0, pady=(0, 2))
         ctk.CTkLabel(
             ver_frame,
             text=f"Settings v2.2.28 | lines=3562 | btn_row_ok",
             font=("Segoe UI", 9, "bold"),
-            text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT
+            text_color="#1A1A2E", fg_color="#FFE0B2"
         ).pack(pady=3)
 
 
         # ── Bottom buttons ──
-        bottom_row = ctk.CTkFrame(self, fg_color="transparent")
+        bottom_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
         bottom_row.pack(side="bottom", fill="x", padx=20, pady=(8, 16))
 
         ctk.CTkButton(
             bottom_row, text="Save", font=("Segoe UI Semibold", 12),
             width=100, height=34, corner_radius=6,
-            fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER,
+            fg_color="#4A6CF7", hover_color="#3A5CE5",
             text_color="#FFFFFF", command=self._save_and_close
         ).pack(side="right")
 
         ctk.CTkButton(
             bottom_row, text="Cancel", font=("Segoe UI", 12),
             width=80, height=34, corner_radius=6,
-            fg_color="transparent", hover_color=self.ZA_HOVER,
-            text_color=self.ZA_TERTIARY, command=self.destroy
+            fg_color="#D0D4E0", hover_color="#B0B4C0",
+            text_color="#1A1A2E", command=self.destroy
         ).pack(side="right", padx=(0, 8))
 
     @classmethod
@@ -3140,7 +3140,7 @@ class SettingsPopup(ctk.CTkToplevel):
             self._test_result.configure(text="✗ Enter a token first", text_color="#E04040")
             return
         self._test_btn.configure(text="...", state="disabled")
-        self._test_result.configure(text="Testing...", text_color=self.ZA_TERTIARY)
+        self._test_result.configure(text="Testing...", text_color="#8E94AE")
         self.update_idletasks()
 
         def do_test():
@@ -3212,7 +3212,7 @@ class SettingsPopup(ctk.CTkToplevel):
             self.update_idletasks()
 
             if browser_cookies.get("HMACCCS"):
-                self._mm_result.configure(text="Testing browser cookie...", text_color=self.ZA_TERTIARY)
+                self._mm_result.configure(text="Testing browser cookie...", text_color="#8E94AE")
                 self.update_idletasks()
                 msg, color = do_test_cookie()
                 self.after(0, lambda m=msg, c=color:
@@ -3221,7 +3221,7 @@ class SettingsPopup(ctk.CTkToplevel):
                 if "✓" in msg:
                     self.after(100, lambda: self.root._do_refresh())
             elif token:
-                self._mm_result.configure(text="Testing API token...", text_color=self.ZA_TERTIARY)
+                self._mm_result.configure(text="Testing API token...", text_color="#8E94AE")
                 self.update_idletasks()
                 msg, color = do_test_token(token)
                 self.after(0, lambda m=msg, c=color:
@@ -3262,7 +3262,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         def run():
             self._oc_test_btn.configure(text="...", state="disabled")
-            self._oc_result.configure(text="Testing browser cookie...", text_color=self.ZA_TERTIARY)
+            self._oc_result.configure(text="Testing browser cookie...", text_color="#8E94AE")
             self.update_idletasks()
 
             # Try browser cookie
@@ -3276,7 +3276,7 @@ class SettingsPopup(ctk.CTkToplevel):
                     self._oc_result.configure(text=m, text_color=c))
             elif raw:
                 # Fall back to manual entry
-                self._oc_result.configure(text="Testing manual cookie...", text_color=self.ZA_TERTIARY)
+                self._oc_result.configure(text="Testing manual cookie...", text_color="#8E94AE")
                 self.update_idletasks()
                 cookie_header = raw if raw.startswith("auth=") else f"auth={raw}"
                 msg, color = do_test(cookie_header)
