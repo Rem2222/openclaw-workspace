@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.31"
+VERSION = "2.2.32"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2105,8 +2105,11 @@ class CodexBarPopup(ctk.CTkToplevel):
                 total = 12
                 s = self._m_step
                 if s >= total:
+                    # Animation complete - make window visible
+                    self.deiconify()
                     self.attributes("-alpha", self.FINAL_ALPHA)
                     self.geometry(f"+{self._target_x}+{self._target_y}")
+                    print(f"[POPUP] Morph complete: alpha={self.FINAL_ALPHA}, geometry={self.geometry()}", flush=True)
                     return
                 t = s / total
                 ease = 1.0 - (1.0 - t) ** 3  # ease-out (decelerate)
@@ -2117,8 +2120,8 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.geometry(f"+{self._target_x}+{self._target_y + y_off}")
                 self._m_step += 1
                 self.after(14, self._morph_tick)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[POPUP] _morph_tick ERROR: {e}", flush=True)
 
     # ── bar colour helpers ──
 
