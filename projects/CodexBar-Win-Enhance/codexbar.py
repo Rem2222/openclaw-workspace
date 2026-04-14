@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.44"
+VERSION = "2.2.45"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3288,8 +3288,8 @@ class SettingsPopup(ctk.CTkToplevel):
 
 class FloatingWidget(ctk.CTkToplevel):
     """
-    Летающий виджет в стиле glassmorphism.
-    Чёрный скруглённый прямоугольник.
+    Летающий виджет.
+    Тёмный скруглённый прямоугольник с текстом.
     """
     
     WIDTH = 140
@@ -3305,9 +3305,7 @@ class FloatingWidget(ctk.CTkToplevel):
         # Настройка окна
         self.overrideredirect(True)
         self.attributes('-topmost', True)
-        # Полупрозрачность через alpha
-        self.attributes('-alpha', 0.85)
-        self.configure(fg_color='#0d0d0d')
+        self.configure(fg_color='#1e1e23')
         
         # Позиция — правый нижний угол
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}+1200+700")
@@ -3316,55 +3314,45 @@ class FloatingWidget(ctk.CTkToplevel):
         self._bind_events()
         self._animate_in()
     
-    def _create_glass_image(self, width, height, radius, bg_rgba, border_rgba, border_width=1.5):
-        """
-        Создаёт PIL-изображение для glassmorphism виджета.
-        Чистые скруглённые углы без щелей.
-        """
-        img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+    def _create_bg_image(self):
+        """Создаёт PNG изображение для фона виджета"""
+        from PIL import Image, ImageDraw
+        
+        W, H = self.WIDTH, self.HEIGHT
+        R = self.CORNER_RADIUS
+        
+        # Чистый белый PNG с альфа-каналом для маски
+        img = Image.new('RGBA', (W, H), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         
-        # Рисуем ВНЕШНИЙ слой (граница)
-        draw.rounded_rectangle(
-            [0, 0, width - 1, height - 1],
-            radius=radius,
-            fill=border_rgba
-        )
+        # Рисуем скруглённый прямоугольник с тёмным фоном
+        # Внешняя граница — почти чёрная
+        draw.rounded_rectangle([0, 0, W-1, H-1], radius=R, fill='#1a1a1f')
         
-        # Рисуем ВНУТРЕННИЙ слой (стекло)
-        draw.rounded_rectangle(
-            [border_width, border_width, width - border_width - 1, height - border_width - 1],
-            radius=max(radius - border_width, 1),
-            fill=bg_rgba
-        )
+        # Внутренняя область — тёмно-серая (light glass effect)
+        draw.rounded_rectangle([2, 2, W-3, H-3], radius=R-2, fill='#252530')
+        
+        # Тонкая светлая линия наверху (gloss)
+        draw.rounded_rectangle([2, 2, W-3, 6], radius=R-2, fill='#2a2a35')
         
         return img
     
     def _create_ui(self):
-        """Создаём glassmorphism виджет"""
-        # Glassmorphism цвета — точно такие же как в _create_glass_image
-        bg_rgba = (30, 30, 35, 210)      # Тёмно-серый glass
-        bg_hex = '#1e1e23'               # Совпадает с bg_rgba
-        border_rgba = (60, 60, 70, 150)  # Светлая граница
-        
+        """Создаём виджет"""
         self.canvas = ctk.CTkCanvas(
             self, width=self.WIDTH, height=self.HEIGHT,
-            bg=bg_hex, highlightthickness=0
+            bg='#1e1e23', highlightthickness=0
         )
         self.canvas.pack(fill='both', expand=True)
         
         # Генерируем фоновое изображение
-        self._bg_img = self._create_glass_image(
-            self.WIDTH, self.HEIGHT,
-            self.CORNER_RADIUS,
-            bg_rgba, border_rgba
-        )
+        self._bg_img = self._create_bg_image()
         
         from PIL import ImageTk
         self._photo = ImageTk.PhotoImage(self._bg_img)
         self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
         
-        # Текст — всё прозрачное чтобы сквозь был виден glass фон
+        # Текст
         self.label_frame = ctk.CTkFrame(self, fg_color='transparent')
         self.label_frame.place(relx=0.5, rely=0.5, anchor='center')
         
@@ -3376,7 +3364,7 @@ class FloatingWidget(ctk.CTkToplevel):
         
         self.provider_label = ctk.CTkLabel(
             self.label_frame, text=self.provider,
-            font=('Inter', 10), text_color='#909090', fg_color='transparent'
+            font=('Inter', 10), text_color='#808090', fg_color='transparent'
         )
         self.provider_label.pack(anchor='center')
     
@@ -3397,10 +3385,8 @@ class FloatingWidget(ctk.CTkToplevel):
         self.geometry(f'+{x}+{y}')
     
     def _animate_in(self):
-        """Fade-in анимация"""
-        self.attributes('-alpha', 0.0)
-        for i in range(16):
-            self.after(i * 20, lambda a=i/15: self.attributes('-alpha', a))
+        """Появление виджета (просто show)"""
+        self.deiconify()
     
     def update_percentage(self, percentage, provider=None):
         """Обновить данные"""
