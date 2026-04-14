@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.34"
+VERSION = "2.2.35"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2087,9 +2087,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                     # hide: alpha=0 + move off-screen to prevent any flash
                     self.attributes("-alpha", 0.0)
                     self.geometry(f"+{self._target_x}+-9999")
-                    self._do_swap()
-                    # window is now resized off-screen, invisible
-                    self.attributes("-alpha", 0.0)
+                    # DON'T call _do_swap here - will call after deiconify in "in" phase
                     self._m_step = 0
                     self._m_phase = "in"
                     self.after(20, self._morph_tick)
@@ -2102,15 +2100,24 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.after(14, self._morph_tick)
 
             elif self._m_phase == "in":
-                # Fade in: 12 steps × 14ms = ~170ms, ease-out + slide up 8px
                 total = 12
                 s = self._m_step
-                if s >= total:
-                    # Animation complete - make window visible
+                # At start of "in" phase (step 0), content needs to be visible
+                # but window hasn't been made visible yet (alpha=0)
+                # So we need to: deiconify + _do_swap at step 0, BEFORE alpha animation
+                if s == 0:
+                    # First call of "in" phase: deiconify, swap content, then start fade-in
                     self.deiconify()
-                    self.update()  # Force Windows to redraw
-                    self.attributes("-alpha", self.FINAL_ALPHA)
+                    self.update()
+                    self.attributes("-alpha", 0.0)  # Start fully transparent
                     self.geometry(f"+{self._target_x}+{self._target_y}")
+                    self._do_swap()  # Update content while invisible
+                    self._m_step = 1
+                    self.after(14, self._morph_tick)
+                    return
+                if s >= total:
+                    # Animation complete
+                    self.attributes("-alpha", self.FINAL_ALPHA)
                     print(f"[POPUP] Morph complete: alpha={self.FINAL_ALPHA}, geometry={self.geometry()}", flush=True)
                     return
                 t = s / total
