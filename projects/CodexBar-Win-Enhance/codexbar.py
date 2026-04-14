@@ -3360,9 +3360,10 @@ class FloatingWidget(ctk.CTkToplevel):
         )
         self.canvas.pack(fill='both', expand=True)
         
-        # Фоновое изображение
+        # Фоновое изображение (используем PIL ImageTk для tkinter Canvas)
         self._bg_image = self._make_glassmorphism_image()
-        self._photo = ctk.CTkImage(self._bg_image, size=(self.WIDTH, self.HEIGHT))
+        from PIL import ImageTk
+        self._photo = ImageTk.PhotoImage(self._bg_image)
         self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
         
         # Текст
