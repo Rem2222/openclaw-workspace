@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.32"
+VERSION = "2.2.33"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2077,6 +2077,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.geometry(f"{self.WIDTH}x{h}+{self._target_x}+{self._target_y}")
 
     def _morph_tick(self):
+        print(f"[POPUP] _morph_tick called: phase={self._m_phase}, step={self._m_step}", flush=True)
         try:
             if self._m_phase == "out":
                 # Fade out: 7 steps × 14ms = ~100ms, ease-in (accelerate)
