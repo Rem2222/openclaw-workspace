@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.35"
+VERSION = "2.2.36"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1904,6 +1904,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.bind("<FocusOut>", self._on_focus_out)
         self.focus_force()
         self.after(40, self._animate_in, 0)
+        self._do_swap()  # Set initial tab content (called while still invisible, before animation)
         print(f"[POPUP] Init complete, geometry={self.geometry()}, state={self.state()}, alpha={self.attributes('-alpha')}", flush=True)
 
     # ── DWM ──
