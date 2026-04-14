@@ -1024,41 +1024,58 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
     else:
         pass  # Circle already drawn above
 
-    # Draw percentage text centered on icon with thick dark outline for visibility
+
+    # Draw percentage text centered on icon - FIXED for Windows compatibility
     if True:
         try:
-            # Larger font for better visibility (20pt for 64x64 icon)
-            font_size = max(18, sz // 3)
-            # Try to use a bold system font for better readability
-            try:
-                font = ImageDraw.ImageFont.truetype("arialbd.ttf", font_size)  # Bold Arial
-            except Exception:
+            font_size = max(16, sz // 3)
+            
+            # Try common Windows fonts with absolute paths
+            fonts_to_try = [
+                ("C:/Windows/Fonts/seguiemj.ttf", font_size),    # Segoe UI Emoji
+                ("C:/Windows/Fonts/seguisb.ttf", font_size),     # Segoe UI Semibold
+                ("C:/Windows/Fonts/segoeuib.ttf", font_size),   # Segoe UI Bold
+                ("C:/Windows/Fonts/arialbd.ttf", font_size),    # Arial Bold
+                ("C:/Windows/Fonts/tahomabd.ttf", font_size),   # Tahoma Bold
+                ("C:/Windows/Fonts/verdana.ttf", font_size),    # Verdana
+                ("C:/Windows/Fonts/arial.ttf", font_size),      # Arial
+                ("C:/Windows/Fonts/consola.ttf", font_size),    # Consolas
+                ("C:/Windows/Fonts/cour.ttf", font_size),       # Courier New
+            ]
+            
+            font = None
+            for font_path, fsize in fonts_to_try:
                 try:
-                    font = ImageDraw.ImageFont.truetype("seguisb.ttf", font_size)  # Semibold Segoe
+                    font = ImageDraw.ImageFont.truetype(font_path, fsize)
+                    print(f"[TRAY] Loaded font: {font_path}", flush=True)
+                    break
                 except Exception:
-                    try:
-                        font = ImageDraw.ImageFont.truetype("arial.ttf", font_size)
-                    except Exception:
-                        font = ImageDraw.ImageFont.load_default()
+                    pass
+            
+            if font is None:
+                font = ImageDraw.ImageFont.load_default()
+                print(f"[TRAY] Using default font", flush=True)
             
             text = f"{pct}%"
-            # Calculate text position for centering
             bbox = d.textbbox((0, 0), text, font=font)
             text_w = bbox[2] - bbox[0]
             text_h = bbox[3] - bbox[1]
             text_x = (sz - text_w) // 2
             text_y = (sz - text_h) // 2 - 2
             
-            # Draw thick white outline by drawing text multiple times with offsets
-            outline_color = (255, 255, 255, 255)  # Solid white outline for contrast
+            # Draw thick white outline
+            outline_color = (255, 255, 255, 255)
             for ox in [-2, -1, 0, 1, 2]:
                 for oy in [-2, -1, 0, 1, 2]:
-                    if abs(ox) + abs(oy) <= 3:  # Circular outline pattern
+                    if abs(ox) + abs(oy) <= 3:
                         d.text((text_x + ox, text_y + oy), text, font=font, fill=outline_color)
-            # Draw black text on top (visible on any colored circle)
             d.text((text_x, text_y), text, font=font, fill=(0, 0, 0, 255))
-        except Exception:
+            print(f"[TRAY] Drew text '{text}' at ({text_x},{text_y})", flush=True)
+        except Exception as e:
+            print(f"[TRAY] Text draw error: {e}", flush=True)
             pass
+
+    # Draw colored dot indicator in bottom-right corner
 
     # Draw colored dot indicator in bottom-right corner
     # Color based on percentage:
