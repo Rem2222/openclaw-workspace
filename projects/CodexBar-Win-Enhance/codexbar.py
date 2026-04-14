@@ -3497,9 +3497,10 @@ class CodexBarApp:
             p = provider if provider in provider_map else "claude"
             data_src, key = provider_map.get(p, (self.fetcher.data, "session_used_pct"))
             sp = data_src.get(key, 0) if data_src else 0
+            print(f"[TRAY] _set_tray_icon provider={provider} -> p={p}, sp={sp}, key={key}, data_keys={list(data_src.keys()) if data_src else None}")
             self.tray.icon = make_icon(sp=sp, provider=p)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[TRAY] _set_tray_icon ERROR: {e}")
 
     # ── refresh ──
 
