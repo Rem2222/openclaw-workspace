@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.40"
+VERSION = "2.2.41"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3316,45 +3316,44 @@ class FloatingWidget(ctk.CTkToplevel):
         self._bind_events()
         self._animate_in()
     
-    def _draw_rounded_rect(self, canvas, x1, y1, x2, y2, radius, fill, outline=None, width=1):
+    def _create_glass_image(self, width, height, radius, bg_rgba, border_rgba, border_width=1.5):
         """
-        Рисует скруглённый прямоугольник на canvas.
-        Использует технику с дугами для углов.
+        Создаёт PIL-изображение для glassmorphism виджета.
+        Чистые скруглённые углы без щелей.
         """
-        # Прямоугольник в центре
-        canvas.create_rectangle(
-            x1 + radius, y1,
-            x2 - radius, y2,
-            fill=fill, outline=fill
+        img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        
+        inner_w = width - border_width * 2
+        inner_h = height - border_width * 2
+        inner_radius = max(radius - border_width, 1)
+        
+        # Внешняя граница (border)
+        draw.rounded_rectangle(
+            [0, 0, width - 1, height - 1],
+            radius=radius,
+            fill=border_rgba
         )
         
-        # Верхний-нижний центральные прямоугольники
-        canvas.create_rectangle(
-            x1, y1 + radius,
-            x2, y2 - radius,
-            fill=fill, outline=fill
+        # Внутренний фон (glass)
+        draw.rounded_rectangle(
+            [border_width, border_width, inner_w, inner_h],
+            radius=inner_radius,
+            fill=bg_rgba
         )
         
-        # Углы (дуги)
-        canvas.create_arc(x1, y1, x1 + radius*2, y1 + radius*2,
-                          start=90, extent=90, fill=fill, outline=fill)
-        canvas.create_arc(x2 - radius*2, y1, x2, y1 + radius*2,
-                          start=0, extent=90, fill=fill, outline=fill)
-        canvas.create_arc(x1, y2 - radius*2, x1 + radius*2, y2,
-                          start=180, extent=90, fill=fill, outline=fill)
-        canvas.create_arc(x2 - radius*2, y2 - radius*2, x2, y2,
-                          start=270, extent=90, fill=fill, outline=fill)
+        # Лёгкий highlight сверху (subtle top light)
+        highlight_steps = max(height // 4, 4)
+        for i in range(highlight_steps):
+            alpha = int(18 * (1 - i / highlight_steps))
+            y = border_width + i
+            line_alpha = max(alpha, 0)
+            draw.line(
+                [(radius, y), (width - radius - 1, y)],
+                fill=(255, 255, 255, line_alpha)
+            )
         
-        if outline:
-            # Линия по периметру
-            canvas.create_arc(x1, y1, x1 + radius*2, y1 + radius*2,
-                              start=90, extent=90, style='arc', outline=outline, width=width)
-            canvas.create_arc(x2 - radius*2, y1, x2, y1 + radius*2,
-                              start=0, extent=90, style='arc', outline=outline, width=width)
-            canvas.create_arc(x1, y2 - radius*2, x1 + radius*2, y2,
-                              start=180, extent=90, style='arc', outline=outline, width=width)
-            canvas.create_arc(x2 - radius*2, y2 - radius*2, x2, y2,
-                              start=270, extent=90, style='arc', outline=outline, width=width)
+        return img
     
     def _create_ui(self):
         """Создаём glassmorphism виджет"""
@@ -3364,29 +3363,20 @@ class FloatingWidget(ctk.CTkToplevel):
         )
         self.canvas.pack(fill='both', expand=True)
         
-        # Рисуем скруглённый прямоугольник
-        r = self.CORNER_RADIUS
-        pad = 3  # padding для border
+        # Glassmorphism цвета
+        bg_rgba = (30, 30, 35, 210)      # Тёмно-серый glass
+        border_rgba = (60, 60, 70, 150)  # Светлая граница
         
-        # Внешняя граница (светлая линия)
-        self._draw_rounded_rect(
-            self.canvas,
-            pad, pad,
-            self.WIDTH - pad, self.HEIGHT - pad,
-            r,
-            fill='#1a1a1e',  # Тёмно-серый фон
-            outline='#3a3a40',  # Светлая граница
-            width=1
+        # Генерируем фоновое изображение
+        self._bg_img = self._create_glass_image(
+            self.WIDTH, self.HEIGHT,
+            self.CORNER_RADIUS,
+            bg_rgba, border_rgba
         )
         
-        # Внутренняя тень (смещение для эффекта глубины)
-        self._draw_rounded_rect(
-            self.canvas,
-            pad + 1, pad + 1,
-            self.WIDTH - pad - 1, self.HEIGHT - pad - 1,
-            r,
-            fill='#1a1a1e'
-        )
+        from PIL import ImageTk
+        self._photo = ImageTk.PhotoImage(self._bg_img)
+        self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
         
         # Текст
         self.label_frame = ctk.CTkFrame(self, fg_color='transparent')
@@ -3394,13 +3384,13 @@ class FloatingWidget(ctk.CTkToplevel):
         
         self.percent_label = ctk.CTkLabel(
             self.label_frame, text=f"{self.percentage}%",
-            font=('Inter', 22, 'bold'), text_color='#ffffff', fg_color='transparent'
+            font=('Inter', 20, 'bold'), text_color='#ffffff', fg_color='transparent'
         )
-        self.percent_label.pack(anchor='center', pady=(2, 0))
+        self.percent_label.pack(anchor='center', pady=(3, 0))
         
         self.provider_label = ctk.CTkLabel(
             self.label_frame, text=self.provider,
-            font=('Inter', 10), text_color='#777777', fg_color='transparent'
+            font=('Inter', 10), text_color='#909090', fg_color='transparent'
         )
         self.provider_label.pack(anchor='center')
     
