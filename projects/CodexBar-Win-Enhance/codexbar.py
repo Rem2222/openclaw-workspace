@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.33"
+VERSION = "2.2.34"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -2108,6 +2108,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 if s >= total:
                     # Animation complete - make window visible
                     self.deiconify()
+                    self.update()  # Force Windows to redraw
                     self.attributes("-alpha", self.FINAL_ALPHA)
                     self.geometry(f"+{self._target_x}+{self._target_y}")
                     print(f"[POPUP] Morph complete: alpha={self.FINAL_ALPHA}, geometry={self.geometry()}", flush=True)
