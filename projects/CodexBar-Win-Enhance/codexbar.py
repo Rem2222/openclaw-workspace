@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.43"
+VERSION = "2.2.44"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3324,48 +3324,34 @@ class FloatingWidget(ctk.CTkToplevel):
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         
-        inner_w = width - border_width * 2
-        inner_h = height - border_width * 2
-        inner_radius = max(radius - border_width, 1)
-        
-        # Внешняя граница (border)
+        # Рисуем ВНЕШНИЙ слой (граница)
         draw.rounded_rectangle(
             [0, 0, width - 1, height - 1],
             radius=radius,
             fill=border_rgba
         )
         
-        # Внутренний фон (glass)
+        # Рисуем ВНУТРЕННИЙ слой (стекло)
         draw.rounded_rectangle(
-            [border_width, border_width, inner_w, inner_h],
-            radius=inner_radius,
+            [border_width, border_width, width - border_width - 1, height - border_width - 1],
+            radius=max(radius - border_width, 1),
             fill=bg_rgba
         )
-        
-        # Лёгкий highlight сверху (subtle top light)
-        highlight_steps = max(height // 4, 4)
-        for i in range(highlight_steps):
-            alpha = int(18 * (1 - i / highlight_steps))
-            y = border_width + i
-            line_alpha = max(alpha, 0)
-            draw.line(
-                [(radius, y), (width - radius - 1, y)],
-                fill=(255, 255, 255, line_alpha)
-            )
         
         return img
     
     def _create_ui(self):
         """Создаём glassmorphism виджет"""
+        # Glassmorphism цвета — точно такие же как в _create_glass_image
+        bg_rgba = (30, 30, 35, 210)      # Тёмно-серый glass
+        bg_hex = '#1e1e23'               # Совпадает с bg_rgba
+        border_rgba = (60, 60, 70, 150)  # Светлая граница
+        
         self.canvas = ctk.CTkCanvas(
             self, width=self.WIDTH, height=self.HEIGHT,
-            bg='#000000', highlightthickness=0
+            bg=bg_hex, highlightthickness=0
         )
         self.canvas.pack(fill='both', expand=True)
-        
-        # Glassmorphism цвета
-        bg_rgba = (30, 30, 35, 210)      # Тёмно-серый glass
-        border_rgba = (60, 60, 70, 150)  # Светлая граница
         
         # Генерируем фоновое изображение
         self._bg_img = self._create_glass_image(
@@ -3378,7 +3364,7 @@ class FloatingWidget(ctk.CTkToplevel):
         self._photo = ImageTk.PhotoImage(self._bg_img)
         self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
         
-        # Текст
+        # Текст — всё прозрачное чтобы сквозь был виден glass фон
         self.label_frame = ctk.CTkFrame(self, fg_color='transparent')
         self.label_frame.place(relx=0.5, rely=0.5, anchor='center')
         
