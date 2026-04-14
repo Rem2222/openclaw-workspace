@@ -1025,55 +1025,9 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
         pass  # Circle already drawn above
 
 
-    # Draw percentage text centered on icon - FIXED for Windows compatibility
-    if True:
-        try:
-            font_size = max(16, sz // 3)
-            
-            # Try common Windows fonts with absolute paths
-            fonts_to_try = [
-                ("C:/Windows/Fonts/seguiemj.ttf", font_size),    # Segoe UI Emoji
-                ("C:/Windows/Fonts/seguisb.ttf", font_size),     # Segoe UI Semibold
-                ("C:/Windows/Fonts/segoeuib.ttf", font_size),   # Segoe UI Bold
-                ("C:/Windows/Fonts/arialbd.ttf", font_size),    # Arial Bold
-                ("C:/Windows/Fonts/tahomabd.ttf", font_size),   # Tahoma Bold
-                ("C:/Windows/Fonts/verdana.ttf", font_size),    # Verdana
-                ("C:/Windows/Fonts/arial.ttf", font_size),      # Arial
-                ("C:/Windows/Fonts/consola.ttf", font_size),    # Consolas
-                ("C:/Windows/Fonts/cour.ttf", font_size),       # Courier New
-            ]
-            
-            font = None
-            for font_path, fsize in fonts_to_try:
-                try:
-                    font = ImageFont.truetype(font_path, fsize)
-                    print(f"[TRAY] Loaded font: {font_path}", flush=True)
-                    break
-                except Exception:
-                    pass
-            
-            if font is None:
-                font = ImageFont.load_default()
-                print(f"[TRAY] Using default font", flush=True)
-            
-            text = f"{pct}%"
-            bbox = d.textbbox((0, 0), text, font=font)
-            text_w = bbox[2] - bbox[0]
-            text_h = bbox[3] - bbox[1]
-            text_x = (sz - text_w) // 2
-            text_y = (sz - text_h) // 2 - 2
-            
-            # Draw thick white outline
-            outline_color = (255, 255, 255, 255)
-            for ox in [-2, -1, 0, 1, 2]:
-                for oy in [-2, -1, 0, 1, 2]:
-                    if abs(ox) + abs(oy) <= 3:
-                        d.text((text_x + ox, text_y + oy), text, font=font, fill=outline_color)
-            d.text((text_x, text_y), text, font=font, fill=(0, 0, 0, 255))
-            print(f"[TRAY] Drew text '{text}' at ({text_x},{text_y})", flush=True)
-        except Exception as e:
-            print(f"[TRAY] Text draw error: {e}", flush=True)
-            pass
+    # NOTE: Text is NOT drawn on tray icon (too small at 16-32px)
+    # Percentage is shown in tooltip (see _set_tray_icon method)
+    # Icon shows colored circle only
 
     # Draw colored dot indicator in bottom-right corner
 
@@ -1454,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.30"
+VERSION = "2.2.31"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3516,6 +3470,10 @@ class CodexBarApp:
             sp = data_src.get(key, 0) if data_src else 0
             print(f"[TRAY] _set_tray_icon provider={provider} -> p={p}, sp={sp}, key={key}, data_keys={list(data_src.keys()) if data_src else None}")
             self.tray.icon = make_icon(sp=sp, provider=p)
+            # Update tooltip with percentage info
+            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+            label = provider_labels.get(p, p.upper())
+            self.tray.title = f"CodexBar {label}: {sp}%"
         except Exception as e:
             print(f"[TRAY] _set_tray_icon ERROR: {e}")
 
