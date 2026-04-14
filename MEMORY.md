@@ -1,5 +1,5 @@
 # MEMORY.md - Долгосрочная память
-_Last updated: 2026-04-01_
+_Last updated: 2026-04-14_
 
 ## Основы
 
@@ -64,6 +64,7 @@ _Last updated: 2026-04-01_
 - **OpenViking удалён (2026-03-21)** — требовал платные API (OpenRouter), создавал блокировку на векторной базе. Удалён полностью (1598 файлов). Заменён на LCM
 
 - **LCM (Lossless Claw)** — плагин управления памятью, заменил OpenViking. Хранит сообщения в SQLite, сжимает старые в DAG-суммаризации. Конфиг: `~/.openclaw/extensions/lossless-claw/`. Для суммаризации использует `openrouter/openai/gpt-oss-20b` по умолчанию (можно сменить через `LCM_SUMMARY_MODEL=zai/glm-5`)
+- **LCM stats**: 40,339 messages, 2,194 conversations (DB: 200MB). CLI commands timeout but plugin works fine (2026-04-14)
 
 - **cortex-memory не подходит** — данные уходят в облако Ubundi (ЮАР), API закрытый, self-hosted невозможен. unity-knowledge-base — правильный выбор (локально, no lock-in)
 
@@ -96,7 +97,8 @@ _Last updated: 2026-04-01_
 - Управлять браузером
 - Работать с памятью (поиск и чтение)
 - Менять модель на лету
-- **MemPalace** — semantic search по workspace файлам
+- **MemPalace** — semantic search по workspace файлам. **2561 drawers**: technical (1972), general (264), planning (149), architecture (133), problems (43)
+- **ByteRover (brv)** — персональная база знаний проекта. CLI: `/root/.brv-cli/bin/brv query "..."` (версия 2.5.2, путь исправлен 2026-04-14)
 
 ## Что я умею (дополнительно)
 
