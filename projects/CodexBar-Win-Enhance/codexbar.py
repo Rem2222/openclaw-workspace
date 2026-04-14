@@ -3282,6 +3282,141 @@ class SettingsPopup(ctk.CTkToplevel):
         self.destroy()
 
 
+# ─────────────────────────────────────────────
+# Floating Widget (летающий виджет)
+# ─────────────────────────────────────────────
+
+class FloatingWidget(ctk.CTkToplevel):
+    """
+    Летающий круглый виджет с процентом использования.
+    Всегда наверху, перетаскивается, красивые анимации.
+    """
+    
+    SIZE = 80
+    
+    # Цвета для разных уровней использования
+    COLORS = {
+        'low': ('#10B981', '#059669'),      # Зелёный
+        'medium': ('#F59E0B', '#D97706'),   # Оранжевый
+        'high': ('#EF4444', '#DC2626'),     # Красный
+    }
+    
+    def __init__(self, master=None, percentage=0, provider="Z.AI"):
+        super().__init__(master)
+        self.percentage = percentage
+        self.provider = provider
+        self._drag_data = {'x': 0, 'y': 0}
+        
+        # Настройка окна
+        self.overrideredirect(True)
+        self.attributes('-topmost', True)
+        self.attributes('-transparentcolor', '#000001')
+        self.configure(fg_color='#000001')
+        
+        # Позиция — правый нижний угол
+        self.geometry(f"{self.SIZE}x{self.SIZE}+1200+700")
+        
+        self._create_ui()
+        self._bind_events()
+        self._animate_in()
+    
+    def _create_ui(self):
+        """Создаём круглый виджет"""
+        self.canvas = ctk.CTkCanvas(
+            self, width=self.SIZE, height=self.SIZE,
+            bg='#000001', highlightthickness=0
+        )
+        self.canvas.pack(fill='both', expand=True)
+        
+        self._update_appearance()
+        
+        # Текст поверх
+        self.label_frame = ctk.CTkFrame(self, fg_color='transparent', width=self.SIZE, height=self.SIZE)
+        self.label_frame.place(relx=0.5, rely=0.5, anchor='center')
+        
+        self.percent_label = ctk.CTkLabel(
+            self.label_frame, text=f"{self.percentage}%",
+            font=('Segoe UI', 18, 'bold'), text_color='white'
+        )
+        self.percent_label.pack(pady=(12, 0))
+        
+        self.provider_label = ctk.CTkLabel(
+            self.label_frame, text=self.provider[:4],
+            font=('Segoe UI', 8), text_color='white'
+        )
+        self.provider_label.pack()
+    
+    def _update_appearance(self):
+        """Обновляем цвет круга"""
+        if self.percentage <= 50:
+            colors = self.COLORS['low']
+        elif self.percentage <= 80:
+            colors = self.COLORS['medium']
+        else:
+            colors = self.COLORS['high']
+        
+        # Создаём градиентный круг
+        img = Image.new('RGBA', (self.SIZE, self.SIZE), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        
+        for i in range(self.SIZE // 2, 0, -1):
+            ratio = i / (self.SIZE // 2)
+            r = int(int(colors[0][1:3], 16) * ratio + int(colors[1][1:3], 16) * (1 - ratio))
+            g = int(int(colors[0][3:5], 16) * ratio + int(colors[1][3:5], 16) * (1 - ratio))
+            b = int(int(colors[0][5:7], 16) * ratio + int(colors[1][5:7], 16) * (1 - ratio))
+            draw.ellipse(
+                [self.SIZE//2 - i, self.SIZE//2 - i, 
+                 self.SIZE//2 + i, self.SIZE//2 + i],
+                fill=(r, g, b, 230)
+            )
+        
+        # Обводка
+        draw.ellipse([2, 2, self.SIZE-2, self.SIZE-2], outline='white', width=2)
+        
+        self.photo = ctk.CTkImage(img, size=(self.SIZE, self.SIZE))
+        self.canvas.create_image(self.SIZE//2, self.SIZE//2, image=self.photo)
+    
+    def _bind_events(self):
+        """Привязка событий"""
+        for widget in [self, self.label_frame, self.percent_label]:
+            widget.bind('<ButtonPress-1>', self._start_drag)
+            widget.bind('<B1-Motion>', self._on_drag)
+            widget.bind('<Double-Button-1>', lambda e: self._open_main())
+    
+    def _start_drag(self, event):
+        self._drag_data['x'] = event.x_root - self.winfo_x()
+        self._drag_data['y'] = event.y_root - self.winfo_y()
+    
+    def _on_drag(self, event):
+        x = event.x_root - self._drag_data['x']
+        y = event.y_root - self._drag_data['y']
+        self.geometry(f'+{x}+{y}')
+    
+    def _animate_in(self):
+        self.attributes('-alpha', 0.0)
+        self._fade_in(0)
+    
+    def _fade_in(self, step):
+        if step < 10:
+            self.attributes('-alpha', step / 10)
+            self.after(20, lambda: self._fade_in(step + 1))
+        else:
+            self.attributes('-alpha', 1.0)
+    
+    def update_percentage(self, percentage, provider=None):
+        """Обновить данные"""
+        self.percentage = percentage
+        if provider:
+            self.provider = provider
+        self.percent_label.configure(text=f"{percentage}%")
+        self.provider_label.configure(text=self.provider[:4])
+        self._update_appearance()
+    
+    def _open_main(self):
+        """Открыть основное окно (хук для интеграции)"""
+        pass
+
+
 class CodexBarApp:
     def __init__(self):
         # ── Single-instance mutex ──────────────────────────────────
@@ -3398,6 +3533,14 @@ class CodexBarApp:
         self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
         threading.Thread(target=self.tray.run, daemon=True).start()
 
+        # ── floating widget ──
+        self.floating_widget = FloatingWidget(
+            self.root,
+            percentage=sp,
+            provider="Claude"
+        )
+        self.floating_widget._open_main = self._show_popup
+
         # ── auto-refresh every 5 min ──
         self.root.after(300_000, self._auto_refresh)
 
@@ -3488,6 +3631,13 @@ class CodexBarApp:
             provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
             label = provider_labels.get(p, p.upper())
             self.tray.title = f"CodexBar {label}: {sp}%"
+            
+            # Update floating widget
+            try:
+                if hasattr(self, 'floating_widget') and self.floating_widget:
+                    self.floating_widget.update_percentage(sp, label)
+            except Exception as fw_err:
+                print(f"[FLOAT] update error: {fw_err}")
         except Exception as e:
             print(f"[TRAY] _set_tray_icon ERROR: {e}")
 
@@ -3528,6 +3678,11 @@ class CodexBarApp:
     def _do_quit(self):
         print("[CodexBar] Bye!")
         self.running = False
+        try:
+            if hasattr(self, 'floating_widget') and self.floating_widget:
+                self.floating_widget.destroy()
+        except Exception:
+            pass
         try:
             self.tray.stop()
         except Exception:
