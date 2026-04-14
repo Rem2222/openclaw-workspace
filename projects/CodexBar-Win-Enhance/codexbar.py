@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.27"
+VERSION = "2.2.28"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -1685,8 +1685,8 @@ class OpenCodeDataFetcher:
     def _load_cookie_from_settings() -> str:
         """Load manually saved cookie from settings file (fallback)."""
         try:
-            if SettingsPopup.CONFIG_PATH.exists():
-                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+            if SettingsPopup._config_path().exists():
+                data = json.loads(SettingsPopup._config_path().read_text())
                 return data.get("opencode_cookie", "") or os.environ.get("OPENCODE_COOKIE", "")
         except Exception:
             pass
@@ -1710,8 +1710,8 @@ class OpenCodeDataFetcher:
     def _workspace_url() -> str:
         # Try to load saved workspace_id, default to the known one
         try:
-            if SettingsPopup.CONFIG_PATH.exists():
-                data = json.loads(SettingsPopup.CONFIG_PATH.read_text())
+            if SettingsPopup._config_path().exists():
+                data = json.loads(SettingsPopup._config_path().read_text())
                 ws_id = data.get("opencode_workspace_id", "").strip()
                 if ws_id:
                     return f"https://opencode.ai/workspace/{ws_id}/go"
@@ -2884,7 +2884,13 @@ class CodexBarPopup(ctk.CTkToplevel):
 class SettingsPopup(ctk.CTkToplevel):
     """Settings window for API tokens."""
 
-    CONFIG_PATH = Path.home() / ".codexbar" / "settings.json"
+    @classmethod
+    def _config_path(cls):
+        """Return settings path: LOCALAPPDATA/CodexBar/settings.json or ~/.codexbar/settings.json."""
+        p = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+        if not p.parent.exists():
+            p = Path.home() / ".codexbar" / "settings.json"
+        return p
 
     @classmethod
     def load_last_tab(cls):
@@ -3047,7 +3053,7 @@ class SettingsPopup(ctk.CTkToplevel):
         ver_frame.pack(fill="x", padx=0, pady=(0, 2))
         ctk.CTkLabel(
             ver_frame,
-            text=f"Settings v2.2.27 | lines=3556 | btn_row_ok",
+            text=f"Settings v2.2.28 | lines=3562 | btn_row_ok",
             font=("Segoe UI", 9, "bold"),
             text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT
         ).pack(pady=3)
@@ -3075,8 +3081,8 @@ class SettingsPopup(ctk.CTkToplevel):
     def _load_token(cls, key="zai_token"):
         """Load saved z.ai token from config file."""
         try:
-            if cls.CONFIG_PATH.exists():
-                data = json.loads(cls.CONFIG_PATH.read_text())
+            if cls._config_path().exists():
+                data = json.loads(cls._config_path().read_text())
                 return data.get(key, "")
         except Exception:
             pass
