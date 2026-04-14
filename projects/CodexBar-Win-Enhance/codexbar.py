@@ -1454,7 +1454,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.28"
+VERSION = "2.2.29"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3070,7 +3070,7 @@ class SettingsPopup(ctk.CTkToplevel):
         ver_frame.pack(fill="x", padx=0, pady=(0, 2))
         ctk.CTkLabel(
             ver_frame,
-            text=f"Settings v2.2.28 | lines=3562 | btn_row_ok",
+            text=f"Settings v{VERSION}",
             font=("Segoe UI", 9, "bold"),
             text_color="#1A1A2E", fg_color="#FFE0B2"
         ).pack(pady=3)
