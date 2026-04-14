@@ -28,7 +28,7 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageFont
 except ImportError:
     print("ERROR: Pillow not found. Run: python -m pip install Pillow")
     sys.exit(1)
@@ -1046,14 +1046,14 @@ def make_icon(sp=0, wp=0, sz=64, provider="claude"):
             font = None
             for font_path, fsize in fonts_to_try:
                 try:
-                    font = ImageDraw.ImageFont.truetype(font_path, fsize)
+                    font = ImageFont.truetype(font_path, fsize)
                     print(f"[TRAY] Loaded font: {font_path}", flush=True)
                     break
                 except Exception:
                     pass
             
             if font is None:
-                font = ImageDraw.ImageFont.load_default()
+                font = ImageFont.load_default()
                 print(f"[TRAY] Using default font", flush=True)
             
             text = f"{pct}%"
@@ -1454,7 +1454,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.29"
+VERSION = "2.2.30"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
