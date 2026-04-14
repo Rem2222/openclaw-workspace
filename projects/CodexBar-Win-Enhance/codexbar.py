@@ -1437,7 +1437,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.26"
+VERSION = "2.2.27"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3042,9 +3042,16 @@ class SettingsPopup(ctk.CTkToplevel):
 
         self._token_entry.focus_set()
 
-        # ── DEBUG: visible separator ──
-        sep = ctk.CTkFrame(self, height=2, fg_color=self.ZA_ACCENT)
-        sep.pack(fill="x", padx=20, pady=(8, 4))
+        # ── DEBUG: version label ──
+        ver_frame = ctk.CTkFrame(self, fg_color=self.ZA_ACCENT_LT, height=24)
+        ver_frame.pack(fill="x", padx=0, pady=(0, 2))
+        ctk.CTkLabel(
+            ver_frame,
+            text=f"Settings v2.2.27 | lines=3556 | btn_row_ok",
+            font=("Segoe UI", 9, "bold"),
+            text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT
+        ).pack(pady=3)
+
 
         # ── Bottom buttons ──
         bottom_row = ctk.CTkFrame(self, fg_color="transparent")
