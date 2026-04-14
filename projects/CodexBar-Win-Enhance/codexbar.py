@@ -3373,7 +3373,8 @@ class FloatingWidget(ctk.CTkToplevel):
         # Обводка
         draw.ellipse([2, 2, self.SIZE-2, self.SIZE-2], outline='white', width=2)
         
-        self.photo = ctk.CTkImage(img, size=(self.SIZE, self.SIZE))
+        from PIL import ImageTk
+        self.photo = ImageTk.PhotoImage(img)
         self.canvas.create_image(self.SIZE//2, self.SIZE//2, image=self.photo)
     
     def _bind_events(self):
