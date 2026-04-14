@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.41"
+VERSION = "2.2.42"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3540,6 +3540,8 @@ class CodexBarApp:
             MenuItem('Open CodexBar', self._tray_open, default=True),
             MenuItem('Refresh', self._tray_refresh),
             Menu.SEPARATOR,
+            MenuItem('Show/Hide Widget', self._tray_toggle_widget),
+            Menu.SEPARATOR,
             MenuItem('Quit', self._tray_quit),
         )
         self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
@@ -3571,6 +3573,23 @@ class CodexBarApp:
     def _tray_open(self, *_):
         self.root.after(0, self._show_popup)
 
+    def _tray_toggle_widget(self, *_):
+        self.root.after(0, self._do_toggle_widget)
+    
+    def _do_toggle_widget(self):
+        """Toggle floating widget visibility"""
+        if self.floating_widget is None or not self.floating_widget.winfo_exists():
+            # Recreate
+            d = self.fetcher.data
+            sp = d.get("session_used_pct", 0)
+            label = self.fetcher.provider
+            self.floating_widget = FloatingWidget(self.root, percentage=sp, provider=label)
+            self.floating_widget._open_main = self._show_popup
+        else:
+            # Hide/destroy
+            self.floating_widget.destroy()
+            self.floating_widget = None
+    
     def _tray_refresh(self, *_):
         self.root.after(0, self._do_refresh)
 
