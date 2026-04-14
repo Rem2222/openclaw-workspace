@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.42"
+VERSION = "2.2.43"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3579,10 +3579,19 @@ class CodexBarApp:
     def _do_toggle_widget(self):
         """Toggle floating widget visibility"""
         if self.floating_widget is None or not self.floating_widget.winfo_exists():
-            # Recreate
-            d = self.fetcher.data
-            sp = d.get("session_used_pct", 0)
-            label = self.fetcher.provider
+            # Get data for active provider
+            provider_map = {
+                "claude": self.fetcher.data,
+                "openai": self.codex_data,
+                "zai": self.zai_data,
+                "minimax": self.minimax_data,
+                "opencode": self.opencode_data,
+            }
+            data_src = provider_map.get(self._active_provider, self.fetcher.data)
+            sp = data_src.get("session_used_pct", 0) if data_src else 0
+            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+            label = provider_labels.get(self._active_provider, "CL")
+            
             self.floating_widget = FloatingWidget(self.root, percentage=sp, provider=label)
             self.floating_widget._open_main = self._show_popup
         else:
