@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.37"
+VERSION = "2.2.38"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3283,25 +3283,20 @@ class SettingsPopup(ctk.CTkToplevel):
 
 
 # ─────────────────────────────────────────────
-# Floating Widget (летающий виджет)
+# Floating Widget - Black Glassmorphism Edition
 # ─────────────────────────────────────────────
 
 class FloatingWidget(ctk.CTkToplevel):
     """
-    Летающий круглый виджет с процентом использования.
-    Всегда наверху, перетаскивается, красивые анимации.
+    Летающий виджет в стиле glassmorphism.
+    Чёрный полупрозрачный скруглённый прямоугольник.
     """
     
-    SIZE = 80
+    WIDTH = 120
+    HEIGHT = 60
+    CORNER_RADIUS = 16
     
-    # Цвета для разных уровней использования
-    COLORS = {
-        'low': ('#10B981', '#059669'),      # Зелёный
-        'medium': ('#F59E0B', '#D97706'),   # Оранжевый
-        'high': ('#EF4444', '#DC2626'),     # Красный
-    }
-    
-    def __init__(self, master=None, percentage=0, provider="Z.AI"):
+    def __init__(self, master=None, percentage=0, provider="MM"):
         super().__init__(master)
         self.percentage = percentage
         self.provider = provider
@@ -3310,76 +3305,85 @@ class FloatingWidget(ctk.CTkToplevel):
         # Настройка окна
         self.overrideredirect(True)
         self.attributes('-topmost', True)
-        self.attributes('-transparentcolor', '#000001')
-        self.configure(fg_color='#000001')
+        self.attributes('-transparentcolor', '#000000')
+        self.configure(fg_color='#000000')
         
         # Позиция — правый нижний угол
-        self.geometry(f"{self.SIZE}x{self.SIZE}+1200+700")
+        self.geometry(f"{self.WIDTH}x{self.HEIGHT}+1200+700")
         
         self._create_ui()
         self._bind_events()
         self._animate_in()
     
+    def _make_glassmorphism_image(self):
+        """
+        Создаёт изображение в стиле black glassmorphism:
+        - Чёрный полупрозрачный фон
+        - Скруглённые углы
+        - Тонкая светлая граница
+        """
+        img_size = max(self.WIDTH, self.HEIGHT)
+        img = Image.new('RGBA', (img_size, img_size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        
+        # Цвета
+        bg_color = (15, 15, 20, 200)  # Почти чёрный
+        border_color = (255, 255, 255, 35)  # Тонкая белая граница
+        
+        r = self.CORNER_RADIUS
+        
+        # Внешняя рамка (border)
+        draw.rounded_rectangle(
+            [1, 1, img_size - 1, img_size - 1],
+            radius=r, fill=border_color
+        )
+        
+        # Внутренний фон
+        draw.rounded_rectangle(
+            [2, 2, img_size - 2, img_size - 2],
+            radius=r - 1, fill=bg_color
+        )
+        
+        # Лёгкий highlight сверху
+        highlight_height = img_size // 3
+        for i in range(highlight_height):
+            alpha = int(12 * (1 - i / highlight_height))
+            draw.line([(r, 2 + i), (img_size - r, 2 + i)], fill=(255, 255, 255, alpha), width=1)
+        
+        return img
+    
     def _create_ui(self):
-        """Создаём круглый виджет"""
+        """Создаём glassmorphism виджет"""
         self.canvas = ctk.CTkCanvas(
-            self, width=self.SIZE, height=self.SIZE,
-            bg='#000001', highlightthickness=0
+            self, width=self.WIDTH, height=self.HEIGHT,
+            bg='#000000', highlightthickness=0
         )
         self.canvas.pack(fill='both', expand=True)
         
-        self._update_appearance()
+        # Фоновое изображение
+        self._bg_image = self._make_glassmorphism_image()
+        self._photo = ctk.CTkImage(self._bg_image, size=(self.WIDTH, self.HEIGHT))
+        self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
         
-        # Текст поверх
-        self.label_frame = ctk.CTkFrame(self, fg_color='transparent', width=self.SIZE, height=self.SIZE)
+        # Текст
+        self.label_frame = ctk.CTkFrame(self, fg_color='transparent')
         self.label_frame.place(relx=0.5, rely=0.5, anchor='center')
         
         self.percent_label = ctk.CTkLabel(
             self.label_frame, text=f"{self.percentage}%",
-            font=('Segoe UI', 18, 'bold'), text_color='white'
+            font=('Inter', 20, 'bold'), text_color='white', fg_color='transparent'
         )
-        self.percent_label.pack(pady=(12, 0))
+        self.percent_label.pack(anchor='center', pady=(4, 0))
         
         self.provider_label = ctk.CTkLabel(
-            self.label_frame, text=self.provider[:4],
-            font=('Segoe UI', 8), text_color='white'
+            self.label_frame, text=self.provider,
+            font=('Inter', 9), text_color='rgba(255,255,255,0.5)', fg_color='transparent'
         )
-        self.provider_label.pack()
-    
-    def _update_appearance(self):
-        """Обновляем цвет круга"""
-        if self.percentage <= 50:
-            colors = self.COLORS['low']
-        elif self.percentage <= 80:
-            colors = self.COLORS['medium']
-        else:
-            colors = self.COLORS['high']
-        
-        # Создаём градиентный круг
-        img = Image.new('RGBA', (self.SIZE, self.SIZE), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        for i in range(self.SIZE // 2, 0, -1):
-            ratio = i / (self.SIZE // 2)
-            r = int(int(colors[0][1:3], 16) * ratio + int(colors[1][1:3], 16) * (1 - ratio))
-            g = int(int(colors[0][3:5], 16) * ratio + int(colors[1][3:5], 16) * (1 - ratio))
-            b = int(int(colors[0][5:7], 16) * ratio + int(colors[1][5:7], 16) * (1 - ratio))
-            draw.ellipse(
-                [self.SIZE//2 - i, self.SIZE//2 - i, 
-                 self.SIZE//2 + i, self.SIZE//2 + i],
-                fill=(r, g, b, 230)
-            )
-        
-        # Обводка
-        draw.ellipse([2, 2, self.SIZE-2, self.SIZE-2], outline='white', width=2)
-        
-        from PIL import ImageTk
-        self.photo = ImageTk.PhotoImage(img)
-        self.canvas.create_image(self.SIZE//2, self.SIZE//2, image=self.photo)
+        self.provider_label.pack(anchor='center')
     
     def _bind_events(self):
         """Привязка событий"""
-        for widget in [self, self.label_frame, self.percent_label]:
+        for widget in [self, self.label_frame, self.percent_label, self.provider_label]:
             widget.bind('<ButtonPress-1>', self._start_drag)
             widget.bind('<B1-Motion>', self._on_drag)
             widget.bind('<Double-Button-1>', lambda e: self._open_main())
@@ -3394,15 +3398,10 @@ class FloatingWidget(ctk.CTkToplevel):
         self.geometry(f'+{x}+{y}')
     
     def _animate_in(self):
+        """Fade-in анимация"""
         self.attributes('-alpha', 0.0)
-        self._fade_in(0)
-    
-    def _fade_in(self, step):
-        if step < 10:
-            self.attributes('-alpha', step / 10)
-            self.after(20, lambda: self._fade_in(step + 1))
-        else:
-            self.attributes('-alpha', 1.0)
+        for i in range(16):
+            self.after(i * 20, lambda a=i/15: self.attributes('-alpha', a))
     
     def update_percentage(self, percentage, provider=None):
         """Обновить данные"""
@@ -3410,8 +3409,7 @@ class FloatingWidget(ctk.CTkToplevel):
         if provider:
             self.provider = provider
         self.percent_label.configure(text=f"{percentage}%")
-        self.provider_label.configure(text=self.provider[:4])
-        self._update_appearance()
+        self.provider_label.configure(text=self.provider)
     
     def _open_main(self):
         """Открыть основное окно (хук для интеграции)"""
