@@ -61,9 +61,10 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 Add whatever helps you do your job. This is your cheat sheet.
 
 ## ByteRover (Memory)
-- **Query:** `/home/rem/.brv-cli/bin/brv query "auth patterns"` (Check existing knowledge)
-- **Curate:** `/home/rem/.brv-cli/bin/brv curate "Auth uses JWT in cookies"` (Save new knowledge)
-- **Sync:** `/home/rem/.brv-cli/bin/brv pull` / `/home/rem/.brv-cli/bin/brv push` (Sync with team - requires login)
+- **CLI:** `/root/.brv-cli/bin/brv` (version 2.5.2)
+- **Query:** `/root/.brv-cli/bin/brv query "auth patterns"` (Check existing knowledge)
+- **Curate:** `/root/.brv-cli/bin/brv curate "Auth uses JWT in cookies"` (Save new knowledge)
+- **Sync:** `/root/.brv-cli/bin/brv pull` / `/root/.brv-cli/bin/brv push` (Sync with team - requires login)
 
 ## MemPalace (Facts & Decisions)
 MemPalace извлекает факты и решения из workspace файлов в semantic storage.
@@ -80,5 +81,5 @@ for r in results['results']:
     print(r['text'][:100], '|', r['source_file'])
 ```
 - **Palace location:** `~/.mempalace/palace`
-- **Status:** 767 drawers (technical: 575, architecture: 81, planning: 45, problems: 39, general: 27)
+- **Status:** 2561 drawers (technical: 1972, general: 264, planning: 149, architecture: 133, problems: 43)
 - **Wings:** rem (main), openclaw

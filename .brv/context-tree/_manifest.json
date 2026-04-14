@@ -86,6 +86,12 @@
     },
     {
       "importance": 50,
+      "path": "infrastructure/dashboard_development.md",
+      "tokens": 447,
+      "type": "context"
+    },
+    {
+      "importance": 50,
       "path": "infrastructure/monitoring/server_monitoring_configuration.md",
       "tokens": 284,
       "type": "context"
@@ -104,8 +110,20 @@
     },
     {
       "importance": 50,
+      "path": "infrastructure/vps_selection.md",
+      "tokens": 500,
+      "type": "context"
+    },
+    {
+      "importance": 50,
       "path": "llm_setup/context.md",
       "tokens": 70,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "llm_setup/model_switching_issues.md",
+      "tokens": 213,
       "type": "context"
     },
     {
@@ -139,13 +157,13 @@
       "type": "context"
     }
   ],
-  "generated_at": "2026-04-01T10:00:58.390Z",
+  "generated_at": "2026-04-14T19:28:45.585Z",
   "lane_tokens": {
-    "contexts": 2394,
+    "contexts": 3554,
     "stubs": 0,
     "summaries": 1980
   },
-  "source_fingerprint": "923c6a9f9f1cc85de3e5f74f827c542f1f3c0f9a0bd44ee7b13cc71d75eb7546",
-  "total_tokens": 4374,
+  "source_fingerprint": "d1477a13397898aac157093736231c95493554abc74495e2e2eede5889d3f0f8",
+  "total_tokens": 5534,
   "version": 1
 }
