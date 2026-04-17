@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-16T01:02:37.496Z",
+  "updatedAt": "2026-04-17T01:02:13.915Z",
   "entries": {
     "memory:memory/2026-04-11.md:1:27": {
       "key": "memory:memory/2026-04-11.md:1:27",
@@ -40,13 +40,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "v2.2.25",
@@ -72,13 +73,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "z.ai",
@@ -104,13 +106,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "z.ai",
@@ -136,13 +139,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "v2.2.26",
@@ -168,14 +172,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "81.17.100.103",
@@ -201,14 +206,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "81.17.100.103",
@@ -234,14 +240,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "linear-webhook.service",
@@ -267,14 +274,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "настройка",
@@ -298,14 +306,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "настройка",
@@ -331,14 +340,15 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "0dac2e09ca9b"
       ],
       "recallDays": [
         "2026-04-13",
         "2026-04-14",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "настройка",
@@ -798,7 +808,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -806,7 +816,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "minimax/minimax-m2.7",
@@ -832,7 +843,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -840,7 +851,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar-win-enhance",
@@ -866,7 +878,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -874,7 +886,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "openai",
@@ -900,7 +913,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -908,7 +921,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar-win-enhance",
@@ -934,7 +948,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -942,7 +956,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "api.minimax.io",
@@ -968,7 +983,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "01679c334ef2"
       ],
@@ -976,7 +991,8 @@
         "2026-04-12",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "критически",
@@ -3846,7 +3862,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -3854,7 +3870,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar.py",
@@ -3880,7 +3897,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -3888,7 +3905,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar.py",
@@ -3914,7 +3932,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -3922,7 +3940,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar.py",
@@ -3948,7 +3967,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -3956,7 +3975,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "codexbar.py",
@@ -3982,7 +4002,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -3990,7 +4010,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "api.opencode.ai/v1/workspaces",
@@ -4016,7 +4037,7 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-14T01:00:00.844Z",
-      "lastRecalledAt": "2026-04-16T01:00:00.679Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "2213b71c3c98"
       ],
@@ -4024,7 +4045,8 @@
         "2026-04-11",
         "2026-04-14",
         "2026-04-15",
-        "2026-04-16"
+        "2026-04-16",
+        "2026-04-17"
       ],
       "conceptTags": [
         "localstorage/sessionstorage",
@@ -5715,13 +5737,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-15T01:00:00.632Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "reflections",
@@ -5743,13 +5766,14 @@
       "totalScore": 0.62,
       "maxScore": 0.62,
       "firstRecalledAt": "2026-04-15T01:00:00.632Z",
-      "lastRecalledAt": "2026-04-15T01:00:00.632Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
       "queryHashes": [
         "11d1361acb2d"
       ],
       "recallDays": [
         "2026-04-14",
-        "2026-04-15"
+        "2026-04-15",
+        "2026-04-17"
       ],
       "conceptTags": [
         "possible",
@@ -12134,6 +12158,4058 @@
         "need",
         "follow",
         "strictly"
+      ]
+    },
+    "memory:memory/2026-04-16.md:403:406": {
+      "key": "memory:memory/2026-04-16.md:403:406",
+      "path": "memory/2026-04-16.md",
+      "startLine": 403,
+      "endLine": 406,
+      "source": "memory",
+      "snippet": "Reflections: Theme: `assistant` kept surfacing across 176 memories.; confidence: 0.92; evidence: memory/.dreams/session-corpus/2026-04-12.txt:2-2, memory/.dreams/session-corpus/2026-04-12.txt:4-4, memory/.dreams/session-corpus/2026-04-12.txt:6-6; note: reflection",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "0.92",
+        "2-2",
+        "4-4",
+        "6-6",
+        "reflections",
+        "theme",
+        "assistant",
+        "kept"
+      ]
+    },
+    "memory:memory/2026-04-16.md:407:410": {
+      "key": "memory:memory/2026-04-16.md:407:410",
+      "path": "memory/2026-04-16.md",
+      "startLine": 407,
+      "endLine": 410,
+      "source": "memory",
+      "snippet": "Reflections: Theme: `user` kept surfacing across 147 memories.; confidence: 0.77; evidence: memory/.dreams/session-corpus/2026-04-12.txt:1-1, memory/.dreams/session-corpus/2026-04-12.txt:3-3, memory/.dreams/session-corpus/2026-04-12.txt:5-5; note: reflection",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "0.77",
+        "1-1",
+        "3-3",
+        "5-5",
+        "reflections",
+        "theme",
+        "user",
+        "kept"
+      ]
+    },
+    "memory:memory/2026-04-16.md:413:415": {
+      "key": "memory:memory/2026-04-16.md:413:415",
+      "path": "memory/2026-04-16.md",
+      "startLine": 413,
+      "endLine": 415,
+      "source": "memory",
+      "snippet": "Possible Lasting Truths: CodexBar-Win-Enhance: **Версия:** v2.2.4 (b229a66) **Файлы:** `projects/CodexBar-Win-Enhance/codexbar.py` [confidence=0.58 evidence=memory/2026-04-12.md:10-11]; CodexBar-Win-Enhance: **Статус провайдеров:** | Провайдер | Статус | Проблема | |-----------|-",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "codexbar-win-enhance",
+        "v2.2.4",
+        "0.58",
+        "memory/2026-04-12.md",
+        "10-11",
+        "possible",
+        "lasting",
+        "truths"
+      ]
+    },
+    "memory:memory/2026-04-16.md:419:421": {
+      "key": "memory:memory/2026-04-16.md:419:421",
+      "path": "memory/2026-04-16.md",
+      "startLine": 419,
+      "endLine": 421,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): **Gateway restarted** — сессия сброшена, Роман написал \"тут?\" в 22:47; Потом: \"иди и читай доки как добавить модель\"; Прочитал `/usr/lib/node_modules/openclaw/docs/concepts/models.md`",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "pre-compaction",
+        "msk",
+        "pre",
+        "compaction",
+        "flush",
+        "restarted",
+        "сессия"
+      ]
+    },
+    "memory:memory/2026-04-16.md:423:423": {
+      "key": "memory:memory/2026-04-16.md:423:423",
+      "path": "memory/2026-04-16.md",
+      "startLine": 423,
+      "endLine": 423,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): **Ключевые моменты из доки:**",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "pre-compaction",
+        "msk",
+        "pre",
+        "compaction",
+        "flush",
+        "ключевые",
+        "моменты",
+        "доки"
+      ]
+    },
+    "memory:memory/2026-04-16.md:424:427": {
+      "key": "memory:memory/2026-04-16.md:424:427",
+      "path": "memory/2026-04-16.md",
+      "startLine": 424,
+      "endLine": 427,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): `agents.defaults.models` — allowlist моделей (если задан, работает как фильтр); `openclaw models scan` — сканирует OpenRouter free models, можно сразу выбрать и задать; `openclaw onboard` — интерактивная настройка провайдеров; `models.jso",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "router",
+        "pre-compaction",
+        "agents.defaults.models",
+        "models.jso",
+        "msk",
+        "pre",
+        "compaction",
+        "flush"
+      ]
+    },
+    "memory:memory/2026-04-16.md:428:428": {
+      "key": "memory:memory/2026-04-16.md:428:428",
+      "path": "memory/2026-04-16.md",
+      "startLine": 428,
+      "endLine": 428,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): `/model list` — в чате показывает список моделей",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "pre-compaction",
+        "msk",
+        "pre",
+        "compaction",
+        "flush",
+        "model",
+        "list",
+        "чате"
+      ]
+    },
+    "memory:memory/2026-04-16.md:430:430": {
+      "key": "memory:memory/2026-04-16.md:430:430",
+      "path": "memory/2026-04-16.md",
+      "startLine": 430,
+      "endLine": 430,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): **Текущая модель:** `trueconf/qwen3.6:35b` (qwen36local алиас в models)",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "pre-compaction",
+        "trueconf/qwen3.6",
+        "msk",
+        "pre",
+        "compaction",
+        "flush",
+        "текущая",
+        "модель"
+      ]
+    },
+    "memory:memory/2026-04-16.md:432:432": {
+      "key": "memory:memory/2026-04-16.md:432:432",
+      "path": "memory/2026-04-16.md",
+      "startLine": 432,
+      "endLine": 432,
+      "source": "memory",
+      "snippet": "Session 22:47 MSK (pre-compaction flush): **Роман спросил \"тут?\" — ответил сразу, подтвердил что живой**",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.62,
+      "maxScore": 0.62,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "b628913e3912"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "pre-compaction",
+        "msk",
+        "pre",
+        "compaction",
+        "flush",
+        "роман",
+        "спросил",
+        "тут"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:7:7": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:7:7",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 7,
+      "endLine": 7,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:8:8": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:8:8",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 8,
+      "endLine": 8,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:9:9": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:9:9",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 9,
+      "endLine": 9,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:10:10": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:10:10",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 10,
+      "endLine": 10,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:11:11": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:11:11",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 11,
+      "endLine": 11,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:12:12": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:12:12",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 12,
+      "endLine": 12,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:13:13": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:13:13",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 13,
+      "endLine": 13,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:14:14": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:14:14",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 14,
+      "endLine": 14,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:15:15": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:15:15",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 15,
+      "endLine": 15,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:16:16": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:16:16",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 16,
+      "endLine": 16,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. I should HEARTBEAT_OK.This is a heartbeat poll. Roman is offline (no response since 19:19 on Ap",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok.this",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:17:17": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:17:17",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 17,
+      "endLine": 17,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:18:18": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:18:18",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 18,
+      "endLine": 18,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:19:19": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:19:19",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 19,
+      "endLine": 19,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6667\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Wed 2026-04-15 20:56 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:20:20": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:20:20",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 20,
+      "endLine": 20,
+      "source": "memory",
+      "snippet": "Assistant: **81.17.100.103** — Contabo, Франция",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "81.17.100.103",
+        "assistant",
+        "contabo",
+        "франция"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:1:1": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:1:1",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:2:2": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:2:2",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 2,
+      "endLine": 2,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:24 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: ВАЖНО: НЕ пересказывай содержимое файла. Ты должен ВЫПОЛНИТЬ анализ и СОХРАНИТЬ результат. 1. Пр",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "user",
+        "thu",
+        "gmt",
+        "subagent",
+        "context"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:3:3": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:3:3",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 3,
+      "endLine": 3,
+      "source": "memory",
+      "snippet": "Assistant: Выполняю задачу. Сначала прочитаю промпт, чтобы понять структуру анализа.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "выполняю",
+        "задачу",
+        "сначала",
+        "прочитаю",
+        "промпт",
+        "чтобы",
+        "понять"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:4:4": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:4:4",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 4,
+      "endLine": 4,
+      "source": "memory",
+      "snippet": "Assistant: Теперь у меня есть полный контекст сообщений. Проведу анализ и создам психологический портрет. --- # Психологический портрет: Роман Период анализа: 2026-04-02 — 2026-04-13 --- ## Часть A: Психологический портрет ### Коммуникативный профиль Роман — максимально лаконичны",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "теперь",
+        "меня",
+        "есть",
+        "полный",
+        "контекст",
+        "сообщений",
+        "проведу"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:5:5": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:5:5",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 5,
+      "endLine": 5,
+      "source": "memory",
+      "snippet": "Assistant: Задача выполнена. Психологический портрет составлен на основе 600 сообщений и сохранён: `/root/.openclaw/workspace/projects/psycho-profile/output/big-pickle_2026-04-16.md` **Краткое резюме:** 🔹 **Стиль:** Короткие_directные сообщения, минимум воды 🔹 **Тип:** ENTJ/EST",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "короткие-directные",
+        "entj/est",
+        "assistant",
+        "задача",
+        "выполнена",
+        "психологический",
+        "портрет",
+        "составлен"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:6:6": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:6:6",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 6,
+      "endLine": 6,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:08 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:7:7": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:7:7",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 7,
+      "endLine": 7,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:8:8": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:8:8",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 8,
+      "endLine": 8,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:20 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:9:9": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:9:9",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 9,
+      "endLine": 9,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:00 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:10:10": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:10:10",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 10,
+      "endLine": 10,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:11:11": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:11:11",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 11,
+      "endLine": 11,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:32 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_glm-5.txt и ВЫПОЛ",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-glm-5.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:12:12": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:12:12",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 12,
+      "endLine": 12,
+      "source": "memory",
+      "snippet": "Assistant: Я проанализировал достаточно сообщений. Позвольте мне составить профиль.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "проанализировал",
+        "достаточно",
+        "сообщений",
+        "позвольте",
+        "мне",
+        "составить",
+        "профиль"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:13:13": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:13:13",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 13,
+      "endLine": 13,
+      "source": "memory",
+      "snippet": "Assistant: Готово. Психологический портрет сохранён в `/root/.openclaw/workspace/projects/psycho-profile/output/glm-5_2026-04-16.md`. **Что сделал:** - Проанализировал ~600 сообщений за период 02-13 апреля - Составил полный профиль по всем запрошенным аспектам (Часть A) - Определ",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "02-13",
+        "assistant",
+        "готово",
+        "психологический",
+        "портрет",
+        "сохранён",
+        "root",
+        "openclaw"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:14:14": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:14:14",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 14,
+      "endLine": 14,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6669\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 05:58 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:15:15": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:15:15",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 15,
+      "endLine": 15,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6669\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 05:58 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:16:16": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:16:16",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 16,
+      "endLine": 16,
+      "source": "memory",
+      "snippet": "Assistant: Что именно почитать? Прикрепи файл или ссылку — иначе я не вижу что ты отправил.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "что",
+        "именно",
+        "почитать",
+        "прикрепи",
+        "файл",
+        "или",
+        "ссылку"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:17:17": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:17:17",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 17,
+      "endLine": 17,
+      "source": "memory",
+      "snippet": "User: [media attached: /root/.openclaw/media/inbound/IMG_0508---99723d0d-a15c-45c1-bf23-6959817311fd.mp4 (video/mp4) | /root/.openclaw/media/inbound/IMG_0508---99723d0d-a15c-45c1-bf23-6959817311fd.mp4] To send an image back, prefer the message tool (media/path/filePath). If you m",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw/media/inbound/img-0508",
+        "video/mp4",
+        "media/path/filepath",
+        "user",
+        "media",
+        "attached",
+        "root",
+        "openclaw"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:18:18": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:18:18",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 18,
+      "endLine": 18,
+      "source": "memory",
+      "snippet": "User: [media attached: /root/.openclaw/media/inbound/IMG_0508---99723d0d-a15c-45c1-bf23-6959817311fd.mp4 (video/mp4) | /root/.openclaw/media/inbound/IMG_0508---99723d0d-a15c-45c1-bf23-6959817311fd.mp4] To send an image back, prefer the message tool (media/path/filePath). If you m",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw/media/inbound/img-0508",
+        "video/mp4",
+        "media/path/filepath",
+        "user",
+        "media",
+        "attached",
+        "root",
+        "openclaw"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:19:19": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:19:19",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 19,
+      "endLine": 19,
+      "source": "memory",
+      "snippet": "Assistant: Прочитал документацию. Вот что это значит конкретно: --- ### 🤖 Managed Bots (управляемые боты) Это возможность **бота-создателя** — создавать и контролировать других ботов. **Как работает:** 1. Берёшь любой свой существующий бот (например, @mer_openClaw_bot) 2. Включа",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "бота-создателя",
+        "mer-openclaw-bot",
+        "assistant",
+        "прочитал",
+        "документацию",
+        "вот",
+        "что",
+        "это"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:20:20": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:20:20",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 20,
+      "endLine": 20,
+      "source": "memory",
+      "snippet": "User: [Queued messages while agent was busy] --- Queued #1 Conversation info (untrusted metadata): ```json { \"message_id\": \"6672\", \"reply_to_id\": \"6671\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 06:00 GMT+2\", \"topic_id\": \"175995\", \"has_reply_context",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "reply-to-id",
+        "sender-id",
+        "topic-id",
+        "has-reply-context",
+        "user",
+        "queued",
+        "messages"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:21:21": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:21:21",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 21,
+      "endLine": 21,
+      "source": "memory",
+      "snippet": "User: [Queued messages while agent was busy] --- Queued #1 Conversation info (untrusted metadata): ```json { \"message_id\": \"6672\", \"reply_to_id\": \"6671\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 06:00 GMT+2\", \"topic_id\": \"175995\", \"has_reply_context",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "reply-to-id",
+        "sender-id",
+        "topic-id",
+        "has-reply-context",
+        "user",
+        "queued",
+        "messages"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:22:22": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:22:22",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 22,
+      "endLine": 22,
+      "source": "memory",
+      "snippet": "Assistant: Я уже это прочитал и ответил выше. Кратко: **Managed Bots** — можно создать бота-менеджера, который позволяет пользователям в 2 тапа создавать своих AI-агентов/ботов без программирования. **Bot-to-Bot Communication** — боты могут общаться друг с другом в группах и чере",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "бота-менеджера",
+        "ai-агентов/ботов",
+        "bot-to-bot",
+        "assistant",
+        "уже",
+        "это",
+        "прочитал",
+        "ответил"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:23:23": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:23:23",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 23,
+      "endLine": 23,
+      "source": "memory",
+      "snippet": "Assistant: Я уже это прочитал и ответил выше. Кратко: **Managed Bots** — можно создать бота-менеджера, который позволяет пользователям в 2 тапа создавать своих AI-агентов/ботов без программирования. **Bot-to-Bot Communication** — боты могут общаться друг с другом в группах и чере",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "бота-менеджера",
+        "ai-агентов/ботов",
+        "bot-to-bot",
+        "assistant",
+        "уже",
+        "это",
+        "прочитал",
+        "ответил"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:24:24": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:24:24",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 24,
+      "endLine": 24,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:04 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:25:25": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:25:25",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 25,
+      "endLine": 25,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:26:26": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:26:26",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 26,
+      "endLine": 26,
+      "source": "memory",
+      "snippet": "User: Sender (untrusted metadata): ```json { \"label\": \"openclaw-control-ui\", \"id\": \"openclaw-control-ui\" } ``` [Thu 2026-04-16 22:55 GMT+2] тут?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw-control-ui",
+        "user",
+        "sender",
+        "untrusted",
+        "metadata",
+        "label",
+        "openclaw",
+        "control"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:27:27": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:27:27",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 27,
+      "endLine": 27,
+      "source": "memory",
+      "snippet": "User: Sender (untrusted metadata): ```json { \"label\": \"openclaw-control-ui\", \"id\": \"openclaw-control-ui\" } ``` [Thu 2026-04-16 22:55 GMT+2] тут?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw-control-ui",
+        "user",
+        "sender",
+        "untrusted",
+        "metadata",
+        "label",
+        "openclaw",
+        "control"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:28:28": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:28:28",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 28,
+      "endLine": 28,
+      "source": "memory",
+      "snippet": "Assistant: Тут! ⚔️ Работаю в вебчате. Что нужно?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "тут",
+        "работаю",
+        "вебчате",
+        "что",
+        "нужно"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:29:29": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:29:29",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 29,
+      "endLine": 29,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6743\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 16:59 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:30:30": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:30:30",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 30,
+      "endLine": 30,
+      "source": "memory",
+      "snippet": "Assistant: DuckDuckGo не дал результатов. Попробую через другой поисковик:",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "duckduckgo",
+        "дал",
+        "результатов",
+        "попробую",
+        "через",
+        "другой",
+        "поисковик"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:31:31": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:31:31",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 31,
+      "endLine": 31,
+      "source": "memory",
+      "snippet": "Assistant: Ничего не нашлось в Википедии. Но я знаю что такое **Termius**: **Термиус (Termius)** — это SSH-клиент для iOS/Android. Популярное приложение для подключения к серверам. **Что умеет:** - SSH / SFTP подключение - Менеджер ключей - Синхронизация между устройствами - Груп",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "ssh-клиент",
+        "ios/android",
+        "assistant",
+        "ничего",
+        "нашлось",
+        "википедии",
+        "знаю",
+        "что"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:32:32": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:32:32",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 32,
+      "endLine": 32,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6746\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:19 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:33:33": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:33:33",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 33,
+      "endLine": 33,
+      "source": "memory",
+      "snippet": "Assistant: Нашёл. Файл: `~/.openclaw/agents/main/agent/models.json` Провайдер **\"local\"** (базовый URL: `http://10.110.0.203:11434/v1`) Сейчас там одна модель — `qwen3.5:27b`. Нужно добавить `qwen3.6:35b` в этот же провайдер. **Что добавить (after line ~309):** ```json { \"id\": \"q",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "10.110.0.203",
+        "11434/v1",
+        "qwen3.5",
+        "qwen3.6",
+        "assistant",
+        "нашёл",
+        "файл",
+        "openclaw"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:34:34": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:34:34",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 34,
+      "endLine": 34,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6748\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:20 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:35:35": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:35:35",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 35,
+      "endLine": 35,
+      "source": "memory",
+      "snippet": "Assistant: Готово. Добавил `qwen3.6:35b` в провайдер `local`. Чтобы заработало — нужен рестарт Gateway. Перезапустить?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "qwen3.6",
+        "assistant",
+        "готово",
+        "добавил",
+        "35b",
+        "провайдер",
+        "local"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:36:36": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:36:36",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 36,
+      "endLine": 36,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6750\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:21 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:37:37": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:37:37",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 37,
+      "endLine": 37,
+      "source": "memory",
+      "snippet": "Assistant: Ты прав, я нашёл `models.json` в `/root/.openclaw/agents/main/agent/models.json`. Это оказался файл настроек конкретно агента \"main\", а не общий конфиг. **Почему так:** - У Романа есть OpenClaw Agents (несколько агентов) - У каждого агента может быть свой `models.json`",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "models.json",
+        "assistant",
+        "прав",
+        "нашёл",
+        "root",
+        "openclaw",
+        "agents",
+        "это"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:38:38": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:38:38",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 38,
+      "endLine": 38,
+      "source": "memory",
+      "snippet": "Assistant: Нет такого. Конфиг перечитать отдельно нельзя — нужен рестарт. Про файл — я нашёл файл по пути `~/.openclaw/agents/main/agent/models.json`. Он и есть основной. Есть и другой? Покажи путь к \"общему файлу настроек\" который ты имеешь в виду — проверю.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "нет",
+        "такого",
+        "конфиг",
+        "перечитать",
+        "отдельно",
+        "нельзя",
+        "нужен"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:39:39": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:39:39",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 39,
+      "endLine": 39,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6753\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:24 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:40:40": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:40:40",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 40,
+      "endLine": 40,
+      "source": "memory",
+      "snippet": "Assistant: Вижу. Это `~/.openclaw/openclaw.json` — основной конфиг. В нём провайдер `trueconf` (а не `local`) указывает на тот же URL `http://10.110.0.203:11434/v1`. Я добавил модель в `~/.openclaw/agents/main/agent/models.json` (там провайдер `local`). Но в основном конфиге `ope",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw/openclaw.json",
+        "10.110.0.203",
+        "11434/v1",
+        "assistant",
+        "вижу",
+        "это",
+        "openclaw",
+        "openclaw.json"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:41:41": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:41:41",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 41,
+      "endLine": 41,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:12 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:42:42": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:42:42",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 42,
+      "endLine": 42,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:43:43": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:43:43",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 43,
+      "endLine": 43,
+      "source": "memory",
+      "snippet": "User: A new session was started via /new or /reset. If runtime-provided startup context is included for this first turn, use it before responding to the user. Then greet the user in your configured persona, if one is provided. Be yourself - use your defined voice, mannerisms, and",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "runtime-provided",
+        "user",
+        "new",
+        "was",
+        "started",
+        "via",
+        "reset",
+        "runtime"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:44:44": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:44:44",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 44,
+      "endLine": 44,
+      "source": "memory",
+      "snippet": "User: A new session was started via /new or /reset. If runtime-provided startup context is included for this first turn, use it before responding to the user. Then greet the user in your configured persona, if one is provided. Be yourself - use your defined voice, mannerisms, and",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "runtime-provided",
+        "user",
+        "new",
+        "was",
+        "started",
+        "via",
+        "reset",
+        "runtime"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:45:45": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:45:45",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 45,
+      "endLine": 45,
+      "source": "memory",
+      "snippet": "Assistant: Роман, здорово. Новый сеанс. Чем могу помочь?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "роман",
+        "здорово",
+        "новый",
+        "сеанс",
+        "чем",
+        "могу",
+        "помочь"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:46:46": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:46:46",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 46,
+      "endLine": 46,
+      "source": "memory",
+      "snippet": "Assistant: Роман, здорово. Новый сеанс. Чем могу помочь?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "роман",
+        "здорово",
+        "новый",
+        "сеанс",
+        "чем",
+        "могу",
+        "помочь"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:47:47": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:47:47",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 47,
+      "endLine": 47,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6793\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:57 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:48:48": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:48:48",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 48,
+      "endLine": 48,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6793\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:57 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:49:49": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:49:49",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 49,
+      "endLine": 49,
+      "source": "memory",
+      "snippet": "Assistant: Жив. ⚔️",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "жив"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:50:50": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:50:50",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 50,
+      "endLine": 50,
+      "source": "memory",
+      "snippet": "Assistant: Жив. ⚔️",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "жив"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:51:51": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:51:51",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 51,
+      "endLine": 51,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6795\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:59 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:52:52": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:52:52",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 52,
+      "endLine": 52,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6795\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:59 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:53:53": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:53:53",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 53,
+      "endLine": 53,
+      "source": "memory",
+      "snippet": "Assistant: Вчера добавили `qwen3.6:35b` в конфиг — работает. Из важного: - **Dashboard** — все 34 задачи закрыты, всё работает - **CodexBar** — v2.2.26, мелкие фиксы - **MemPalace** — 767 drawers, работает - **Memories** — обновляю при каждом reset (Rule 13) Что делаем?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "qwen3.6",
+        "v2.2.26",
+        "assistant",
+        "вчера",
+        "добавили",
+        "35b",
+        "конфиг",
+        "работает"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:54:54": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:54:54",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 54,
+      "endLine": 54,
+      "source": "memory",
+      "snippet": "Assistant: Вчера добавили `qwen3.6:35b` в конфиг — работает. Из важного: - **Dashboard** — все 34 задачи закрыты, всё работает - **CodexBar** — v2.2.26, мелкие фиксы - **MemPalace** — 767 drawers, работает - **Memories** — обновляю при каждом reset (Rule 13) Что делаем?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "qwen3.6",
+        "v2.2.26",
+        "assistant",
+        "вчера",
+        "добавили",
+        "35b",
+        "конфиг",
+        "работает"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:55:55": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:55:55",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 55,
+      "endLine": 55,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:16 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_opus-4.6.txt и вы",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-opus-4.6.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:56:56": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:56:56",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 56,
+      "endLine": 56,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:57:57": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:57:57",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 57,
+      "endLine": 57,
+      "source": "memory",
+      "snippet": "User: [Thu 2026-04-16 14:33 GMT+2] [Subagent Context] You are running as a subagent (depth 1/1). Results auto-announce to your requester; do not busy-poll for status. [Subagent Task]: Прочитай файл /root/.openclaw/workspace/projects/psycho-profile/output/.prompt_qwen36.txt и ВЫПО",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "1/1",
+        "auto-announce",
+        "busy-poll",
+        "prompt-qwen36.txt",
+        "user",
+        "thu",
+        "gmt",
+        "subagent"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:58:58": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:58:58",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 58,
+      "endLine": 58,
+      "source": "memory",
+      "snippet": "User: Continue where you left off. The previous model attempt failed or timed out.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "user",
+        "continue",
+        "where",
+        "you",
+        "left",
+        "off",
+        "the",
+        "previous"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:21:21": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:21:21",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 21,
+      "endLine": 21,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:22:22": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:22:22",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 22,
+      "endLine": 22,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:23:23": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:23:23",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 23,
+      "endLine": 23,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:24:24": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:24:24",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 24,
+      "endLine": 24,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman is offline (no response since 19:19 on April 13). The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "offline",
+        "response",
+        "april"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:25:25": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:25:25",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 25,
+      "endLine": 25,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:26:26": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:26:26",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 26,
+      "endLine": 26,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman has been offline since April 13 at 19:19 - that's about 3 days now. The Linear cron is misconfigured (fires every 2 minutes instead of hourly). Roman knows about it. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "has",
+        "been",
+        "offline"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:27:27": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:27:27",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 27,
+      "endLine": 27,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:28:28": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:28:28",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 28,
+      "endLine": 28,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman has been offline since April 13 at 19:19 - that's about 3 days now. The Linear cron is misconfigured (fires every 2 minutes instead of hourly). Roman knows about it. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "has",
+        "been",
+        "offline"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:29:29": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:29:29",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 29,
+      "endLine": 29,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:30:30": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:30:30",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 30,
+      "endLine": 30,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman has been offline since April 13 at 19:19. The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "has",
+        "been",
+        "offline"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:31:31": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:31:31",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 31,
+      "endLine": 31,
+      "source": "memory",
+      "snippet": "User: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK. When reading HEARTBEAT.md, use workspace file /root/.openclaw/workspace/HEARTBEAT.md (exact case). Do n",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat.md",
+        "heartbeat-ok",
+        "openclaw/workspace/heartbeat.md",
+        "user",
+        "read",
+        "exists",
+        "context",
+        "follow"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-15.txt:32:32": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-15.txt:32:32",
+      "path": "memory/.dreams/session-corpus/2026-04-15.txt",
+      "startLine": 32,
+      "endLine": 32,
+      "source": "memory",
+      "snippet": "Assistant: This is a heartbeat poll. Roman has been offline since April 13 at 19:19. The Linear cron is misconfigured but Roman knows. Nothing urgent needs immediate attention. HEARTBEAT_OK",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "06e18920b74b"
+      ],
+      "recallDays": [
+        "2026-04-15",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "heartbeat-ok",
+        "assistant",
+        "heartbeat",
+        "poll",
+        "roman",
+        "has",
+        "been",
+        "offline"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:59:59": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:59:59",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 59,
+      "endLine": 59,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6675\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 06:05 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:60:60": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:60:60",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 60,
+      "endLine": 60,
+      "source": "memory",
+      "snippet": "Assistant: Задача **REM-34** создана. Теперь опишу как это выглядит в рамках Оркестратора: --- ### 🎯 Как Managed Bots вписываются в Оркестратор **Сейчас:** Оркестратор — один бот (@mer_openClaw_bot), который запускает субагентов на сервере. Ты общаешься с ним один на один. **С M",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "rem-34",
+        "mer-openclaw-bot",
+        "assistant",
+        "задача",
+        "rem",
+        "создана",
+        "теперь",
+        "опишу"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:61:61": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:61:61",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 61,
+      "endLine": 61,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6677\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 13:22 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:62:62": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:62:62",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 62,
+      "endLine": 62,
+      "source": "memory",
+      "snippet": "Assistant: Хороший вопрос. Давай разберусь что реально есть. **Что есть у меня:** - LCM: 2194 разговора, 40,339 сообщений — но старые сжаты в саммари, raw-текст остался только у недавних - Memory-файлы: MEMORY.md, daily notes — мои записи о взаимодействиях - Текущая сессия: полны",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "raw-текст",
+        "memory-файлы",
+        "memory.md",
+        "assistant",
+        "хороший",
+        "вопрос",
+        "давай",
+        "разберусь"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:63:63": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:63:63",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 63,
+      "endLine": 63,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6679\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 13:24 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:64:64": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:64:64",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 64,
+      "endLine": 64,
+      "source": "memory",
+      "snippet": "Assistant: Ты прав, дай проверю что реально лежит в LCM базе.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "прав",
+        "дай",
+        "проверю",
+        "что",
+        "реально",
+        "лежит",
+        "lcm"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:65:65": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:65:65",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 65,
+      "endLine": 65,
+      "source": "memory",
+      "snippet": "Assistant: Да, ты прав! Сырые данные есть: - **18 JSONL-файлов** сессий в `~/.openclaw/agents/main/sessions/` - **445 твоих сообщений**, ~229К символов (~57K токенов) - Плюс LCM база с 40К+ сообщений (включая твои) Это более чем достаточно для анализа. Сырой текст, не сжатый, с т",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "jsonl-файлов",
+        "openclaw/agents/main/sessions",
+        "assistant",
+        "прав",
+        "сырые",
+        "данные",
+        "есть",
+        "jsonl"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:66:66": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:66:66",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 66,
+      "endLine": 66,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6682\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 13:28 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:67:67": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:67:67",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 67,
+      "endLine": 67,
+      "source": "memory",
+      "snippet": "Assistant: Хороший вопрос. Вот что нужно для этой задачи: 1. **Понимание нюансов** — подтекст, ирония, эмоциональная окраска 2. **Русский язык** — все сообщения на русском, нужен глубокий level 3. **Reasoning** — не просто пересказ, а анализ паттернов 4. **Контекст** — 57K токено",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "хороший",
+        "вопрос",
+        "вот",
+        "что",
+        "нужно",
+        "для",
+        "этой"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:68:68": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:68:68",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 68,
+      "endLine": 68,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6684\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 13:30 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:69:69": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:69:69",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 69,
+      "endLine": 69,
+      "source": "memory",
+      "snippet": "Assistant: Opus 4.6 доступен через два провайдера: - **opencode-anthropic** — `claude-opus-4-6` (ctx: 200K) - **neko** — `claude-opus-4-6` (ctx: 200K) 200K контекст — твои 57K токенов помещаются с запасом. **Рекомендация:** `opencode-anthropic/claude-opus-4-6` — это прямой Anthro",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "4.6",
+        "opencode-anthropic",
+        "claude-opus-4-6",
+        "assistant",
+        "opus",
+        "доступен",
+        "через",
+        "два"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:70:70": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:70:70",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 70,
+      "endLine": 70,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6686\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 13:50 GMT+2\", \"topic_id\": \"175995\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:71:71": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:71:71",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 71,
+      "endLine": 71,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6755\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:25 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:72:72": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:72:72",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 72,
+      "endLine": 72,
+      "source": "memory",
+      "snippet": "Assistant: Добавил в `openclaw.json`. Теперь рестарт Gateway? ⚠️ Рестарт займёт ~10-15 секунд. Модель после рестарта: `trueconf/qwen3.6:35b` или алиас `local/qwen3.6:35b`.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "openclaw.json",
+        "10-15",
+        "trueconf/qwen3.6",
+        "local/qwen3.6",
+        "assistant",
+        "добавил",
+        "теперь"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:73:73": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:73:73",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 73,
+      "endLine": 73,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6757\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:26 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:74:74": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:74:74",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 74,
+      "endLine": 74,
+      "source": "memory",
+      "snippet": "User: Sender (untrusted metadata): ```json { \"label\": \"openclaw-control-ui\", \"id\": \"openclaw-control-ui\" } ``` [Thu 2026-04-16 22:31 GMT+2] тут?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw-control-ui",
+        "user",
+        "sender",
+        "untrusted",
+        "metadata",
+        "label",
+        "openclaw",
+        "control"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:75:75": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:75:75",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 75,
+      "endLine": 75,
+      "source": "memory",
+      "snippet": "Assistant: Тут 🫡",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "тут"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:76:76": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:76:76",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 76,
+      "endLine": 76,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6758\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:40 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:77:77": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:77:77",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 77,
+      "endLine": 77,
+      "source": "memory",
+      "snippet": "User: System (untrusted): [2026-04-16 22:41:39 GMT+2] Exec failed (wild-emb, signal SIGKILL) Conversation info (untrusted metadata): ```json { \"topic_id\": \"173822\" } ``` An async command you ran earlier has completed. The result is shown in the system messages above. Please relay",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "wild-emb",
+        "topic-id",
+        "user",
+        "system",
+        "untrusted",
+        "gmt",
+        "exec",
+        "failed"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:78:78": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:78:78",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 78,
+      "endLine": 78,
+      "source": "memory",
+      "snippet": "Assistant: Да, добавил. Модель `qwen3.6:35b` теперь есть в `openclaw.json` в секции `trueconf`. Gateway запущен (pid 254979), RPC probe: ok. Если нужно переключиться на эту модель — скажи, сделаю `/model trueconf/qwen3.6:35b`.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "qwen3.6",
+        "openclaw.json",
+        "trueconf/qwen3.6",
+        "assistant",
+        "добавил",
+        "модель",
+        "35b"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:79:79": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:79:79",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 79,
+      "endLine": 79,
+      "source": "memory",
+      "snippet": "User: System: [2026-04-16 22:42:10 GMT+2] Model switched to Minimax (minimax/minimax-m2.7). Conversation info (untrusted metadata): ```json { \"message_id\": \"6770\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 22:42 GMT+2\", \"topic_id\": \"173822\" } ``` Sen",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "minimax/minimax-m2.7",
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "system",
+        "gmt",
+        "model"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:80:80": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:80:80",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 80,
+      "endLine": 80,
+      "source": "memory",
+      "snippet": "Assistant: Понял — модель есть в провайдере, но нет в секции алиасов агента. Добавляю туда:",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "понял",
+        "модель",
+        "есть",
+        "провайдере",
+        "нет",
+        "секции",
+        "алиасов"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:81:81": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:81:81",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 81,
+      "endLine": 81,
+      "source": "memory",
+      "snippet": "Assistant: Добавил алиас `qwen36local` для модели. Но сообщение об ошибке \"is not allowed\" похоже на ограничение Telegram-бота, а не Gateway. Проверю — может бот имеет свой список разрешённых моделей.",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "telegram-бота",
+        "assistant",
+        "добавил",
+        "алиас",
+        "qwen36local",
+        "для",
+        "модели"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:82:82": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:82:82",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 82,
+      "endLine": 82,
+      "source": "memory",
+      "snippet": "Assistant: Добавил алиас `qwen36local` для модели в `openclaw.json`. Но нужна перезагрузка Gateway чтобы изменения применились. После рестарта можешь попробовать `/model local/qwen3.6:35b` (через алиас) или `trueconf/qwen3.6:35b`. Перезапустить?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "gateway",
+        "openclaw.json",
+        "local/qwen3.6",
+        "trueconf/qwen3.6",
+        "assistant",
+        "добавил",
+        "алиас",
+        "qwen36local"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:83:83": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:83:83",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 83,
+      "endLine": 83,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6796\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 23:00 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:84:84": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:84:84",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 84,
+      "endLine": 84,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6796\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 23:00 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:85:85": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:85:85",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 85,
+      "endLine": 85,
+      "source": "memory",
+      "snippet": "Assistant: Да, всё работает. ⚔️",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "всё",
+        "работает"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:86:86": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:86:86",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 86,
+      "endLine": 86,
+      "source": "memory",
+      "snippet": "Assistant: Да, всё работает. ⚔️",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "всё",
+        "работает"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:87:87": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:87:87",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 87,
+      "endLine": 87,
+      "source": "memory",
+      "snippet": "User: Sender (untrusted metadata): ```json { \"label\": \"openclaw-control-ui\", \"id\": \"openclaw-control-ui\" } ``` [Thu 2026-04-16 23:01 GMT+2] тут?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw-control-ui",
+        "user",
+        "sender",
+        "untrusted",
+        "metadata",
+        "label",
+        "openclaw",
+        "control"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:88:88": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:88:88",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 88,
+      "endLine": 88,
+      "source": "memory",
+      "snippet": "User: Sender (untrusted metadata): ```json { \"label\": \"openclaw-control-ui\", \"id\": \"openclaw-control-ui\" } ``` [Thu 2026-04-16 23:01 GMT+2] тут?",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "openclaw-control-ui",
+        "user",
+        "sender",
+        "untrusted",
+        "metadata",
+        "label",
+        "openclaw",
+        "control"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:89:89": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:89:89",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 89,
+      "endLine": 89,
+      "source": "memory",
+      "snippet": "Assistant: Тут!",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "assistant",
+        "тут"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:90:90": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:90:90",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 90,
+      "endLine": 90,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6798\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 23:05 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:91:91": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:91:91",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 91,
+      "endLine": 91,
+      "source": "memory",
+      "snippet": "User: Conversation info (untrusted metadata): ```json { \"message_id\": \"6798\", \"sender_id\": \"386235337\", \"sender\": \"Rem\", \"timestamp\": \"Thu 2026-04-16 23:05 GMT+2\", \"topic_id\": \"173822\" } ``` Sender (untrusted metadata): ```json { \"label\": \"Rem (386235337)\", \"id\": \"386235337\", \"na",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "message-id",
+        "sender-id",
+        "topic-id",
+        "user",
+        "conversation",
+        "info",
+        "untrusted",
+        "metadata"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:92:92": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:92:92",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 92,
+      "endLine": 92,
+      "source": "memory",
+      "snippet": "Assistant: **trueconf/qwen3.6:35b** (qwen36local)",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "trueconf/qwen3.6",
+        "assistant",
+        "trueconf",
+        "qwen3.6",
+        "35b",
+        "qwen36local"
+      ]
+    },
+    "memory:memory/.dreams/session-corpus/2026-04-16.txt:93:93": {
+      "key": "memory:memory/.dreams/session-corpus/2026-04-16.txt:93:93",
+      "path": "memory/.dreams/session-corpus/2026-04-16.txt",
+      "startLine": 93,
+      "endLine": 93,
+      "source": "memory",
+      "snippet": "Assistant: **trueconf/qwen3.6:35b** (qwen36local)",
+      "recallCount": 0,
+      "dailyCount": 1,
+      "groundedCount": 0,
+      "totalScore": 0.58,
+      "maxScore": 0.58,
+      "firstRecalledAt": "2026-04-17T01:00:00.888Z",
+      "lastRecalledAt": "2026-04-17T01:00:00.888Z",
+      "queryHashes": [
+        "33f679d35d02"
+      ],
+      "recallDays": [
+        "2026-04-16",
+        "2026-04-17"
+      ],
+      "conceptTags": [
+        "trueconf/qwen3.6",
+        "assistant",
+        "trueconf",
+        "qwen3.6",
+        "35b",
+        "qwen36local"
       ]
     }
   }
