@@ -3313,7 +3313,7 @@ class PremiumWidgetManager:
             stdin=_sp.PIPE,
             stderr=_sp.STDOUT,
             cwd=_os.path.dirname(__file__),
-            creationflags=0
+            creationflags=0x00000010  # CREATE_NEW_CONSOLE
         )
         print(f"[PW] Started PID={self._proc.pid}")
 
