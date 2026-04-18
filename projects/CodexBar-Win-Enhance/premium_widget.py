@@ -2,9 +2,10 @@
 
 import sys
 import threading
+import queue
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
 from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
-from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer, pyqtSignal, QObject)
+from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
 
 THEME = {
     'low':      {'p': QColor(16,185,129), 's': QColor(5,150,105)},
@@ -52,24 +53,38 @@ class Ring(QFrame):
         p.end()
 
 class PremiumWidget(QWidget):
-    update_signal = pyqtSignal(int, str)
-
     def __init__(self, pct=0, prov="CL"):
         super().__init__()
         self.pct = pct
         self.prov = prov
+        self._q = queue.Queue()
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setStyleSheet("background:transparent;")
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedSize(220,260)
         s = QApplication.primaryScreen().geometry()
         self.move((s.width()-220)//2, (s.height()-260)//2)
         self._drag = None
         self._ui()
         self.update_pct(pct, prov)
-        # Connect signal for thread-safe updates
-        self.update_signal.connect(self._on_update)
+        # Poll queue on main thread every 100ms
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._drain_queue)
+        self._timer.start(100)
+
+    def _drain_queue(self):
+        """Called on Qt main thread — safe to update UI."""
+        updated = False
+        while True:
+            try:
+                pct, prov = self._q.get_nowait()
+                self.update_pct(pct, prov)
+                updated = True
+            except queue.Empty:
+                break
+        if updated:
+            print(f"[PW] UI updated: {self.pct}% {self.prov}", flush=True)
+
     def _ui(self):
         lo = QVBoxLayout(self)
         lo.setContentsMargins(16,12,16,12)
@@ -91,9 +106,6 @@ class PremiumWidget(QWidget):
         self.sl.setStyleSheet("color:rgba(255,255,255,0.5);")
         self.sl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lo.addWidget(self.sl)
-    def _on_update(self, pct, prov):
-        """Called on Qt main thread via signal."""
-        self.update_pct(pct, prov)
     def update_pct(self, pct, prov=None):
         self.pct = pct
         if prov: self.prov = prov
@@ -124,7 +136,7 @@ class PremiumWidget(QWidget):
         m.exec(e.globalPos())
 
 class StdinReader(threading.Thread):
-    """Reads stdin in background thread, emits Qt signal for thread-safe UI updates."""
+    """Reads stdin, puts updates into widget's queue (thread-safe)."""
     def __init__(self, widget):
         super().__init__(daemon=True)
         self.w = widget
@@ -135,7 +147,7 @@ class StdinReader(threading.Thread):
             try:
                 line = sys.stdin.readline()
                 if not line:
-                    break  # EOF
+                    break
                 line = line.strip()
                 if not line:
                     continue
@@ -146,10 +158,8 @@ class StdinReader(threading.Thread):
                 if len(parts) >= 2:
                     pct = int(parts[0])
                     prov = parts[1]
-                    # Direct call + repaint
-                    self.w.update_pct(pct, prov)
-                    self.w.repaint()
-                    print(f"[PW] Updated: {pct}% {prov} (repainted)", flush=True)
+                    self.w._q.put((pct, prov))
+                    print(f"[PW] Queued: {pct}% {prov}", flush=True)
             except (ValueError, EOFError):
                 break
             except Exception as e:
