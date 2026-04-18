@@ -3307,8 +3307,9 @@ class PremiumWidgetManager:
             self._proc.terminate()
             try: self._proc.wait(timeout=2)
             except: self._proc.kill()
+        _py = sys.executable.replace('pythonw.exe', 'python.exe').replace('pythonw', 'python')
         self._proc = _sp.Popen(
-            [sys.executable, self._widget_path, str(pct), prov],
+            [_py, self._widget_path, str(pct), prov],
             stdin=_sp.PIPE,
             stderr=_sp.STDOUT,
             cwd=_os.path.dirname(__file__),
