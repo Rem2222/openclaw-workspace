@@ -3286,119 +3286,13 @@ class SettingsPopup(ctk.CTkToplevel):
 # Floating Widget - Black Glassmorphism Edition
 # ─────────────────────────────────────────────
 
-class FloatingWidget(ctk.CTkToplevel):
-    """
-    Летающий виджет.
-    Тёмный скруглённый прямоугольник с текстом.
-    """
-    
-    WIDTH = 140
-    HEIGHT = 70
-    CORNER_RADIUS = 18
-    
-    def __init__(self, master=None, percentage=0, provider="MM"):
-        super().__init__(master)
-        self.percentage = percentage
-        self.provider = provider
-        self._drag_data = {'x': 0, 'y': 0}
-        
-        # Настройка окна
-        self.overrideredirect(True)
-        self.attributes('-topmost', True)
-        self.configure(fg_color='#1e1e23')
-        
-        # Позиция — правый нижний угол
-        self.geometry(f"{self.WIDTH}x{self.HEIGHT}+1200+700")
-        
-        self._create_ui()
-        self._bind_events()
-        self._animate_in()
-    
-    def _create_bg_image(self):
-        """Создаёт PNG изображение для фона виджета"""
-        from PIL import Image, ImageDraw
-        
-        W, H = self.WIDTH, self.HEIGHT
-        R = self.CORNER_RADIUS
-        
-        # Чистый белый PNG с альфа-каналом для маски
-        img = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        # Рисуем скруглённый прямоугольник с тёмным фоном
-        # Внешняя граница — почти чёрная
-        draw.rounded_rectangle([0, 0, W-1, H-1], radius=R, fill='#1a1a1f')
-        
-        # Внутренняя область — тёмно-серая (light glass effect)
-        draw.rounded_rectangle([2, 2, W-3, H-3], radius=R-2, fill='#252530')
-        
-        # Тонкая светлая линия наверху (gloss)
-        draw.rounded_rectangle([2, 2, W-3, 6], radius=R-2, fill='#2a2a35')
-        
-        return img
-    
-    def _create_ui(self):
-        """Создаём виджет"""
-        self.canvas = ctk.CTkCanvas(
-            self, width=self.WIDTH, height=self.HEIGHT,
-            bg='#1e1e23', highlightthickness=0
-        )
-        self.canvas.pack(fill='both', expand=True)
-        
-        # Генерируем фоновое изображение
-        self._bg_img = self._create_bg_image()
-        
-        from PIL import ImageTk
-        self._photo = ImageTk.PhotoImage(self._bg_img)
-        self.canvas.create_image(self.WIDTH // 2, self.HEIGHT // 2, image=self._photo, anchor='center')
-        
-        # Текст
-        self.label_frame = ctk.CTkFrame(self, fg_color='transparent')
-        self.label_frame.place(relx=0.5, rely=0.5, anchor='center')
-        
-        self.percent_label = ctk.CTkLabel(
-            self.label_frame, text=f"{self.percentage}%",
-            font=('Inter', 20, 'bold'), text_color='#ffffff', fg_color='transparent'
-        )
-        self.percent_label.pack(anchor='center', pady=(3, 0))
-        
-        self.provider_label = ctk.CTkLabel(
-            self.label_frame, text=self.provider,
-            font=('Inter', 10), text_color='#808090', fg_color='transparent'
-        )
-        self.provider_label.pack(anchor='center')
-    
-    def _bind_events(self):
-        """Привязка событий"""
-        for widget in [self, self.label_frame, self.percent_label, self.provider_label]:
-            widget.bind('<ButtonPress-1>', self._start_drag)
-            widget.bind('<B1-Motion>', self._on_drag)
-            widget.bind('<Double-Button-1>', lambda e: self._open_main())
-    
-    def _start_drag(self, event):
-        self._drag_data['x'] = event.x_root - self.winfo_x()
-        self._drag_data['y'] = event.y_root - self.winfo_y()
-    
-    def _on_drag(self, event):
-        x = event.x_root - self._drag_data['x']
-        y = event.y_root - self._drag_data['y']
-        self.geometry(f'+{x}+{y}')
-    
-    def _animate_in(self):
-        """Появление виджета (просто show)"""
-        self.deiconify()
-    
-    def update_percentage(self, percentage, provider=None):
-        """Обновить данные"""
-        self.percentage = percentage
-        if provider:
-            self.provider = provider
-        self.percent_label.configure(text=f"{percentage}%")
-        self.provider_label.configure(text=self.provider)
-    
-    def _open_main(self):
-        """Открыть основное окно (хук для интеграции)"""
-        pass
+
+# ── Premium Widget (PyQt6 subprocess) ──
+import subprocess
+import os
+
+PREMIUM_WIDGET_PATH = os.path.join(os.path.dirname(__file__), "premium_widget.py")
+premium_widget_process = None
 
 
 class CodexBarApp:
@@ -3512,20 +3406,23 @@ class CodexBarApp:
             MenuItem('Open CodexBar', self._tray_open, default=True),
             MenuItem('Refresh', self._tray_refresh),
             Menu.SEPARATOR,
-            MenuItem('Show/Hide Widget', self._tray_toggle_widget),
+            MenuItem('Show/Hide Premium Widget', self._tray_toggle_premium_widget),
             Menu.SEPARATOR,
             MenuItem('Quit', self._tray_quit),
         )
         self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
         threading.Thread(target=self.tray.run, daemon=True).start()
 
-        # ── floating widget ──
-        self.floating_widget = FloatingWidget(
-            self.root,
-            percentage=sp,
-            provider="Claude"
-        )
-        self.floating_widget._open_main = self._show_popup
+        # ── premium floating widget (separate PyQt6 process) ──
+        self.premium_widget_process = None
+        print("[CodexBar] Starting premium widget...")
+        try:
+            self._start_premium_widget(sp, "CL")
+            print("[CodexBar] Premium widget started OK")
+        except Exception as e:
+            print(f"[CodexBar] Premium widget start ERROR: {e}")
+            import traceback
+            traceback.print_exc()
 
         # ── auto-refresh every 5 min ──
         self.root.after(300_000, self._auto_refresh)
@@ -3545,31 +3442,54 @@ class CodexBarApp:
     def _tray_open(self, *_):
         self.root.after(0, self._show_popup)
 
-    def _tray_toggle_widget(self, *_):
-        self.root.after(0, self._do_toggle_widget)
+    def _start_premium_widget(self, percentage=0, provider="CL"):
+        """Start premium widget as separate PyQt6 process"""
+        print(f"[PremiumWidget] _start_premium_widget called: pct={percentage}, provider={provider}")
+        print(f"[PremiumWidget] PREMIUM_WIDGET_PATH={PREMIUM_WIDGET_PATH}")
+        print(f"[PremiumWidget] sys.executable={sys.executable}")
+        
+        try:
+            if self.premium_widget_process and self.premium_widget_process.poll() is None:
+                print("[PremiumWidget] Terminating existing process...")
+                self.premium_widget_process.terminate()
+                self.premium_widget_process.wait()
+        except Exception as e:
+            print(f"[PremiumWidget] Error terminating existing: {e}")
+            pass
+        
+        print("[PremiumWidget] Launching subprocess...")
+        try:
+            self.premium_widget_process = subprocess.Popen(
+                [sys.executable, PREMIUM_WIDGET_PATH, str(percentage), provider],
+                cwd=os.path.dirname(__file__)
+            )
+            print(f"[PremiumWidget] Process started: PID={self.premium_widget_process.pid}")
+        except Exception as e:
+            print(f"[PremiumWidget] ERROR launching subprocess: {e}")
+            import traceback
+            traceback.print_exc()
     
-    def _do_toggle_widget(self):
-        """Toggle floating widget visibility"""
-        if self.floating_widget is None or not self.floating_widget.winfo_exists():
-            # Get data for active provider
-            provider_map = {
-                "claude": self.fetcher.data,
-                "openai": self.codex_data,
-                "zai": self.zai_data,
-                "minimax": self.minimax_data,
-                "opencode": self.opencode_data,
-            }
-            data_src = provider_map.get(self._active_provider, self.fetcher.data)
-            sp = data_src.get("session_used_pct", 0) if data_src else 0
-            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
-            label = provider_labels.get(self._active_provider, "CL")
-            
-            self.floating_widget = FloatingWidget(self.root, percentage=sp, provider=label)
-            self.floating_widget._open_main = self._show_popup
-        else:
-            # Hide/destroy
-            self.floating_widget.destroy()
-            self.floating_widget = None
+    def _tray_toggle_premium_widget(self, *_):
+        """Toggle premium widget (restart with current data)"""
+        self._start_premium_widget(
+            self._get_current_percentage(),
+            self._get_current_provider_label()
+        )
+    
+    def _get_current_percentage(self):
+        provider_map = {
+            "claude": self.fetcher.data,
+            "openai": self.codex_data,
+            "zai": self.zai_data,
+            "minimax": self.minimax_data,
+            "opencode": self.opencode_data,
+        }
+        data_src = provider_map.get(self._active_provider, self.fetcher.data)
+        return data_src.get("session_used_pct", 0) if data_src else 0
+    
+    def _get_current_provider_label(self):
+        provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+        return provider_labels.get(self._active_provider, "CL")
     
     def _tray_refresh(self, *_):
         self.root.after(0, self._do_refresh)
@@ -3644,12 +3564,13 @@ class CodexBarApp:
             label = provider_labels.get(p, p.upper())
             self.tray.title = f"CodexBar {label}: {sp}%"
             
-            # Update floating widget
+            # Update premium widget (restart subprocess with new data)
             try:
-                if hasattr(self, 'floating_widget') and self.floating_widget:
-                    self.floating_widget.update_percentage(sp, label)
-            except Exception as fw_err:
-                print(f"[FLOAT] update error: {fw_err}")
+                if hasattr(self, 'premium_widget_process') and self.premium_widget_process:
+                    if self.premium_widget_process.poll() is None:
+                        self._start_premium_widget(sp, label)
+            except Exception as pw_err:
+                print(f"[PREMIUM] update error: {pw_err}")
         except Exception as e:
             print(f"[TRAY] _set_tray_icon ERROR: {e}")
 
@@ -3691,8 +3612,10 @@ class CodexBarApp:
         print("[CodexBar] Bye!")
         self.running = False
         try:
-            if hasattr(self, 'floating_widget') and self.floating_widget:
-                self.floating_widget.destroy()
+            if hasattr(self, 'premium_widget_process') and self.premium_widget_process:
+                if self.premium_widget_process.poll() is None:
+                    self.premium_widget_process.terminate()
+                    self.premium_widget_process.wait()
         except Exception:
             pass
         try:
