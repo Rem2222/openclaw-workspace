@@ -3318,19 +3318,13 @@ class PremiumWidgetManager:
 
     def update(self, pct, prov):
         """Send update via stdin — no restart, no flicker."""
-        print(f"[PW-MGR] update called: pct={pct}, prov={prov}, proc={self._proc is not None}, poll={self._proc.poll() if self._proc else 'N/A'}", flush=True)
         if self._proc and self._proc.poll() is None:
             try:
-                msg = f"{pct}|{prov}\n".encode()
-                print(f"[PW-MGR] writing to stdin: {msg}", flush=True)
-                self._proc.stdin.write(msg)
+                self._proc.stdin.write(f"{pct}|{prov}\n".encode())
                 self._proc.stdin.flush()
-                print(f"[PW-MGR] flushed", flush=True)
-            except (BrokenPipeError, OSError) as e:
-                print(f"[PW-MGR] pipe error: {e}, relaunching", flush=True)
+            except (BrokenPipeError, OSError):
                 self._launch(pct, prov)
         else:
-            print(f"[PW-MGR] proc dead, relaunching", flush=True)
             self._launch(pct, prov)
 
     def toggle(self, pct, prov):
