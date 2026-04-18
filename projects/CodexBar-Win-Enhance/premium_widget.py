@@ -4,7 +4,7 @@ import sys
 import threading
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
 from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
-from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
+from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer, pyqtSignal, QObject)
 
 THEME = {
     'low':      {'p': QColor(16,185,129), 's': QColor(5,150,105)},
@@ -52,6 +52,8 @@ class Ring(QFrame):
         p.end()
 
 class PremiumWidget(QWidget):
+    update_signal = pyqtSignal(int, str)
+
     def __init__(self, pct=0, prov="CL"):
         super().__init__()
         self.pct = pct
@@ -65,6 +67,8 @@ class PremiumWidget(QWidget):
         self._drag = None
         self._ui()
         self.update_pct(pct, prov)
+        # Connect signal for thread-safe updates
+        self.update_signal.connect(self._on_update)
     def _ui(self):
         lo = QVBoxLayout(self)
         lo.setContentsMargins(16,12,16,12)
@@ -86,6 +90,9 @@ class PremiumWidget(QWidget):
         self.sl.setStyleSheet("color:rgba(255,255,255,0.5);")
         self.sl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lo.addWidget(self.sl)
+    def _on_update(self, pct, prov):
+        """Called on Qt main thread via signal."""
+        self.update_pct(pct, prov)
     def update_pct(self, pct, prov=None):
         self.pct = pct
         if prov: self.prov = prov
@@ -116,7 +123,7 @@ class PremiumWidget(QWidget):
         m.exec(e.globalPos())
 
 class StdinReader(threading.Thread):
-    """Reads stdin in background thread, posts updates to Qt main thread."""
+    """Reads stdin in background thread, emits Qt signal for thread-safe UI updates."""
     def __init__(self, widget):
         super().__init__(daemon=True)
         self.w = widget
@@ -138,8 +145,8 @@ class StdinReader(threading.Thread):
                 if len(parts) >= 2:
                     pct = int(parts[0])
                     prov = parts[1]
-                    # Schedule update on Qt main thread
-                    QTimer.singleShot(0, lambda p=pct, pr=prov: self.w.update_pct(p, pr))
+                    # Use Qt signal for thread-safe UI update
+                    self.w.update_signal.emit(pct, prov)
                     print(f"[PW] Updated: {pct}% {prov}", flush=True)
             except (ValueError, EOFError):
                 break
