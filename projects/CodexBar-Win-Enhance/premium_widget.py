@@ -1,9 +1,9 @@
-"""Premium Floating Widget v2 - PyQt6 Glassmorphism"""
+"""Premium Floating Widget v3 - PyQt6 Glassmorphism + stdin IPC"""
 
 import sys
-from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGraphicsDropShadowEffect, QMenu)
-from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QRadialGradient, QFont, QPen)
-from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty)
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
+from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
+from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
 
 THEME = {
     'low':      {'p': QColor(16,185,129), 's': QColor(5,150,105)},
@@ -114,25 +114,49 @@ class PremiumWidget(QWidget):
         a=m.addAction("Close"); a.triggered.connect(lambda: self.close())
         m.exec(e.globalPos())
 
+class StdinReader(QTimer):
+    """Polls stdin for update commands: 'pct\\nprov\\n'"""
+    def __init__(self, widget):
+        super().__init__()
+        self.w = widget
+        self.timeout.connect(self._read)
+        self.start(200)
+    def _read(self):
+        import select
+        # Windows: use msvcrt
+        try:
+            import msvcrt
+            if not msvcrt.kbhit():
+                return
+            line = input().strip()
+        except ImportError:
+            # Unix fallback
+            if not select.select([sys.stdin],[],[],0)[0]:
+                return
+            line = sys.stdin.readline().strip()
+        if not line:
+            return
+        parts = line.split("|")
+        if len(parts) >= 2:
+            try:
+                pct = int(parts[0])
+                prov = parts[1]
+                self.w.update_pct(pct, prov)
+                print(f"[PW] Updated: {pct}% {prov}", flush=True)
+            except ValueError:
+                pass
+        elif parts[0] == "quit":
+            QApplication.quit()
+
 def main():
-    print("[PW] Starting...", flush=True)
-    print(f"[PW] Args: {sys.argv}", flush=True)
-    try:
-        app = QApplication(sys.argv)
-    except Exception as e:
-        print(f"[PW] ERR: {e}", flush=True)
-        return
+    app = QApplication(sys.argv)
     pct = int(sys.argv[1]) if len(sys.argv)>1 else 0
     prov = sys.argv[2] if len(sys.argv)>2 else "CL"
-    try:
-        w = PremiumWidget(pct=pct, prov=prov)
-        w.show()
-        w.raise_()
-        print(f"[PW] Visible: {w.isVisible()}", flush=True)
-    except Exception as e:
-        print(f"[PW] ERR: {e}", flush=True)
-        import traceback; traceback.print_exc()
-        return
+    w = PremiumWidget(pct=pct, prov=prov)
+    w.show()
+    w.raise_()
+    reader = StdinReader(w)
+    print("[PW] Ready", flush=True)
     sys.exit(app.exec())
 
 if __name__=="__main__":

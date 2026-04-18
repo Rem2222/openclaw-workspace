@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.46"
+VERSION = "2.2.47"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3283,204 +3283,69 @@ class SettingsPopup(ctk.CTkToplevel):
 
 
 # ─────────────────────────────────────────────
-# Premium Widget - PyQt6 Glassmorphism (in-process, daemon thread)
+# Premium Widget Manager - subprocess + stdin IPC
 # ─────────────────────────────────────────────
 
-import threading as _threading
+import os as _os
 
-try:
-    from PyQt6.QtWidgets import (QApplication as _QApp, QWidget as _QW, QVBoxLayout as _QVL,
-        QLabel as _QL, QFrame as _QF, QMenu as _QM)
-    from PyQt6.QtGui import (QPainter as _QP, QColor as _QC, QLinearGradient as _QGrad,
-        QFont as _QFont, QPen as _QPen)
-    from PyQt6.QtCore import (Qt as _Qt, QPropertyAnimation as _QAnim,
-        QEasingCurve as _QEasing, pyqtProperty as _qProp, QTimer as _QTimer)
-    HAS_PYQT6 = True
-except ImportError:
-    HAS_PYQT6 = False
-    print("[PremiumWidget] PyQt6 not found, widget disabled")
+class PremiumWidgetManager:
+    """Manages premium_widget.py as subprocess. Updates via stdin — no restart."""
+    def __init__(self):
+        self._proc = None
+        self._visible = True
+        self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
 
-if HAS_PYQT6:
-    _THEME = {
-        'low':      {'p': _QC(16,185,129), 's': _QC(5,150,105)},
-        'medium':   {'p': _QC(245,158,11), 's': _QC(217,119,6)},
-        'high':     {'p': _QC(239,68,68),   's': _QC(220,38,38)},
-        'critical': {'p': _QC(255,0,102),   's': _QC(204,0,80)},
-    }
+    def start(self, pct=0, prov="CL"):
+        if not _os.path.exists(self._widget_path):
+            print(f"[PW] Not found: {self._widget_path}")
+            return
+        self._launch(pct, prov)
 
-    def _get_theme(pct):
-        if pct<=50: return "low"
-        elif pct<=70: return "medium"
-        elif pct<=90: return "high"
-        else: return "critical"
+    def _launch(self, pct, prov):
+        import subprocess as _sp
+        if self._proc and self._proc.poll() is None:
+            self._proc.terminate()
+            try: self._proc.wait(timeout=2)
+            except: self._proc.kill()
+        self._proc = _sp.Popen(
+            [sys.executable, self._widget_path, str(pct), prov],
+            stdin=_sp.PIPE,
+            cwd=_os.path.dirname(__file__),
+            creationflags=0x00000008 if sys.platform=="win32" else 0  # DETACHED_PROCESS
+        )
+        print(f"[PW] Started PID={self._proc.pid}")
 
-    class _Ring(_QF):
-        def __init__(self, parent=None):
-            super().__init__(parent)
-            self._v = 0.0
-            self.setFixedSize(80,80)
-            self._a = _QAnim(self, b"val")
-            self._a.setDuration(600)
-            self._a.setEasingCurve(_QEasing.Type.InOutCubic)
-        @_qProp(float)
-        def val(self): return self._v
-        @val.setter
-        def val(self, v): self._v = v; self.update()
-        def set_val(self, v):
-            self._a.stop()
-            self._a.setStartValue(self._v)
-            self._a.setEndValue(v)
-            self._a.start()
-        def paintEvent(self, e):
-            p = _QP(self)
-            p.setRenderHint(_QP.RenderHint.Antialiasing)
-            t = _THEME[_get_theme(int(self._v*100))]
-            cx,cy,r = 40,40,30
-            p.setPen(_QPen(_QC(255,255,255,30),6))
-            p.drawEllipse(cx-r,cy-r,r*2,r*2)
-            if self._v > 0:
-                g = _QGrad(cx-r,cy,cx+r,cy)
-                g.setColorAt(0, t['p'])
-                g.setColorAt(1, t['s'])
-                p.setPen(_QPen(g,6,_Qt.PenStyle.SolidLine,_Qt.PenCapStyle.RoundCap))
-                p.drawArc(cx-r,cy-r,r*2,r*2,-90*16,int(self._v*360*16))
-            p.end()
+    def update(self, pct, prov):
+        """Send update via stdin — no restart, no flicker."""
+        if self._proc and self._proc.poll() is None:
+            try:
+                self._proc.stdin.write(f"{pct}|{prov}\n".encode())
+                self._proc.stdin.flush()
+            except (BrokenPipeError, OSError):
+                self._launch(pct, prov)
+        else:
+            self._launch(pct, prov)
 
-    class _PremiumWidget(_QW):
-        """Glassmorphism floating widget with ring indicator."""
-        def __init__(self, pct=0, prov="CL"):
-            super().__init__()
-            self.pct = pct
-            self.prov = prov
-            self._dirty = False
-            self._new_pct = pct
-            self._new_prov = prov
-            self.setWindowTitle("CodexBar")
-            self.setWindowFlags(_Qt.WindowType.FramelessWindowHint|_Qt.WindowType.Tool|_Qt.WindowType.WindowStaysOnTopHint)
-            self.setAttribute(_Qt.WidgetAttribute.WA_TranslucentBackground)
-            self.setFixedSize(220,260)
-            self._drag = None
-            self._ui()
-            self.update_pct(pct, prov)
-            # Poll for updates every 200ms, only redraws when dirty
-            self._timer = _QTimer(self)
-            self._timer.timeout.connect(self._check_update)
-            self._timer.start(200)
-
-        def _ui(self):
-            lo = _QVL(self)
-            lo.setContentsMargins(16,12,16,12)
-            lo.setSpacing(4)
-            self.pl = _QL(self.prov)
-            self.pl.setFont(_QFont("Segoe UI",11,_QFont.Weight.Bold))
-            self.pl.setStyleSheet("color:rgba(255,255,255,0.85);")
-            self.pl.setAlignment(_Qt.AlignmentFlag.AlignCenter)
-            lo.addWidget(self.pl)
-            self.ring = _Ring(self)
-            lo.addWidget(self.ring, alignment=_Qt.AlignmentFlag.AlignCenter)
-            self.pcl = _QL("0%")
-            self.pcl.setFont(_QFont("Segoe UI",36,_QFont.Weight.Bold))
-            self.pcl.setStyleSheet("color:white;")
-            self.pcl.setAlignment(_Qt.AlignmentFlag.AlignCenter)
-            lo.addWidget(self.pcl)
-            self.sl = _QL("Active")
-            self.sl.setFont(_QFont("Segoe UI",9))
-            self.sl.setStyleSheet("color:rgba(255,255,255,0.5);")
-            self.sl.setAlignment(_Qt.AlignmentFlag.AlignCenter)
-            lo.addWidget(self.sl)
-
-        def set_data(self, pct, prov):
-            """Thread-safe: called from tkinter main thread."""
-            self._new_pct = pct
-            self._new_prov = prov
-            self._dirty = True
-
-        def _check_update(self):
-            if self._dirty:
-                self._dirty = False
-                self.update_pct(self._new_pct, self._new_prov)
-
-        def update_pct(self, pct, prov=None):
-            self.pct = pct
-            if prov: self.prov = prov
-            t = _THEME[_get_theme(pct)]
-            self.pcl.setText(f'{pct}%')
-            self.pl.setText(self.prov)
-            self.pcl.setStyleSheet(f"color:{t['p'].name()};")
-            self.ring.set_val(pct/100.0)
-
-        def paintEvent(self, e):
-            p = _QP(self)
-            p.setRenderHint(_QP.RenderHint.Antialiasing)
-            g = _QGrad(0,0,0,self.height())
-            g.setColorAt(0, _QC(26,31,46,220))
-            g.setColorAt(1, _QC(15,20,30,220))
-            p.setBrush(g)
-            p.setPen(_QPen(_QC(255,255,255,30),1))
-            p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1),16,16)
-            p.end()
-
-        def mousePressEvent(self, e):
-            if e.button()==_Qt.MouseButton.LeftButton:
-                self._drag = e.globalPosition().toPoint()-self.pos()
-        def mouseMoveEvent(self, e):
-            if self._drag and e.buttons()&_Qt.MouseButton.LeftButton:
-                self.move(e.globalPosition().toPoint()-self._drag)
-        def contextMenuEvent(self, e):
-            m = _QM(self)
-            a=m.addAction("Close"); a.triggered.connect(lambda: self.hide())
-            m.exec(e.globalPos())
-
-    def _run_premium_widget_thread(app_ref, widget_ref, pct, prov):
-        """Run QApplication in daemon thread."""
-        import sys as _sys
-        _app = _QApp(_sys.argv)
-        app_ref['app'] = _app
-        w = _PremiumWidget(pct=pct, prov=prov)
-        w.show()
-        w.raise_()
-        widget_ref['w'] = w
-        _app.exec()
-
-    class PremiumWidgetManager:
-        """Manages PyQt6 widget lifecycle from tkinter main thread."""
-        def __init__(self):
-            self._app_ref = {}
-            self._widget_ref = {}
-            self._thread = None
+    def toggle(self, pct, prov):
+        if self._visible:
+            if self._proc and self._proc.poll() is None:
+                try:
+                    self._proc.stdin.write(b"quit\n")
+                    self._proc.stdin.flush()
+                except: pass
+            self._visible = False
+        else:
+            self._launch(pct, prov)
             self._visible = True
 
-        def start(self, pct=0, prov="CL"):
-            if not HAS_PYQT6: return
-            self._thread = _threading.Thread(
-                target=_run_premium_widget_thread,
-                args=(self._app_ref, self._widget_ref, pct, prov),
-                daemon=True
-            )
-            self._thread.start()
-
-        def update(self, pct, prov):
-            """Thread-safe update — no restart."""
-            w = self._widget_ref.get('w')
-            if w and w.isVisible():
-                w.set_data(pct, prov)
-
-        def toggle(self, pct, prov):
-            w = self._widget_ref.get('w')
-            if w:
-                if w.isVisible():
-                    w.hide()
-                    self._visible = False
-                else:
-                    w.show()
-                    w.raise_()
-                    w.set_data(pct, prov)
-                    self._visible = True
-
-        def stop(self):
-            _app = self._app_ref.get('app')
-            if _app:
-                _app.quit()
+    def stop(self):
+        if self._proc and self._proc.poll() is None:
+            try:
+                self._proc.stdin.write(b"quit\n")
+                self._proc.stdin.flush()
+            except: pass
+            try: self._proc.terminate()
+            except: pass
 
 
 class CodexBarApp:
@@ -3602,7 +3467,7 @@ class CodexBarApp:
         threading.Thread(target=self.tray.run, daemon=True).start()
 
         # ── premium floating widget (PyQt6, in-process thread) ──
-        self.pw_manager = PremiumWidgetManager() if HAS_PYQT6 else None
+        self.pw_manager = PremiumWidgetManager()
         if self.pw_manager:
             try:
                 self.pw_manager.start(sp, "CL")
