@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.48"
+VERSION = "2.2.49"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3312,7 +3312,7 @@ class PremiumWidgetManager:
             stdin=_sp.PIPE,
             stderr=_sp.STDOUT,
             cwd=_os.path.dirname(__file__),
-            creationflags=0x08000000 if sys.platform=="win32" else 0  # CREATE_NO_WINDOW
+            creationflags=0
         )
         print(f"[PW] Started PID={self._proc.pid}")
 
