@@ -60,7 +60,8 @@ class PremiumWidget(QWidget):
         self.prov = prov
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet("background:transparent;")
         self.setFixedSize(220,260)
         s = QApplication.primaryScreen().geometry()
         self.move((s.width()-220)//2, (s.height()-260)//2)
@@ -145,9 +146,10 @@ class StdinReader(threading.Thread):
                 if len(parts) >= 2:
                     pct = int(parts[0])
                     prov = parts[1]
-                    # Use Qt signal for thread-safe UI update
-                    self.w.update_signal.emit(pct, prov)
-                    print(f"[PW] Updated: {pct}% {prov}", flush=True)
+                    # Direct call + repaint
+                    self.w.update_pct(pct, prov)
+                    self.w.repaint()
+                    print(f"[PW] Updated: {pct}% {prov} (repainted)", flush=True)
             except (ValueError, EOFError):
                 break
             except Exception as e:
