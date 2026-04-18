@@ -61,6 +61,7 @@ class PremiumWidget(QWidget):
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # self.setStyleSheet("background:transparent;")
         self.setFixedSize(220,260)
         s = QApplication.primaryScreen().geometry()
         self.move((s.width()-220)//2, (s.height()-260)//2)
