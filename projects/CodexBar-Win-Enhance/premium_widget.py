@@ -311,43 +311,27 @@ class PremiumWidget(QWidget):
 
     def _set_click_through(self, enabled):
         """Make this widget click-through (mouse events pass to windows behind it).
-
-        Requires WS_EX_LAYERED + SetLayeredWindowAttributes (with alpha=0) for
-        WS_EX_TRANSPARENT to work on non-layered windows.
+        
+        WS_EX_TRANSPARENT alone is sufficient - no SetLayeredWindowAttributes needed.
+        The widget stays VISIBLE, only mouse events pass through.
         """
         try:
             import ctypes
             GWL_EXSTYLE = -20
-            WS_EX_LAYERED     = 0x00080000
             WS_EX_TRANSPARENT = 0x00000020
             WS_EX_NOACTIVATE  = 0x08000000
-            LWA_ALPHA         = 0x00000002
 
-            hwnd = int(self.winId())  # PyQt6: winId() returns an object, convert to int for ctypes
+            hwnd = int(self.winId())
             style = ctypes.windll.user32.GetWindowLongPtrW(hwnd, GWL_EXSTYLE)
 
             if enabled:
-                # WS_EX_LAYERED is REQUIRED for WS_EX_TRANSPARENT to work
-                style |= (WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE)
+                style |= (WS_EX_TRANSPARENT | WS_EX_NOACTIVATE)
             else:
                 style &= ~(WS_EX_TRANSPARENT | WS_EX_NOACTIVATE)
-                # Remove WS_EX_LAYERED too (restores normal rendering)
-                style &= ~WS_EX_LAYERED
 
             ctypes.windll.user32.SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style)
 
-            if enabled:
-                # SetLayeredWindowAttributes with alpha=0 makes entire window
-                # transparent to mouse (events fall through to windows below).
-                # CLR_INVALID = 0 (color key ignored when using LWA_ALPHA)
-                ctypes.windll.user32.SetLayeredWindowAttributes(
-                    hwnd, 0, 0 if enabled else 255, LWA_ALPHA)
-
             # Force window to recalculate non-client area so new styles take effect
-            ctypes.windll.user32.SetWindowPos(
-                hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
-
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
                 0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
