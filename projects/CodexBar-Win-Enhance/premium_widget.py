@@ -56,15 +56,16 @@ class Ring(QFrame):
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         t = THEME[get_theme(int(self._v*100))]
         cx, cy, r = 32, 32, 26  # Centered in 65x65 frame
+        pen_w = 10  # Thicker ring (was 5)
         # Background arc
-        p.setPen(QPen(QColor(255,255,255,20), 5))
+        p.setPen(QPen(QColor(255,255,255,20), pen_w))
         p.drawEllipse(cx-r, cy-r, r*2, r*2)
         # Foreground arc
         if self._v > 0:
             g = QLinearGradient(cx-r, cy, cx+r, cy)
             g.setColorAt(0, t['p'])
             g.setColorAt(1, t['s'])
-            p.setPen(QPen(g, 5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+            p.setPen(QPen(g, pen_w, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
             p.drawArc(cx-r, cy-r, r*2, r*2, -90*16, int(self._v*360*16))
         p.end()
 
@@ -158,6 +159,7 @@ class PremiumWidget(QWidget):
                 pct = int(parts[0])
                 prov = parts[1]
                 wp = int(parts[2]) if len(parts) >= 3 else 0
+                print(f"[PW] poll: pct={pct} prov={prov} wp={wp} raw={data!r}", flush=True)
                 self.update_pct(pct, prov, wp=wp)
         except (FileNotFoundError, ValueError):
             pass
