@@ -1,7 +1,7 @@
-"""Premium Floating Widget v4 - PyQt6 + file-based IPC (no stdin needed)"""
+"""Premium Floating Widget v5 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
-from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
 from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
 from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
 
@@ -28,11 +28,17 @@ def get_theme(pct):
     elif pct<=90: return "high"
     else: return "critical"
 
+def get_week_theme(pct):
+    """Same thresholds as session: <=50 green, <=70 orange, >70 red"""
+    if pct <= 50: return THEME['low']
+    elif pct <= 70: return THEME['medium']
+    else: return THEME['high']
+
 class Ring(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._v = 0.0
-        self.setFixedSize(80,80)
+        self.setFixedSize(65, 65)  # Smaller ring for square layout
         self._a = QPropertyAnimation(self, b"val")
         self._a.setDuration(600)
         self._a.setEasingCurve(QEasingCurve.Type.InOutCubic)
@@ -49,15 +55,63 @@ class Ring(QFrame):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         t = THEME[get_theme(int(self._v*100))]
-        cx,cy,r = 40,40,30
-        p.setPen(QPen(QColor(255,255,255,30),6))
-        p.drawEllipse(cx-r,cy-r,r*2,r*2)
+        cx, cy, r = 32, 32, 26  # Centered in 65x65 frame
+        # Background arc
+        p.setPen(QPen(QColor(255,255,255,20), 5))
+        p.drawEllipse(cx-r, cy-r, r*2, r*2)
+        # Foreground arc
         if self._v > 0:
-            g = QLinearGradient(cx-r,cy,cx+r,cy)
+            g = QLinearGradient(cx-r, cy, cx+r, cy)
             g.setColorAt(0, t['p'])
             g.setColorAt(1, t['s'])
-            p.setPen(QPen(g,6,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap))
-            p.drawArc(cx-r,cy-r,r*2,r*2,-90*16,int(self._v*360*16))
+            p.setPen(QPen(g, 5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+            p.drawArc(cx-r, cy-r, r*2, r*2, -90*16, int(self._v*360*16))
+        p.end()
+
+class WeeklyBar(QFrame):
+    """Horizontal progress bar showing weekly usage percentage."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._wp = 0
+        self.setFixedHeight(24)
+    @pyqtProperty(float)
+    def wp(self): return self._wp
+    @wp.setter
+    def wp(self, v): self._wp = v; self.update()
+    def set_wp(self, v):
+        self._a = QPropertyAnimation(self, b"wp")
+        self._a.setDuration(400)
+        self._a.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        self._a.setStartValue(self._wp)
+        self._a.setEndValue(v)
+        self._a.start()
+    def paintEvent(self, e):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        if self._wp <= 0:
+            p.end()
+            return
+        t = get_week_theme(self._wp)
+        rect = self.rect()
+        # Semi-transparent background
+        bg = QColor(255,255,255,15)
+        p.setBrush(bg)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(rect, 6, 6)
+        # Foreground bar
+        bar_w = int(rect.width() * (self._wp / 100.0))
+        if bar_w > 0:
+            g = QLinearGradient(rect.left(), 0, rect.right(), 0)
+            g.setColorAt(0, t['p'])
+            g.setColorAt(1, t['s'])
+            p.setBrush(g)
+            p.drawRoundedRect(0, 0, bar_w, rect.height(), 6, 6)
+        # Label overlay
+        p.setPen(QColor(255,255,255,230))
+        font = QFont("Segoe UI", 9, QFont.Weight.Bold)
+        p.setFont(font)
+        label = f"Wk: {self._wp:.0f}%"
+        p.drawText(rect, Qt.AlignmentFlag.AlignCenter, label)
         p.end()
 
 class PremiumWidget(QWidget):
@@ -65,18 +119,21 @@ class PremiumWidget(QWidget):
         super().__init__()
         self.pct = 0
         self.prov = "CL"
+        self.wp = 0  # Weekly percentage
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(220,260)
+        # Square: 220x220
+        side = 220
+        self.setFixedSize(side, side)
         if pos:
             self.move(pos[0], pos[1])
         else:
             s = QApplication.primaryScreen().geometry()
-            self.move((s.width()-220)//2, (s.height()-260)//2)
+            self.move((s.width()-side)//2, (s.height()-side)//2)
         self._drag = None
         self._ui()
-        self.update_pct(0, "CL")
+        self.update_pct(0, "CL", wp=0)
         # Poll data file every 200ms
         self._last_data = ""
         self._timer = QTimer(self)
@@ -100,59 +157,81 @@ class PremiumWidget(QWidget):
             if len(parts) >= 2:
                 pct = int(parts[0])
                 prov = parts[1]
+                # Weekly data comes separately via update_pct call with wp parameter
                 self.update_pct(pct, prov)
         except (FileNotFoundError, ValueError):
             pass
 
     def _ui(self):
-        lo = QVBoxLayout(self)
-        lo.setContentsMargins(16,12,16,12)
-        lo.setSpacing(4)
+        # Main vertical layout, evenly distributed
+        main_lo = QVBoxLayout(self)
+        main_lo.setContentsMargins(12, 10, 12, 10)
+        main_lo.setSpacing(0)
+        
+        # Top: Provider label (small, subtle)
         self.pl = QLabel(self.prov)
-        self.pl.setFont(QFont("Segoe UI",11,QFont.Weight.Bold))
-        self.pl.setStyleSheet("color:rgba(255,255,255,0.85);")
+        self.pl.setFont(QFont("Segoe UI", 10, QFont.Weight.Medium))
+        self.pl.setStyleSheet("color: rgba(255,255,255,0.6);")
         self.pl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lo.addWidget(self.pl)
-        self.ring = Ring(self)
-        lo.addWidget(self.ring, alignment=Qt.AlignmentFlag.AlignCenter)
+        main_lo.addWidget(self.pl, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Center: Large percentage number
         self.pcl = QLabel("0%")
-        self.pcl.setFont(QFont("Segoe UI",36,QFont.Weight.Bold))
-        self.pcl.setStyleSheet("color:white;")
+        self.pcl.setFont(QFont("Segoe UI", 38, QFont.Weight.Bold))
+        self.pcl.setStyleSheet("color: white;")
         self.pcl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lo.addWidget(self.pcl)
-        # ── Status ─────────────────────────────────────────────
-        self.sl = QLabel("Active")
-        self.sl.setFont(QFont("Segoe UI",9))
-        self.sl.setStyleSheet("color:rgba(255,255,255,0.5);")
-        self.sl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lo.addWidget(self.sl)
+        main_lo.addWidget(self.pcl, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Below percentage: Ring (smaller, 65x65)
+        self.ring = Ring(self)
+        main_lo.addWidget(self.ring, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Spacer to push weekly bar to bottom
+        main_lo.addStretch(1)
+        
+        # Bottom: Weekly progress bar
+        self.wb = WeeklyBar(self)
+        self.wb.setFixedWidth(196)  # 220 - 12*2 padding
+        main_lo.addWidget(self.wb, alignment=Qt.AlignmentFlag.AlignCenter)
 
-    def update_pct(self, pct, prov=None):
+    def update_pct(self, pct, prov=None, wp=0):
+        """
+        Update percentage display.
+        pct: session percentage (0-100)
+        prov: provider name (optional)
+        wp: weekly percentage (0 = no data, don't show bar)
+        """
         self.pct = pct
         if prov: self.prov = prov
+        self.wp = wp
         t = THEME[get_theme(pct)]
         self.pcl.setText(f'{pct}%')
         self.pl.setText(self.prov)
-        self.pcl.setStyleSheet(f"color:{t['p'].name()};")
-        self.ring.set_val(pct/100.0)
+        self.pcl.setStyleSheet(f"color: {t['p'].name()};")
+        self.ring.set_val(pct / 100.0)
+        # Update weekly bar if wp > 0
+        if wp > 0:
+            self.wb.set_wp(wp)
+        # Store wp for reference
+        self._wp = wp
 
     def paintEvent(self, e):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        g = QLinearGradient(0,0,0,self.height())
-        g.setColorAt(0, QColor(26,31,46,220))
-        g.setColorAt(1, QColor(15,20,30,220))
+        g = QLinearGradient(0, 0, 0, self.height())
+        g.setColorAt(0, QColor(26, 31, 46, 230))
+        g.setColorAt(1, QColor(15, 20, 30, 230))
         p.setBrush(g)
-        p.setPen(QPen(QColor(255,255,255,30),1))
-        p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1),16,16)
+        p.setPen(QPen(QColor(255,255,255,25), 1))
+        p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1), 16, 16)
         p.end()
 
     def mousePressEvent(self, e):
-        if e.button()==Qt.MouseButton.LeftButton:
-            self._drag = e.globalPosition().toPoint()-self.pos()
+        if e.button() == Qt.MouseButton.LeftButton:
+            self._drag = e.globalPosition().toPoint() - self.pos()
     def mouseMoveEvent(self, e):
-        if self._drag and e.buttons()&Qt.MouseButton.LeftButton:
-            self.move(e.globalPosition().toPoint()-self._drag)
+        if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
+            self.move(e.globalPosition().toPoint() - self._drag)
             self._save_position()  # save on drag
     def closeEvent(self, e):
         self._save_position()
@@ -174,7 +253,8 @@ class PremiumWidget(QWidget):
 
     def contextMenuEvent(self, e):
         m = QMenu(self)
-        a=m.addAction("Close"); a.triggered.connect(lambda: self.close())
+        a = m.addAction("Close")
+        a.triggered.connect(lambda: self.close())
         m.exec(e.globalPos())
 
 def main():
@@ -191,5 +271,5 @@ def main():
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
