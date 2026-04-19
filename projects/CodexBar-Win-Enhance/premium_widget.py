@@ -159,7 +159,8 @@ class PremiumWidget(QWidget):
                 pct = int(parts[0])
                 prov = parts[1]
                 wp = int(parts[2]) if len(parts) >= 3 else 0
-                print(f"[PW] poll: pct={pct} prov={prov} wp={wp} raw={data!r}", flush=True)
+                if wp > 0:
+                    print(f"[PW] WEEKLY DATA: wp={wp}% raw={data!r}", flush=True)
                 self.update_pct(pct, prov, wp=wp)
         except (FileNotFoundError, ValueError):
             pass

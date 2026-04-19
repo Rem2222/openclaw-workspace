@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.62"
+VERSION = "2.2.63"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3970,6 +3970,22 @@ class CodexBarApp:
                 self.opencode_data = self.opencode_fetcher.fetch()
             except Exception:
                 pass
+            # Directly update premium widget with weekly data
+            try:
+                if self.pw_manager:
+                    ap = self._active_provider
+                    pm = {"claude": self.fetcher.data, "openai": self.codex_data,
+                          "zai": self.zai_data, "minimax": self.minimax_data,
+                          "opencode": self.opencode_data}
+                    src = pm.get(ap, self.fetcher.data)
+                    sp = src.get("session_used_pct", 0) if src else 0
+                    wp = src.get("weekly_used_pct", 0) if src else 0
+                    labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+                    label = labels.get(ap, ap.upper())
+                    self.pw_manager.update(sp, label, wp)
+                    print(f"[PREMIUM] bg update: sp={sp} label={label} wp={wp} provider={ap}")
+            except Exception as e:
+                print(f"[PREMIUM] bg update error: {e}")
             # Update tray icon with current session percentage for active provider
             self._set_tray_icon(self._active_provider)
             print("[CodexBar] Refreshed")
