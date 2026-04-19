@@ -2408,6 +2408,10 @@ class CodexBarPopup(ctk.CTkToplevel):
             command=lambda: self._switch_tab("ollama"))
         self._ollama_tab_btn.pack(side="left", padx=(1, 2), pady=2)
 
+        # ── reset ollama tab button in initial state ──
+        if self._active_tab != "ollama":
+            self._ollama_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+
         # ── CLAUDE CONTENT ──
         self._claude_frame = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0)
         self._build_claude_panel(self._claude_frame)
@@ -2495,6 +2499,14 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._tab_inner.configure(fg_color=self.ZA_TRACK)
                 self.configure(fg_color=self.ZA_BG)
                 self._opencode_frame.pack(fill="both", expand=True)
+                self._footer_frame.configure(fg_color=self.ZA_BG)
+                self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
+            elif self._active_tab == "ollama":
+                self._ollama_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+                self._tab_bar.configure(fg_color=self.ZA_BG)
+                self._tab_inner.configure(fg_color=self.ZA_TRACK)
+                self.configure(fg_color=self.ZA_BG)
+                self._ollama_frame.pack(fill="both", expand=True)
                 self._footer_frame.configure(fg_color=self.ZA_BG)
                 self._footer_divider.configure(fg_color=self.ZA_DIVIDER)
 
@@ -3047,6 +3059,48 @@ class CodexBarPopup(ctk.CTkToplevel):
                          font=("Segoe UI Semibold", 14),
                          text_color=self.ZA_PRIMARY).pack(pady=(0, 4))
             ctk.CTkLabel(nd, text="Auto-reads cookies from browser (or set OPENCODE_COOKIE)",
+                         font=("Segoe UI", 11),
+                         text_color=self.ZA_TERTIARY).pack(pady=(0, 12))
+            return
+
+        sp = d.get("session_used_pct", 0)
+        self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+
+    def _build_ollama_panel(self, parent):
+        d = self._ollama
+        available = not d.get("error") and d.get("available", False)
+
+        ctk.CTkFrame(parent, fg_color=self.ZA_BG, height=10, corner_radius=0).pack(fill="x")
+
+        hero = ctk.CTkFrame(parent, fg_color="transparent")
+        hero.pack(fill="x", padx=22, pady=(4, 0))
+        row = ctk.CTkFrame(hero, fg_color="transparent")
+        row.pack(fill="x")
+        ctk.CTkLabel(row, text="Ollama", font=("Segoe UI Semibold", 22),
+                     text_color=self.ZA_PRIMARY).pack(side="left")
+        plan = d.get("plan", "")
+        if plan and plan != "Unknown":
+            ctk.CTkLabel(row, text=f"  {plan}  ", font=("Segoe UI Semibold", 11),
+                         text_color=self.ZA_PRIMARY, fg_color=self.ZA_ACCENT_LT,
+                         corner_radius=10).pack(side="right")
+
+        meta = ctk.CTkFrame(hero, fg_color="transparent")
+        meta.pack(fill="x", pady=(5, 0))
+        dot_color = self.ZA_ACCENT if available else self.ZA_TERTIARY
+        ctk.CTkFrame(meta, fg_color=dot_color, corner_radius=4,
+                     width=7, height=7).pack(side="left", padx=(1, 7), pady=5)
+        ctk.CTkLabel(meta, text=d.get("updated", ""), font=("Segoe UI", 12),
+                     text_color=self.ZA_TERTIARY).pack(side="left")
+
+        # Debug panel
+        if not available:
+            ctk.CTkFrame(parent, fg_color=self.ZA_ACCENT_LT, height=1, corner_radius=0).pack(fill="x", padx=20, pady=(12, 0))
+            nd = ctk.CTkFrame(parent, fg_color="transparent")
+            nd.pack(fill="x", padx=20, pady=(20, 8))
+            ctk.CTkLabel(nd, text=d.get("error", "Ollama cookie not set"),
+                         font=("Segoe UI Semibold", 14),
+                         text_color=self.ZA_PRIMARY).pack(pady=(0, 4))
+            ctk.CTkLabel(nd, text="Auto-reads cookies from browser (or set OLLAMA_COOKIE)",
                          font=("Segoe UI", 11),
                          text_color=self.ZA_TERTIARY).pack(pady=(0, 12))
             return
