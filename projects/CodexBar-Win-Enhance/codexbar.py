@@ -1908,7 +1908,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.bind("<FocusOut>", self._on_focus_out)
         self.focus_force()
         self.after(40, self._animate_in, 0)
-        print(f"[POPUP] Init complete, geometry={self.geometry()}, state={self.state()}, alpha={self.attributes('-alpha')}", flush=True)
+        _d(f"[POPUP] Init complete, geometry={self.geometry()}, state={self.state()}, alpha={self.attributes('-alpha')}")
 
     # ── DWM ──
 
@@ -2083,7 +2083,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self.geometry(f"{self.WIDTH}x{h}+{self._target_x}+{self._target_y}")
 
     def _morph_tick(self):
-        print(f"[POPUP] _morph_tick called: phase={self._m_phase}, step={self._m_step}", flush=True)
+        _d(f"[POPUP] _morph_tick called: phase={self._m_phase}, step={self._m_step}")
         try:
             if self._m_phase == "out":
                 # Fade out: 7 steps × 14ms = ~100ms, ease-in (accelerate)
@@ -2124,7 +2124,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 if s >= total:
                     # Animation complete
                     self.attributes("-alpha", self.FINAL_ALPHA)
-                    print(f"[POPUP] Morph complete: alpha={self.FINAL_ALPHA}, geometry={self.geometry()}", flush=True)
+                    _d(f"[POPUP] Morph complete: alpha={self.FINAL_ALPHA}, geometry={self.geometry()}")
                     return
                 t = s / total
                 ease = 1.0 - (1.0 - t) ** 3  # ease-out (decelerate)
@@ -2136,7 +2136,7 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self._m_step += 1
                 self.after(14, self._morph_tick)
         except Exception as e:
-            print(f"[POPUP] _morph_tick ERROR: {e}", flush=True)
+            _d(f"[POPUP] _morph_tick ERROR: {e}")
 
     # ── bar colour helpers ──
 
@@ -3069,7 +3069,7 @@ class SettingsPopup(ctk.CTkToplevel):
             command=self._on_ct_change)
 
         # DEBUG: trace when switch is created and what default value is set
-        print(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()}", flush=True)
+        _d(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()}")
         self._ct_switch.pack(side="left")
         # Load saved click-through
         try:
@@ -3131,19 +3131,19 @@ class SettingsPopup(ctk.CTkToplevel):
     def _on_ct_change(self):
         """Apply click-through setting change immediately."""
         ct = self._ct_var.get()
-        print(f"[SETTINGS] _on_ct_change called: ct={ct}", flush=True)
+        _d(f"SETTINGS _on_ct_change: ct={ct}")
         # Save to settings.json so it's preserved
         try:
             data = {}
             cfg = SettingsPopup._config_path()
-            print(f"[SETTINGS] config path: {cfg}, exists={cfg.exists()}", flush=True)
+            _d(f"[SETTINGS] config path: {cfg}, exists={cfg.exists()}")
             if cfg.exists():
                 data = json.loads(cfg.read_text())
             data["widgets_click_through"] = ct
             cfg.write_text(json.dumps(data, indent=2))
-            print(f"[SETTINGS] wrote widgets_click_through={ct} to {cfg}", flush=True)
+            _d(f"SETTINGS _on_ct_change: wrote widgets_click_through={ct}")
         except Exception as e:
-            print(f"[SETTINGS] _on_ct_change error: {e}", flush=True)
+            _d(f"SETTINGS _on_ct_change error: {e}")
             pass
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
@@ -3362,15 +3362,15 @@ class SettingsPopup(ctk.CTkToplevel):
         try:
             data = {}
             cfg = SettingsPopup._config_path()
-            print(f"[SETTINGS] _save_and_close: cfg={cfg}, exists={cfg.exists()}", flush=True)
+            _d(f"SETTINGS _save_and_close: cfg={cfg}")
             if cfg.exists():
                 data = json.loads(cfg.read_text())
             ct = self._ct_var.get() if hasattr(self, '_ct_var') else False
-            print(f"[SETTINGS] _save_and_close: writing widgets_click_through={ct}", flush=True)
+            _d(f"SETTINGS _save_and_close: writing widgets_click_through={ct}")
             data["widgets_click_through"] = ct
             cfg.write_text(json.dumps(data, indent=2))
         except Exception as e:
-            print(f"[SETTINGS] _save_and_close error: {e}", flush=True)
+            _d(f"SETTINGS _save_and_close error: {e}")
             pass
         if self._on_save:
             self._on_save()
@@ -4002,7 +4002,7 @@ class CodexBarApp:
 
     def _show_popup(self):
         import sys
-        print(f"[POPUP] _show_popup called, popup={self.popup}", flush=True)
+        _d(f"[POPUP] _show_popup called, popup={self.popup}")
         if self.popup is not None:
             try:
                 self.popup.destroy()
@@ -4010,7 +4010,7 @@ class CodexBarApp:
                 pass
             self.popup = None
 
-        print("[POPUP] Creating CodexBarPopup...", flush=True)
+        _d("[POPUP] Creating CodexBarPopup...")
         self.popup = CodexBarPopup(
             self.root,
             self.fetcher.data,
@@ -4146,6 +4146,18 @@ class CodexBarApp:
 
 
 # ─────────────────────────────────────────────
+
+# ── Debug log ──
+_DEBUG_FILE = __import__('pathlib').Path(__import__('os').environ.get('LOCALAPPDATA', __import__('os').getcwd())) / 'CodexBar' / 'settings_debug.log'
+_DEBUG_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+def _d(msg):
+    try:
+        with open(_DEBUG_FILE, 'a') as f:
+            from datetime import datetime
+            f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
+    except Exception:
+        pass
 
 if __name__ == '__main__':
     print(r"""
