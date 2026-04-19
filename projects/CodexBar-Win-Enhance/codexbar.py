@@ -3464,15 +3464,24 @@ class CodexBarApp:
             print(f"[CodexBar] OpenCode fetch err: {e}")
             self.opencode_data = OpenCodeDataFetcher._empty()
 
+        # ── get correct sp for active provider ──
+        _provider_map = {
+            "claude": (self.fetcher.data, "session_used_pct"),
+            "openai": (self.codex_data, "session_used_pct"),
+            "zai": (self.zai_data, "session_used_pct"),
+            "minimax": (self.minimax_data, "session_used_pct"),
+            "opencode": (self.opencode_data, "session_used_pct"),
+        }
+        _p = self._active_provider if self._active_provider in _provider_map else "claude"
+        _d, _k = _provider_map[_p]
+        _sp = (_d.get(_k, 0) or 0) if _d else 0
+
         # ── hidden tkinter root ──
         ctk.set_appearance_mode("light")
         self.root = ctk.CTk()
         self.root.withdraw()
 
         # ── tray icon (background thread) ──
-        d = self.fetcher.data
-        sp = d.get("session_used_pct", 0)
-
         menu = Menu(
             MenuItem('Open CodexBar', self._tray_open, default=True),
             MenuItem('Refresh', self._tray_refresh),
@@ -3481,7 +3490,7 @@ class CodexBarApp:
             Menu.SEPARATOR,
             MenuItem('Quit', self._tray_quit),
         )
-        self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
+        self.tray = pystray.Icon('CodexBar', make_icon(sp=_sp, provider=_p), 'CodexBar', menu)
         threading.Thread(target=self.tray.run, daemon=True).start()
 
         # ── premium floating widget (PyQt6, subprocess) ──
@@ -3495,9 +3504,9 @@ class CodexBarApp:
                 lf.write(f"File exists: {os.path.exists(self.pw_manager._widget_path)}\n")
             provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
             init_label = provider_labels.get(self._active_provider, "CL")
-            self.pw_manager.start(sp, init_label)
+            self.pw_manager.start(_sp, init_label)
             with open(log_path, 'a') as lf:
-                lf.write(f"start() called with {init_label}\n")
+                lf.write(f"start() called with sp={_sp}, label={init_label}\n")
         except Exception as e:
             with open(log_path, 'a') as lf:
                 lf.write(f"ERROR: {e}\n")
