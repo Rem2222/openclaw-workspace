@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.58"
+VERSION = "2.2.59"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3506,7 +3506,6 @@ class PremiumWidgetManager:
         if mode == "none":
             self._write_data(0, "off")
             self._visible = False
-            # Save widget_visible=False
             try:
                 sp = self._settings_file()
                 data = {}
@@ -3514,6 +3513,7 @@ class PremiumWidgetManager:
                     try: data = _json.loads(sp.read_text())
                     except: pass
                 data["widget_mode"] = "none"
+                data["widget_visible"] = False
                 sp.write_text(_json.dumps(data, indent=2))
             except: pass
             return
@@ -3786,25 +3786,47 @@ class CodexBarApp:
         if not self.pw_manager:
             return
         mode = self.pw_manager._get_widget_mode()
+        settings = self.pw_manager._load_settings()
         pct = self._get_current_percentage()
         prov = self._get_current_provider_label()
-        
+
         if self.pw_manager._visible:
-            # Hide - terminate both
-            if self.pw_manager._proc and self.pw_manager._proc.poll() is None:
-                self.pw_manager._proc.terminate()
-            if self.pw_manager._bar_proc and self.pw_manager._bar_proc.poll() is None:
-                self.pw_manager._bar_proc.terminate()
+            for ref in [self.pw_manager._proc, self.pw_manager._bar_proc]:
+                if ref and ref.poll() is None:
+                    ref.terminate()
+                    try: ref.wait(timeout=2)
+                    except: pass
+            self.pw_manager._proc = None
+            self.pw_manager._bar_proc = None
             self.pw_manager._write_data(0, "off")
             self.pw_manager._visible = False
+            try:
+                sp = self.pw_manager._settings_file()
+                data = {}
+                if sp.exists():
+                    try: data = json.loads(sp.read_text())
+                    except: pass
+                data["widget_visible"] = False
+                sp.write_text(json.dumps(data, indent=2))
+            except: pass
         else:
-            # Show - respect widget_mode
+            if mode == "none":
+                return
             self.pw_manager._write_data(pct, prov)
-            if mode in ("both", "large"):
-                self.pw_manager._launch("premium")
-            if mode in ("both", "small"):
-                self.pw_manager._launch("bar")
+            if mode in ("both", "large") and _os.path.exists(self.pw_manager._widget_path):
+                self.pw_manager._launch_single("premium", settings.get("premium_widget_pos"))
+            if mode in ("both", "small") and _os.path.exists(self.pw_manager._bar_path):
+                self.pw_manager._launch_single("bar", settings.get("bar_widget_pos"))
             self.pw_manager._visible = True
+            try:
+                sp = self.pw_manager._settings_file()
+                data = {}
+                if sp.exists():
+                    try: data = json.loads(sp.read_text())
+                    except: pass
+                data["widget_visible"] = True
+                sp.write_text(json.dumps(data, indent=2))
+            except: pass
 
     def _tray_toggle_bar_widget(self, *_):
         """Toggle bar widget independently"""
