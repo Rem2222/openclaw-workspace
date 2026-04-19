@@ -1,4 +1,4 @@
-"""Widget4 - Pure progress bar only. No text, no ring, no label."""
+"""Widget4 - Pure progress bar only. No text, no ring, no label. v2.2.54"""
 
 import sys, os, time
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout
