@@ -34,7 +34,7 @@ class BarWidget(QWidget):
         self.setWindowTitle("CodexBar Bar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(300, 12)
+        self.setFixedSize(300, 24)
         if pos:
             self.move(pos[0], pos[1])
         else:

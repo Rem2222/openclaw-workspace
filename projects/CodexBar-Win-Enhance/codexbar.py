@@ -3043,18 +3043,19 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#1A1A2E").pack(side="left")
 
         self._widget_mode = ctk.CTkOptionMenu(
-            self, values=["Both", "Large only", "Small only"],
+            self, values=["Both", "Large only", "Small only", "Don't show"],
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", button_color="#4A6CF7",
             button_hover_color="#3A5CE5",
-            dropdown_fg_color="#FFFFFF")
+            dropdown_fg_color="#FFFFFF",
+            command=self._on_widget_mode_change)
         self._widget_mode.pack(fill="x", padx=20, pady=(0, 4))
         # Load saved mode
         try:
             saved_mode = json.loads(cls._config_path().read_text()).get("widget_mode", "both") if cls._config_path().exists() else "both"
         except Exception:
             saved_mode = "both"
-        mode_map = {"both": "Both", "large": "Large only", "small": "Small only"}
+        mode_map = {"both": "Both", "large": "Large only", "small": "Small only", "none": "Don't show"}
         self._widget_mode.set(mode_map.get(saved_mode, "Both"))
 
         self._token_entry.focus_set()
@@ -3099,6 +3100,53 @@ class SettingsPopup(ctk.CTkToplevel):
             pass
         return ""
 
+    def _on_widget_mode_change(self, value):
+        """Apply widget change immediately when user selects new value."""
+        from codexbar import CodexBarApp
+        mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
+        mode = mode_map.get(value, "both")
+        # Save immediately to settings.json
+        try:
+            settings_path = self._config_path()
+            data = {}
+            if settings_path.exists():
+                try: data = json.loads(settings_path.read_text())
+                except: pass
+            data["widget_mode"] = mode
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            settings_path.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
+        # Apply immediately via PremiumWidgetManager
+        for inst in CodexBarApp.instances:
+            if hasattr(inst, 'pw_manager') and inst.pw_manager:
+                pct = inst._get_current_percentage()
+                prov = inst._get_current_provider_label()
+                if mode == "none":
+                    # Hide all widgets
+                    if inst.pw_manager._proc and inst.pw_manager._proc.poll() is None:
+                        inst.pw_manager._proc.terminate()
+                    if inst.pw_manager._bar_proc and inst.pw_manager._bar_proc.poll() is None:
+                        inst.pw_manager._bar_proc.terminate()
+                    inst.pw_manager._write_data(0, "off")
+                    inst.pw_manager._visible = False
+                else:
+                    # Update which widgets are shown
+                    inst.pw_manager._write_data(pct, prov)
+                    inst.pw_manager._visible = True
+                    # Stop widgets not in mode
+                    if mode == "large" and inst.pw_manager._bar_proc:
+                        if inst.pw_manager._bar_proc.poll() is None:
+                            inst.pw_manager._bar_proc.terminate()
+                    if mode == "small" and inst.pw_manager._proc:
+                        if inst.pw_manager._proc.poll() is None:
+                            inst.pw_manager._proc.terminate()
+                    # Launch correct widgets
+                    if mode in ("both", "large") and os.path.exists(inst.pw_manager._widget_path):
+                        inst.pw_manager._launch("premium")
+                    if mode in ("both", "small") and os.path.exists(inst.pw_manager._bar_path):
+                        inst.pw_manager._launch("bar")
+
     def save_all_tokens(self):
         """Save all tokens to config file and set env vars."""
         try:
@@ -3117,7 +3165,7 @@ class SettingsPopup(ctk.CTkToplevel):
             zai_tok = self._token_entry.get().strip()
             mm_tok = self._mm_entry.get().strip()
             # Save widget mode
-            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small"}
+            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
             data["widget_mode"] = mode_reverse.get(self._widget_mode.get(), "both")
 
             oc_cook = self._oc_entry.get().strip()
@@ -3369,6 +3417,8 @@ class PremiumWidgetManager:
             self._launch("premium")
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
+        if mode == "none":
+            self._visible = False
 
     def _launch(self, which="both"):
         import subprocess as _sp
@@ -3428,6 +3478,7 @@ class PremiumWidgetManager:
 
 
 class CodexBarApp:
+    instances = []  # track all instances for settings propagation
     def __init__(self):
         # ── Single-instance mutex ──────────────────────────────────
         import os as _os, ctypes as _ctypes, ctypes.wintypes as _wt
@@ -3498,6 +3549,8 @@ class CodexBarApp:
         saved_oc = SettingsPopup._load_token("opencode_cookie")
         if saved_oc:
             os.environ.setdefault("OPENCODE_COOKIE", saved_oc)
+        # Track all instances for widget mode propagation
+        CodexBarApp.instances.append(self)
 
     def start(self):
         print("[CodexBar] Fetching your real usage data...\n")
@@ -3582,7 +3635,10 @@ class CodexBarApp:
             MenuItem('Open CodexBar', self._tray_open, default=True),
             MenuItem('Refresh', self._tray_refresh),
             Menu.SEPARATOR,
-            MenuItem('Show/Hide Premium Widget', self._tray_toggle_premium_widget),
+            MenuItem('Show/Hide Premium Widget', self._tray_toggle_widget),
+            MenuItem('Show/Hide Bar Widget', self._tray_toggle_bar_widget),
+            Menu.SEPARATOR,
+            MenuItem('Settings', self._tray_open_settings),
             Menu.SEPARATOR,
             MenuItem('Quit', self._tray_quit),
         )
@@ -3626,14 +3682,47 @@ class CodexBarApp:
     def _tray_open(self, *_):
         self.root.after(0, self._show_popup)
 
+    def _tray_open_settings(self, *_):
+        self.root.after(0, self._show_settings)
 
-    def _tray_toggle_premium_widget(self, *_):
-        """Toggle premium widget visibility"""
-        if self.pw_manager:
-            self.pw_manager.toggle(
-                self._get_current_percentage(),
-                self._get_current_provider_label()
-            )
+    def _tray_toggle_widget(self, *_):
+        """Toggle primary widget (respects widget_mode: large/small/both/off)"""
+        if not self.pw_manager:
+            return
+        mode = self.pw_manager._get_widget_mode()
+        pct = self._get_current_percentage()
+        prov = self._get_current_provider_label()
+        
+        if self.pw_manager._visible:
+            # Hide - terminate both
+            if self.pw_manager._proc and self.pw_manager._proc.poll() is None:
+                self.pw_manager._proc.terminate()
+            if self.pw_manager._bar_proc and self.pw_manager._bar_proc.poll() is None:
+                self.pw_manager._bar_proc.terminate()
+            self.pw_manager._write_data(0, "off")
+            self.pw_manager._visible = False
+        else:
+            # Show - respect widget_mode
+            self.pw_manager._write_data(pct, prov)
+            if mode in ("both", "large"):
+                self.pw_manager._launch("premium")
+            if mode in ("both", "small"):
+                self.pw_manager._launch("bar")
+            self.pw_manager._visible = True
+
+    def _tray_toggle_bar_widget(self, *_):
+        """Toggle bar widget independently"""
+        if not self.pw_manager:
+            return
+        pct = self._get_current_percentage()
+        prov = self._get_current_provider_label()
+        
+        if self.pw_manager._bar_proc and self.pw_manager._bar_proc.poll() is None:
+            self.pw_manager._bar_proc.terminate()
+            self.pw_manager._write_data(0, "off")
+        else:
+            self.pw_manager._write_data(pct, prov)
+            self.pw_manager._launch("bar")
     
     def _get_current_percentage(self):
         provider_map = {
