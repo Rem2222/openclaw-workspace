@@ -3069,7 +3069,6 @@ class SettingsPopup(ctk.CTkToplevel):
             command=self._on_ct_change)
 
         # DEBUG: trace when switch is created and what default value is set
-        _d(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()}")
         self._ct_switch.pack(side="left")
         # Load saved click-through
         try:
@@ -3077,6 +3076,13 @@ class SettingsPopup(ctk.CTkToplevel):
         except Exception:
             saved_ct = False
         self._ct_var.set(saved_ct)
+        # Log actual file contents for debugging
+        try:
+            cfg_content = cls._config_path().read_text() if cls._config_path().exists() else "<file not found>"
+            _d(f"[SETTINGS] File contents: {cfg_content[:200]}")
+        except Exception as e:
+            _d(f"[SETTINGS] File read error: {e}")
+        _d(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()} (saved_ct={saved_ct})")
 
         self._token_entry.focus_set()
 
@@ -4157,6 +4163,17 @@ def _d(msg):
         with open(_DEBUG_FILE, 'a', encoding='utf-8') as f:
             from datetime import datetime
             f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
+            f.flush()
+    except Exception:
+        pass
+
+def _d_settings(msg):
+    """Dedicated settings debug log with immediate flush."""
+    try:
+        with open(_DEBUG_FILE, 'a', encoding='utf-8') as f:
+            from datetime import datetime
+            f.write(f"[{datetime.now().strftime('%H:%M:%S')}] SETTINGS: {msg}\n")
+            f.flush()
     except Exception:
         pass
 
