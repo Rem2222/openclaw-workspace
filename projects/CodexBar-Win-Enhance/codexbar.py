@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.63"
+VERSION = "2.2.64"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)

@@ -1,4 +1,4 @@
-"""Premium Floating Widget v5 - Square layout with weekly progress bar"""
+"""Premium Floating Widget v6 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
@@ -137,12 +137,14 @@ class PremiumWidget(QWidget):
         self.update_pct(0, "CL", wp=0)
         # Poll data file every 200ms
         self._last_data = ""
+        self._poll_count = 0
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._poll_file)
         self._timer.start(200)
 
     def _poll_file(self):
         """Read data file on main thread."""
+        self._poll_count += 1
         try:
             with open(DATA_FILE, 'r') as f:
                 data = f.read().strip()
@@ -150,6 +152,7 @@ class PremiumWidget(QWidget):
                 return
             self._last_data = data
             if data == "quit":
+                print("[PW] quit signal received", flush=True)
                 QApplication.quit()
                 return
             if data == "off":
@@ -159,11 +162,14 @@ class PremiumWidget(QWidget):
                 pct = int(parts[0])
                 prov = parts[1]
                 wp = int(parts[2]) if len(parts) >= 3 else 0
-                if wp > 0:
-                    print(f"[PW] WEEKLY DATA: wp={wp}% raw={data!r}", flush=True)
+                print(f"[PW] poll #{self._poll_count}: pct={pct} prov={prov} wp={wp} raw={data!r}", flush=True)
                 self.update_pct(pct, prov, wp=wp)
-        except (FileNotFoundError, ValueError):
-            pass
+        except FileNotFoundError:
+            pass  # Normal - file not created yet
+        except ValueError:
+            print(f"[PW] ValueError in poll: raw={data!r}", flush=True)
+        except Exception as e:
+            print(f"[PW] poll error: {e}", flush=True)
 
     def _ui(self):
         # Main vertical layout, evenly distributed
@@ -204,19 +210,25 @@ class PremiumWidget(QWidget):
         prov: provider name (optional)
         wp: weekly percentage (0 = no data, don't show bar)
         """
-        self.pct = pct
-        if prov: self.prov = prov
-        self.wp = wp
-        t = THEME[get_theme(pct)]
-        self.pcl.setText(f'{pct}%')
-        self.pl.setText(self.prov)
-        self.pcl.setStyleSheet(f"color: {t['p'].name()};")
-        self.ring.set_val(pct / 100.0)
-        # Update weekly bar if wp > 0
-        if wp > 0:
-            self.wb.set_wp(wp)
-        # Store wp for reference
-        self._wp = wp
+        try:
+            self.pct = pct
+            if prov: self.prov = prov
+            self.wp = wp
+            t = THEME[get_theme(pct)]
+            self.pcl.setText(f'{pct}%')
+            self.pl.setText(self.prov)
+            self.pcl.setStyleSheet(f"color: {t['p'].name()};")
+            self.ring.set_val(pct / 100.0)
+            # Update weekly bar if wp > 0
+            if wp > 0:
+                try:
+                    self.wb.set_wp(wp)
+                except Exception as e:
+                    print(f"[PW] wb.set_wp error: {e}", flush=True)
+            # Store wp for reference
+            self._wp = wp
+        except Exception as e:
+            print(f"[PW] update_pct error: {e}", flush=True)
 
     def paintEvent(self, e):
         p = QPainter(self)
