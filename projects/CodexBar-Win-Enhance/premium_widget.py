@@ -120,13 +120,17 @@ class PremiumWidget(QWidget):
 
     @staticmethod
     def _load_widget_settings():
-        """Load opacity_idx and click_through from settings file."""
+        """Load opacity_idx and click_through from settings file.
+        Reads widgets_click_through (from Settings popup) as primary,
+        falls back to premium_click_through (legacy/restarted widget).
+        """
         try:
             if os.path.exists(SETTINGS_FILE):
                 with open(SETTINGS_FILE, 'r') as f:
                     data = json.load(f)
                 idx = data.get("premium_opacity_idx", 3)
-                ct = data.get("premium_click_through", False)
+                # Settings popup writes widgets_click_through; widget writes premium_click_through
+                ct = data.get("widgets_click_through", data.get("premium_click_through", False))
                 return idx, ct
         except Exception:
             pass

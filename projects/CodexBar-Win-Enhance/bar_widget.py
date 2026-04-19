@@ -31,13 +31,16 @@ class BarWidget(QWidget):
 
     @staticmethod
     def _load_widget_settings():
-        """Load opacity_idx and click_through from settings file."""
+        """Load opacity_idx and click_through from settings file.
+        Reads widgets_click_through (from Settings popup) as primary,
+        falls back to bar_click_through (legacy/restarted widget).
+        """
         try:
             if os.path.exists(SETTINGS_FILE):
                 with open(SETTINGS_FILE, 'r') as f:
                     data = json.load(f)
                 idx = data.get("bar_opacity_idx", 3)
-                ct = data.get("bar_click_through", False)
+                ct = data.get("widgets_click_through", data.get("bar_click_through", False))
                 return idx, ct
         except Exception:
             pass
