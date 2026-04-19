@@ -4148,12 +4148,13 @@ class CodexBarApp:
 # ─────────────────────────────────────────────
 
 # ── Debug log ──
-_DEBUG_FILE = __import__('pathlib').Path(__import__('os').environ.get('LOCALAPPDATA', __import__('os').getcwd())) / 'CodexBar' / 'settings_debug.log'
-_DEBUG_FILE.parent.mkdir(parents=True, exist_ok=True)
+# Debug log in same dir as minimax_debug.log (next to codexbar.py)
+import __main__
+_DEBUG_FILE = __import__('pathlib').Path(__import__('os').path.dirname(__file__) or __import__('os').getcwd()) / 'settings_debug.log'
 
 def _d(msg):
     try:
-        with open(_DEBUG_FILE, 'a') as f:
+        with open(_DEBUG_FILE, 'a', encoding='utf-8') as f:
             from datetime import datetime
             f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
     except Exception:
