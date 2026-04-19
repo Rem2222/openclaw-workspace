@@ -1953,7 +1953,13 @@ class OllamaDataFetcher:
 
             if weekly_pct is None and session_pct is None:
                 self._log("[Ollama] ERROR: no usage data found in page")
-                self._log("[Ollama] HTML preview (first 500): " + html[:500])
+                self._log("[Ollama] HTML preview (first 2000): " + html[:2000])
+            # Search for usage-related patterns
+            import re as _re2
+            for pattern in [r'usage', r'Usage', r'limit', r'Limit', r'percent', r'Percent', r'remaining', r'Remaining', r'cost', r'Cost', r'dollars', r'credit', r'Credit', r'spend', r'Spend', r'rollover', r'weekly', r'monthly', r'reset']:
+                matches = _re2.findall(pattern + r"[^<]{0,80}", html)
+                if matches:
+                    self._log(f"[Ollama] Pattern '{pattern}': {matches[:5]}")
                 d["error"] = "no usage data found in page (HTML structure may differ)"
                 return d
 
