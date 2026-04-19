@@ -1831,20 +1831,17 @@ class OllamaDataFetcher:
                     except: pass
         except Exception as e:
             cls._log(f"[Ollama]   debug scan error: {e}")
-        cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
+        # ollama.com uses __Secure-session + aid cookies
+        cookies = _CookieDecryptor.get_cookies("ollama.com", "__Secure-session", "aid")
         cls._log("[Ollama]   browser result: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
-        # Also try without leading dot
-        if not cookies:
-            cookies = _CookieDecryptor.get_cookies("ollama.com", "ollama_session", "csrf_token")
-            cls._log("[Ollama]   retry without dot: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
         if not cookies:
             cls._log("[Ollama]   no cookies from browser")
             return None
         parts = []
-        if "ollama_session" in cookies and cookies["ollama_session"]:
-            parts.append(f"ollama_session={cookies['ollama_session']}")
-        if "csrf_token" in cookies and cookies["csrf_token"]:
-            parts.append(f"csrf_token={cookies['csrf_token']}")
+        if "__Secure-session" in cookies and cookies["__Secure-session"]:
+            parts.append(f"__Secure-session={cookies['__Secure-session']}")
+        if "aid" in cookies and cookies["aid"]:
+            parts.append(f"aid={cookies['aid']}")
         return "; ".join(parts) if parts else None
 
     @staticmethod
@@ -1883,7 +1880,7 @@ class OllamaDataFetcher:
                     return f"https://ollama.com/{username}/usage"
         except Exception:
             pass
-        return "https://ollama.com/account/usage"
+        return "https://ollama.com/settings"
 
     def fetch(self):
         d = self._empty()
@@ -3706,7 +3703,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         def do_test(cookie_header):
             try:
-                url = "https://ollama.com/account/usage"
+                url = "https://ollama.com/settings"
                 OllamaDataFetcher._log("[Test] fetching:", url)
                 req = Request(url, headers={"Cookie": cookie_header,
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
