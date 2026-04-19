@@ -3283,63 +3283,63 @@ class SettingsPopup(ctk.CTkToplevel):
 
 
 # ─────────────────────────────────────────────
-# Premium Widget Manager - subprocess + stdin IPC
+# Premium Widget Manager - subprocess + file IPC
 # ─────────────────────────────────────────────
 
 import os as _os
+import tempfile as _tf
 
 class PremiumWidgetManager:
-    """Manages premium_widget.py as subprocess. Updates via stdin — no restart."""
+    """Manages premium_widget.py as subprocess. Updates via temp file — no stdin needed."""
     def __init__(self):
         self._proc = None
         self._visible = True
         self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
+        self._data_file = _os.path.join(_tf.gettempdir(), "codexbar_widget.txt")
+
+    def _write_data(self, pct, prov):
+        with open(self._data_file, 'w') as f:
+            f.write(f"{pct}|{prov}")
 
     def start(self, pct=0, prov="CL"):
         if not _os.path.exists(self._widget_path):
             print(f"[PW] Not found: {self._widget_path}")
             return
-        self._launch(pct, prov)
+        self._write_data(pct, prov)
+        self._launch()
 
-    def _launch(self, pct, prov):
+    def _launch(self):
         import subprocess as _sp
         if self._proc and self._proc.poll() is None:
             self._proc.terminate()
             try: self._proc.wait(timeout=2)
             except: self._proc.kill()
         self._proc = _sp.Popen(
-            [sys.executable, self._widget_path, str(pct), prov],
-            stdin=_sp.PIPE,
-            stderr=_sp.STDOUT,
+            [sys.executable, self._widget_path],
             cwd=_os.path.dirname(__file__),
-            creationflags=0  # no special flags
+            creationflags=0
         )
         print(f"[PW] Started PID={self._proc.pid}")
 
     def update(self, pct, prov):
-        """Send update via stdin — no restart, no flicker."""
-        if self._proc and self._proc.poll() is None:
-            try:
-                self._proc.stdin.write(f"{pct}|{prov}\n".encode())
-                self._proc.stdin.flush()
-            except (BrokenPipeError, OSError):
-                self._launch(pct, prov)
-        else:
-            self._launch(pct, prov)
+        """Write update to temp file — no stdin needed."""
+        self._write_data(pct, prov)
+        if not (self._proc and self._proc.poll() is None):
+            self._launch()
 
     def toggle(self, pct, prov):
         if self._visible:
             if self._proc and self._proc.poll() is None:
-                try:
-                    self._proc.stdin.write(b"quit\n")
-                    self._proc.stdin.flush()
-                except: pass
+                self._proc.terminate()
+            self._write_data(0, "off")
             self._visible = False
         else:
-            self._launch(pct, prov)
+            self._write_data(pct, prov)
+            self._launch()
             self._visible = True
 
     def stop(self):
+        self._write_data(0, "quit")
         if self._proc and self._proc.poll() is None:
             try:
                 self._proc.stdin.write(b"quit\n")

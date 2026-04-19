@@ -1,11 +1,11 @@
-"""Premium Floating Widget v3 - PyQt6 Glassmorphism + stdin IPC"""
+"""Premium Floating Widget v4 - PyQt6 + file-based IPC (no stdin needed)"""
 
-import sys
-import threading
-import queue
+import sys, os, time
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
 from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
 from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
+
+DATA_FILE = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', '/tmp')), 'codexbar_widget.txt')
 
 THEME = {
     'low':      {'p': QColor(16,185,129), 's': QColor(5,150,105)},
@@ -53,11 +53,10 @@ class Ring(QFrame):
         p.end()
 
 class PremiumWidget(QWidget):
-    def __init__(self, pct=0, prov="CL"):
+    def __init__(self):
         super().__init__()
-        self.pct = pct
-        self.prov = prov
-        self._q = queue.Queue()
+        self.pct = 0
+        self.prov = "CL"
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -66,24 +65,33 @@ class PremiumWidget(QWidget):
         self.move((s.width()-220)//2, (s.height()-260)//2)
         self._drag = None
         self._ui()
-        self.update_pct(pct, prov)
-        # Poll queue on main thread every 100ms
+        self.update_pct(0, "CL")
+        # Poll data file every 200ms
+        self._last_data = ""
         self._timer = QTimer(self)
-        self._timer.timeout.connect(self._drain_queue)
-        self._timer.start(100)
+        self._timer.timeout.connect(self._poll_file)
+        self._timer.start(200)
 
-    def _drain_queue(self):
-        """Called on Qt main thread — safe to update UI."""
-        updated = False
-        while True:
-            try:
-                pct, prov = self._q.get_nowait()
+    def _poll_file(self):
+        """Read data file on main thread."""
+        try:
+            with open(DATA_FILE, 'r') as f:
+                data = f.read().strip()
+            if data == self._last_data:
+                return
+            self._last_data = data
+            if data == "quit":
+                QApplication.quit()
+                return
+            if data == "off":
+                return
+            parts = data.split("|")
+            if len(parts) >= 2:
+                pct = int(parts[0])
+                prov = parts[1]
                 self.update_pct(pct, prov)
-                updated = True
-            except queue.Empty:
-                break
-        if updated:
-            print(f"[PW] UI updated: {self.pct}% {self.prov}", flush=True)
+        except (FileNotFoundError, ValueError):
+            pass
 
     def _ui(self):
         lo = QVBoxLayout(self)
@@ -106,6 +114,7 @@ class PremiumWidget(QWidget):
         self.sl.setStyleSheet("color:rgba(255,255,255,0.5);")
         self.sl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lo.addWidget(self.sl)
+
     def update_pct(self, pct, prov=None):
         self.pct = pct
         if prov: self.prov = prov
@@ -114,6 +123,7 @@ class PremiumWidget(QWidget):
         self.pl.setText(self.prov)
         self.pcl.setStyleSheet(f"color:{t['p'].name()};")
         self.ring.set_val(pct/100.0)
+
     def paintEvent(self, e):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -124,6 +134,7 @@ class PremiumWidget(QWidget):
         p.setPen(QPen(QColor(255,255,255,30),1))
         p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1),16,16)
         p.end()
+
     def mousePressEvent(self, e):
         if e.button()==Qt.MouseButton.LeftButton:
             self._drag = e.globalPosition().toPoint()-self.pos()
@@ -135,46 +146,11 @@ class PremiumWidget(QWidget):
         a=m.addAction("Close"); a.triggered.connect(lambda: self.close())
         m.exec(e.globalPos())
 
-class StdinReader(threading.Thread):
-    """Reads stdin, puts updates into widget's queue (thread-safe)."""
-    def __init__(self, widget):
-        super().__init__(daemon=True)
-        self.w = widget
-        self._running = True
-        self.start()
-    def run(self):
-        while self._running:
-            try:
-                line = sys.stdin.readline()
-                if not line:
-                    break
-                line = line.strip()
-                if not line:
-                    continue
-                if line == "quit":
-                    QApplication.quit()
-                    break
-                parts = line.split("|")
-                if len(parts) >= 2:
-                    pct = int(parts[0])
-                    prov = parts[1]
-                    self.w._q.put((pct, prov))
-                    print(f"[PW] Queued: {pct}% {prov}", flush=True)
-            except (ValueError, EOFError):
-                break
-            except Exception as e:
-                print(f"[PW] stdin error: {e}", flush=True)
-                break
-        print("[PW] stdin reader stopped", flush=True)
-
 def main():
     app = QApplication(sys.argv)
-    pct = int(sys.argv[1]) if len(sys.argv)>1 else 0
-    prov = sys.argv[2] if len(sys.argv)>2 else "CL"
-    w = PremiumWidget(pct=pct, prov=prov)
+    w = PremiumWidget()
     w.show()
     w.raise_()
-    reader = StdinReader(w)
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
 
