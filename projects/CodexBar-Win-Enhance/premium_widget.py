@@ -157,8 +157,8 @@ class PremiumWidget(QWidget):
             if len(parts) >= 2:
                 pct = int(parts[0])
                 prov = parts[1]
-                # Weekly data comes separately via update_pct call with wp parameter
-                self.update_pct(pct, prov)
+                wp = int(parts[2]) if len(parts) >= 3 else 0
+                self.update_pct(pct, prov, wp=wp)
         except (FileNotFoundError, ValueError):
             pass
 

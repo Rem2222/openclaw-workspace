@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.59"
+VERSION = "2.2.60"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3367,9 +3367,9 @@ class PremiumWidgetManager:
         data = self._load_settings()
         return data.get("widget_mode", "both")
 
-    def _write_data(self, pct, prov):
+    def _write_data(self, pct, prov, wp=0):
         with open(self._data_file, 'w') as f:
-            f.write(f"{pct}|{prov}")
+            f.write(f"{pct}|{prov}|{wp}")
 
     def start(self, pct=0, prov="CL"):
         self._write_data(pct, prov)
@@ -3406,9 +3406,15 @@ class PremiumWidgetManager:
         if which in ("both", "bar"):
             self._bar_proc = launch_one(self._bar_path, self._bar_proc, settings.get("bar_widget_pos"))
 
-    def update(self, pct, prov):
-        """Write update to temp file — both widgets read it."""
+    def update(self, pct, prov, wp=0):
+        """Write update to temp file — both widgets read it. wp = weekly %."""
         self._write_data(pct, prov)
+        # Also write weekly data for widgets that support it
+        if wp > 0:
+            try:
+                with open(self._data_file.replace('.txt', '_week.txt'), 'w') as f:
+                    f.write(str(wp))
+            except: pass
         mode = self._get_widget_mode()
         if mode in ("both", "large"):
             if self._proc and self._proc.poll() is None:
@@ -3931,9 +3937,11 @@ class CodexBarApp:
             self.tray.title = f"CodexBar {label}: {sp}%"
             
             # Update premium widget (in-process, no restart)
+            # Pass both session (sp) and weekly (wp) percentages
             try:
                 if self.pw_manager:
-                    self.pw_manager.update(sp, label)
+                    wp = data_src.get("weekly_used_pct", 0) if data_src else 0
+                    self.pw_manager.update(sp, label, wp)
             except Exception as pw_err:
                 print(f"[PREMIUM] update error: {pw_err}")
         except Exception as e:
