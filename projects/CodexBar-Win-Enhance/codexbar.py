@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.61"
+VERSION = "2.2.62"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3943,6 +3943,7 @@ class CodexBarApp:
                     wp = data_src.get("weekly_used_pct", 0) if data_src else 0
                     print(f"[PREMIUM] _set_tray_icon: sp={sp} label={label} wp={wp} data_keys={list(data_src.keys())[:5] if data_src else None}")
                     self.pw_manager.update(sp, label, wp)
+                    print(f"[PREMIUM] update called with sp={sp} label={label} wp={wp}")
             except Exception as pw_err:
                 print(f"[PREMIUM] update error: {pw_err}")
         except Exception as e:
