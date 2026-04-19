@@ -1772,6 +1772,161 @@ class OpenCodeDataFetcher:
 
         return d
 
+# ─────────────────────────────────────────────
+# Ollama data fetcher  (added by Romul)
+# ─────────────────────────────────────────────
+
+class OllamaDataFetcher:
+    """Fetch usage quota from Ollama.com via browser cookies (auto-read).
+
+    Reads cookies from .ollama.com in Chrome, Edge, or Brave, then fetches
+    the account/usage page to extract embedded usage data.
+
+    Uses the same cookie-based pattern as OpenCodeDataFetcher.
+    """
+
+    TIMEOUT = 15
+    USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "Chrome/131.0.0.0 Safari/537.36")
+
+    _cookie_header = None  # manually set cookie (fallback)
+
+    LOG_FILE = "ollama_debug.log"
+
+    def _log(self, *args):
+        try:
+            log_path = Path(__file__).parent / self.LOG_FILE
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(" ".join(str(a) for a in args) + "\n")
+        except Exception:
+            pass
+
+    @classmethod
+    def _load_cookies_from_browser(cls) -> str | None:
+        """Extract auth cookie from .ollama.com in any browser. Returns cookie header or None."""
+        cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
+        if not cookies:
+            return None
+        parts = []
+        if "ollama_session" in cookies and cookies["ollama_session"]:
+            parts.append(f"ollama_session={cookies['ollama_session']}")
+        if "csrf_token" in cookies and cookies["csrf_token"]:
+            parts.append(f"csrf_token={cookies['csrf_token']}")
+        return "; ".join(parts) if parts else None
+
+    @staticmethod
+    def _load_cookie_from_settings() -> str:
+        """Load manually saved cookie from settings file (fallback)."""
+        try:
+            if SettingsPopup._config_path().exists():
+                data = json.loads(SettingsPopup._config_path().read_text())
+                return data.get("ollama_cookie", "") or os.environ.get("OLLAMA_COOKIE", "")
+        except Exception:
+            pass
+        return os.environ.get("OLLAMA_COOKIE", "")
+
+    @classmethod
+    def set_cookie(cls, cookie_header: str):
+        cls._cookie_header = cookie_header
+
+    @staticmethod
+    def _empty():
+        return {
+            "provider": "Ollama", "plan": "Pro", "updated": "Never",
+            "source": "none", "session_used_pct": 0, "session_reset": "unknown",
+            "weekly_used_pct": 0, "weekly_reset": "unknown",
+            "cost_today": 0, "cost_today_tokens": "0",
+            "cost_30d": 0, "cost_30d_tokens": "0", "model": "", "error": None, "available": False,
+        }
+
+    @staticmethod
+    def _usage_url() -> str:
+        # Try to load saved username, default to account page
+        try:
+            if SettingsPopup._config_path().exists():
+                data = json.loads(SettingsPopup._config_path().read_text())
+                username = data.get("ollama_username", "").strip()
+                if username:
+                    return f"https://ollama.com/{username}/usage"
+        except Exception:
+            pass
+        return "https://ollama.com/account/usage"
+
+    def fetch(self):
+        d = self._empty()
+
+        # Priority: manual cookie > browser cookie
+        cookie = self._cookie_header or self._load_cookie_from_settings()
+        if not cookie:
+            cookie = self._load_cookies_from_browser()
+        if not cookie:
+            d["error"] = "cookie not found in browser; please login at ollama.com"
+            return d
+        d["available"] = True
+
+        import re as _re
+        url = self._usage_url()
+
+        # Normalise to ollama_session= prefix if raw value passed
+        cookie_header = cookie if cookie.startswith("ollama_session=") else f"ollama_session={cookie}"
+
+        try:
+            req = Request(url, headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT})
+            with urlopen(req, timeout=self.TIMEOUT) as resp:
+                html = resp.read().decode("utf-8", errors="replace")
+
+            # TODO: Ollama.com HTML structure for usage data is not yet reverse-engineered.
+            # The following parsing matches OpenCode.ai pattern as a reasonable fallback.
+            # Adjust the regex patterns based on actual Ollama.com HTML once available.
+            def _parse_usage(html, label):
+                pattern = label + r':\$R\[\d+\]=\{([^}]+)\}'
+                m = _re.search(pattern, html)
+                if m:
+                    try:
+                        fields = m.group(1)
+                        secs_m = _re.search(r'resetInSec:(\d+)', fields)
+                        pct_m = _re.search(r'usagePercent:(\d+)', fields)
+                        if secs_m and pct_m:
+                            secs = int(secs_m.group(1))
+                            pct = int(pct_m.group(1))
+                            self._log(f"  {label}: secs={secs}, pct={pct}")
+                            h, mn = divmod(secs // 60, 60)
+                            if h >= 24:
+                                reset = f"{h // 24}d {h % 24}h"
+                            else:
+                                reset = f"{h}h {mn:02d}m"
+                            return pct, reset
+                    except Exception as e:
+                        self._log(f"  {label}: parse error: {e}")
+                self._log(f"  {label}: no match")
+                return None, "unknown"
+
+            session_pct, session_reset = _parse_usage(html, "rollingUsage")
+            weekly_pct, weekly_reset = _parse_usage(html, "weeklyUsage")
+
+            if weekly_pct is None and session_pct is None:
+                self._log(f"ERROR: no usage data found in page")
+                d["error"] = "no usage data found in page (HTML structure may differ)"
+                return d
+
+            d["session_used_pct"] = session_pct if session_pct is not None else 0
+            d["session_reset"] = session_reset
+            d["weekly_used_pct"] = weekly_pct if weekly_pct is not None else 0
+            d["weekly_reset"] = weekly_reset
+            d["source"] = "html"
+            d["updated"] = datetime.now().strftime("Updated %H:%M")
+
+        except HTTPError as e:
+            if e.code in (401, 403):
+                d["error"] = "session expired; please re-login in browser"
+            else:
+                d["error"] = f"HTTP {e.code}"
+        except Exception as e:
+            d["error"] = str(e)
+
+        return d
+
+
 class CodexBarPopup(ctk.CTkToplevel):
     """Borderless popup with Claude + OpenAI tabs and smooth transitions."""
 
@@ -1851,7 +2006,8 @@ class CodexBarPopup(ctk.CTkToplevel):
     def __init__(self, master, claude_data, codex_data=None, *,
                  on_close=None, on_refresh=None, on_quit=None,
                  on_tab_switch=None, on_settings=None,
-                 zai_data=None, minimax_data=None, opencode_data=None):
+                 zai_data=None, minimax_data=None, opencode_data=None,
+                 ollama_data=None):
         super().__init__(master)
         self._claude = claude_data
         self._codex = codex_data or CodexDataFetcher._empty()
@@ -1862,6 +2018,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._zai = zai_data or ZaiDataFetcher._empty()
         self._minimax = minimax_data or MiniMaxDataFetcher._empty()
         self._opencode = opencode_data or OpenCodeDataFetcher._empty()
+        self._ollama = ollama_data or OllamaDataFetcher._empty()
         self._on_tab_switch = on_tab_switch
         self._active_tab = SettingsPopup.load_last_tab()
 
@@ -2000,7 +2157,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         # Reset all tab buttons to inactive (use track color for visibility in both modes)
         track_bg = self.CL_TRACK  # Will be updated per-tab below
-        for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn, self._mm_tab_btn, self._oc_tab_btn):
+        for btn in (self._cl_tab_btn, self._oa_tab_btn, self._zai_tab_btn, self._mm_tab_btn, self._oc_tab_btn, self._ollama_tab_btn):
             btn.configure(fg_color=self.CL_TRACK)  # Visible background
 
         # tab button + footer styles — unified white+blue theme
@@ -2030,6 +2187,11 @@ class CodexBarPopup(ctk.CTkToplevel):
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
                 self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
             self._oc_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
+        elif tab == "ollama":
+            bg, track, divider, accent, accent_hover, hover = (
+                self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
+                self.ZA_ACCENT, self.ZA_HOVER, self.ZA_HOVER)
+            self._ollama_tab_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER, text_color="#FFFFFF")
         else:
             bg, track, divider, accent, accent_hover, hover = (
                 self.ZA_BG, self.ZA_TRACK, self.ZA_DIVIDER,
@@ -2046,6 +2208,8 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._mm_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
         if tab != "opencode":
             self._oc_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
+        if tab != "ollama":
+            self._ollama_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
 
         self._tab_bar.configure(fg_color=bg)
         self._tab_inner.configure(fg_color=track)
@@ -2057,7 +2221,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._refresh_btn.configure(fg_color=self.ZA_ACCENT, hover_color=self.ZA_HOVER)
 
         # swap frames
-        for frame in (self._claude_frame, self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
+        for frame in (self._claude_frame, self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame, self._ollama_frame):
             frame.pack_forget()
         self._footer_frame.pack_forget()
         if tab == "claude":
@@ -2070,6 +2234,8 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._minimax_frame.pack(fill="both", expand=True)
         elif tab == "opencode":
             self._opencode_frame.pack(fill="both", expand=True)
+        elif tab == "ollama":
+            self._ollama_frame.pack(fill="both", expand=True)
         self._footer_frame.pack(fill="x", side="bottom")
 
         # resize to fixed height + reposition anchored to bottom
@@ -2229,6 +2395,19 @@ class CodexBarPopup(ctk.CTkToplevel):
             command=lambda: self._switch_tab("opencode"))
         self._oc_tab_btn.pack(side="left", padx=(1, 2), pady=2)
 
+        # ── Ollama tab button (purple) ──
+        self._ollama_tab_btn = ctk.CTkButton(
+            tab_inner,
+            text="OLL",
+            image=None,
+            font=("Segoe UI Semibold", 11),
+            text_color="#1A1A2E",
+            fg_color=self.CL_TRACK,
+            hover_color=self.ZA_HOVER,
+            corner_radius=8, height=26, width=34,
+            command=lambda: self._switch_tab("ollama"))
+        self._ollama_tab_btn.pack(side="left", padx=(1, 2), pady=2)
+
         # ── CLAUDE CONTENT ──
         self._claude_frame = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0)
         self._build_claude_panel(self._claude_frame)
@@ -2254,10 +2433,15 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._build_opencode_panel(self._opencode_frame)
         # starts hidden
 
+        # ── Ollama CONTENT ──
+        self._ollama_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
+        self._build_ollama_panel(self._ollama_frame)
+        # starts hidden
+
         # ── measure all panel heights to equalize later ──
         self.update_idletasks()
         heights = [self._claude_frame.winfo_reqheight()]
-        for frame in (self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame):
+        for frame in (self._openai_frame, self._zai_frame, self._minimax_frame, self._opencode_frame, self._ollama_frame):
             frame.pack(fill="both", expand=True)
             self.update_idletasks()
             heights.append(frame.winfo_reqheight())
@@ -3755,6 +3939,7 @@ class CodexBarApp:
         self.zai_fetcher = ZaiDataFetcher()          # added by Romul
         self.minimax_fetcher = MiniMaxDataFetcher()  # added by Romul
         self.opencode_fetcher = OpenCodeDataFetcher()  # added by Romul
+        self.ollama_fetcher = OllamaDataFetcher()      # added by Romul
         self.root = None
         self.tray = None
         self.popup = None
@@ -3764,6 +3949,7 @@ class CodexBarApp:
         self.zai_data = None                          # added by Romul
         self.minimax_data = None                      # added by Romul
         self.opencode_data = None                     # added by Romul
+        self.ollama_data = None                      # added by Romul
         # Load last active provider from settings
         try:
             _sp = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
@@ -3823,6 +4009,14 @@ class CodexBarApp:
             print(f"[CodexBar] OpenCode fetch err: {e}")
             self.opencode_data = OpenCodeDataFetcher._empty()
 
+        # --- Ollama fetch (added by Romul) ---
+        try:
+            self.ollama_data = self.ollama_fetcher.fetch()
+            print(f"[CodexBar] Ollama: {'available' if not self.ollama_data.get('error') else self.ollama_data.get('error')}")
+        except Exception as e:
+            print(f"[CodexBar] Ollama fetch err: {e}")
+            self.ollama_data = OllamaDataFetcher._empty()
+
         # ── get correct sp for active provider ──
         _provider_map = {
             "claude": (self.fetcher.data, "session_used_pct"),
@@ -3830,6 +4024,7 @@ class CodexBarApp:
             "zai": (self.zai_data, "session_used_pct"),
             "minimax": (self.minimax_data, "session_used_pct"),
             "opencode": (self.opencode_data, "session_used_pct"),
+            "ollama": (self.ollama_data, "session_used_pct"),
         }
         _p = self._active_provider if self._active_provider in _provider_map else "claude"
         _d, _k = _provider_map[_p]
@@ -3845,6 +4040,7 @@ class CodexBarApp:
                 "zai": lambda: self.zai_fetcher.fetch(),
                 "minimax": lambda: self.minimax_fetcher.fetch(),
                 "opencode": lambda: self.opencode_fetcher.fetch(),
+                "ollama": lambda: self.ollama_fetcher.fetch(),
             }
             try:
                 new_data = _retry_map[_p]()
@@ -3852,7 +4048,7 @@ class CodexBarApp:
                 print(f"[CodexBar] REM-42: retry returned sp={new_sp}")
                 if new_sp > 0:
                     # Store refreshed data
-                    _data_attr = {"openai": "codex_data", "zai": "zai_data", "minimax": "minimax_data", "opencode": "opencode_data"}
+                    _data_attr = {"openai": "codex_data", "zai": "zai_data", "minimax": "minimax_data", "opencode": "opencode_data", "ollama": "ollama_data"}
                     setattr(self, _data_attr[_p], new_data)
                     _d = new_data
                     _sp = new_sp
@@ -3890,7 +4086,7 @@ class CodexBarApp:
             with open(log_path, 'a') as lf:
                 lf.write(f"Manager created, widget_path={self.pw_manager._widget_path}\n")
                 lf.write(f"File exists: {os.path.exists(self.pw_manager._widget_path)}\n")
-            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
             init_label = provider_labels.get(self._active_provider, "CL")
             self.pw_manager.start(_sp, init_label)
             if _wp > 0:
@@ -3991,12 +4187,13 @@ class CodexBarApp:
             "zai": self.zai_data,
             "minimax": self.minimax_data,
             "opencode": self.opencode_data,
+            "ollama": self.ollama_data,
         }
         data_src = provider_map.get(self._active_provider, self.fetcher.data)
         return data_src.get("session_used_pct", 0) if data_src else 0
     
     def _get_current_provider_label(self):
-        provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+        provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
         return provider_labels.get(self._active_provider, "CL")
     
     def _tray_refresh(self, *_):
@@ -4025,6 +4222,7 @@ class CodexBarApp:
             zai_data=self.zai_data,
             minimax_data=self.minimax_data,
             opencode_data=self.opencode_data,
+            ollama_data=self.ollama_data,
             on_close=self._on_popup_closed,
             on_refresh=lambda: self.root.after(0, self._do_refresh),
             on_quit=lambda: self.root.after(0, self._do_quit),
@@ -4049,7 +4247,7 @@ class CodexBarApp:
 
     def _on_tab_switch(self, tab):
         # Store the active provider for icon refresh
-        self._active_provider = tab if tab in ("openai", "zai", "minimax", "opencode") else "claude"
+        self._active_provider = tab if tab in ("openai", "zai", "minimax", "opencode", "ollama") else "claude"
         self._set_tray_icon(tab)
 
     def _set_tray_icon(self, provider):
@@ -4061,6 +4259,7 @@ class CodexBarApp:
                 "zai": (self.zai_data, "session_used_pct"),
                 "minimax": (self.minimax_data, "session_used_pct"),
                 "opencode": (self.opencode_data, "session_used_pct"),
+                "ollama": (self.ollama_data, "session_used_pct"),
             }
             p = provider if provider in provider_map else "claude"
             data_src, key = provider_map.get(p, (self.fetcher.data, "session_used_pct"))
@@ -4068,7 +4267,7 @@ class CodexBarApp:
             print(f"[TRAY] _set_tray_icon provider={provider} -> p={p}, sp={sp}, key={key}, data_keys={list(data_src.keys()) if data_src else None}")
             self.tray.icon = make_icon(sp=sp, provider=p)
             # Update tooltip with percentage info
-            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
             label = provider_labels.get(p, p.upper())
             self.tray.title = f"CodexBar {label}: {sp}%"
             
@@ -4106,17 +4305,21 @@ class CodexBarApp:
                 self.opencode_data = self.opencode_fetcher.fetch()
             except Exception:
                 pass
+            try:                                       # added by Romul
+                self.ollama_data = self.ollama_fetcher.fetch()
+            except Exception:
+                pass
             # Directly update premium widget with weekly data
             try:
                 if self.pw_manager:
                     ap = self._active_provider
                     pm = {"claude": self.fetcher.data, "openai": self.codex_data,
                           "zai": self.zai_data, "minimax": self.minimax_data,
-                          "opencode": self.opencode_data}
+                          "opencode": self.opencode_data, "ollama": self.ollama_data}
                     src = pm.get(ap, self.fetcher.data)
                     sp = src.get("session_used_pct", 0) if src else 0
                     wp = src.get("weekly_used_pct", 0) if src else 0
-                    labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+                    labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
                     label = labels.get(ap, ap.upper())
                     self.pw_manager.update(sp, label, wp)
                     print(f"[PREMIUM] bg update: sp={sp} label={label} wp={wp} provider={ap}")
