@@ -3273,6 +3273,46 @@ class SettingsPopup(ctk.CTkToplevel):
             text_color="#8E94AE", anchor="w")
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
+        # ── Ollama section ──
+        ollama_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        ollama_header.pack(fill="x", padx=20, pady=(12, 4))
+        ctk.CTkLabel(ollama_header, text="Ollama",
+                     font=("Segoe UI Semibold", 13),
+                     text_color="#1A1A2E").pack(side="left")
+        ctk.CTkLabel(ollama_header,
+                     text=" Auto-reads cookies from browser",
+                     font=("Segoe UI", 10),
+                     text_color="#8E94AE").pack(side="left", padx=(4, 0))
+
+        ollama_hint = ctk.CTkLabel(self,
+                               text="Make sure you're logged in at ollama.com",
+                               font=("Segoe UI", 10), text_color="#8E94AE",
+                               anchor="w")
+        ollama_hint.pack(fill="x", padx=20, pady=(0, 2))
+
+        ollama_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        ollama_row.pack(fill="x", padx=20, pady=4)
+        saved_ollama = self._load_token("ollama_cookie")
+        self._ollama_entry = ctk.CTkEntry(
+            ollama_row, show="*", placeholder_text="Cookie (fallback; auto-read if blank)",
+            font=("Segoe UI", 12), height=30, corner_radius=6,
+            fg_color="#FFFFFF", border_color="#D8DCE8")
+        self._ollama_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        if saved_ollama:
+            self._ollama_entry.insert(0, saved_ollama)
+
+        self._ollama_test_btn = ctk.CTkButton(
+            ollama_row, text="Test", font=("Segoe UI Semibold", 12),
+            width=60, height=30, corner_radius=6,
+            fg_color="#4A6CF7", hover_color="#3A5CE5",
+            text_color="#FFFFFF", command=self._test_ollama)
+        self._ollama_test_btn.pack(side="left")
+
+        self._ollama_result = ctk.CTkLabel(
+            self, text="", font=("Segoe UI", 11),
+            text_color="#8E94AE", anchor="w")
+        self._ollama_result.pack(fill="x", padx=20, pady=(2, 0))
+
         # ── Widget mode selector ──
         wm_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
         wm_header.pack(fill="x", padx=20, pady=(12, 4))
@@ -3437,11 +3477,14 @@ class SettingsPopup(ctk.CTkToplevel):
             data["zai_token"] = dedup(zai_tok)
             data["minimax_token"] = dedup(mm_tok)
             data["opencode_cookie"] = oc_cook
+            ollama_cook = self._ollama_entry.get().strip()
+            data["ollama_cookie"] = ollama_cook
 
             settings_path.write_text(json.dumps(data, indent=2))
             os.environ["ZAI_API_TOKEN"] = data.get("zai_token", "")
             os.environ["MINIMAX_API_KEY"] = data.get("minimax_token", "")
             os.environ["OPENCODE_COOKIE"] = data.get("opencode_cookie", "")
+            os.environ["OLLAMA_COOKIE"] = data.get("ollama_cookie", "")
         except Exception:
             pass
 
@@ -3598,6 +3641,61 @@ class SettingsPopup(ctk.CTkToplevel):
                     text="✗ No cookie; browser auto-read failed", text_color="#E04040"))
 
             self.after(0, lambda: self._oc_test_btn.configure(text="Test", state="normal"))
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def _test_ollama(self):
+        # Try browser cookies first, then fall back to manual entry
+        browser_cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
+        raw = self._ollama_entry.get().strip()
+
+        def do_test(cookie_header):
+            try:
+                url = "https://ollama.com/account/usage"
+                req = Request(url, headers={"Cookie": cookie_header,
+                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
+                with urlopen(req, timeout=15) as resp:
+                    html = resp.read().decode("utf-8", errors="replace")
+                    # Try to find usage data
+                    import re as _re
+                    m = _re.search(r'(?:rollingUsage|usagePercent|resetIn)', html)
+                    if m:
+                        return "✓ Browser cookie works", "#2E9E5A"
+                    return "✓ Connected (no usage data — page structure unknown)", "#5A607A"
+            except HTTPError as e:
+                if e.code in (401, 403):
+                    return "✗ Session expired; re-login in browser", "#E04040"
+                return f"✗ HTTP {e.code}", "#E04040"
+            except Exception as e:
+                return f"✗ {type(e).__name__}: {e}", "#E04040"
+
+        def run():
+            self._ollama_test_btn.configure(text="...", state="disabled")
+            self._ollama_result.configure(text="Testing browser cookie...", text_color="#8E94AE")
+            self.update_idletasks()
+
+            # Try browser cookie
+            if browser_cookies.get("ollama_session"):
+                parts = [f"ollama_session={browser_cookies['ollama_session']}"]
+                if browser_cookies.get("csrf_token"):
+                    parts.append(f"csrf_token={browser_cookies['csrf_token']}")
+                cookie_header = "; ".join(parts)
+                msg, color = do_test(cookie_header)
+                self.after(0, lambda m=msg, c=color:
+                    self._ollama_result.configure(text=m, text_color=c))
+            elif raw:
+                # Fall back to manual entry
+                self._ollama_result.configure(text="Testing manual cookie...", text_color="#8E94AE")
+                self.update_idletasks()
+                cookie_header = raw if raw.startswith("ollama_session=") else f"ollama_session={raw}"
+                msg, color = do_test(cookie_header)
+                self.after(0, lambda m=msg, c=color:
+                    self._ollama_result.configure(text=m, text_color=c))
+            else:
+                self.after(0, lambda: self._ollama_result.configure(
+                    text="✗ No cookie; browser auto-read failed", text_color="#E04040"))
+
+            self.after(0, lambda: self._ollama_test_btn.configure(text="Test", state="normal"))
 
         threading.Thread(target=run, daemon=True).start()
 
