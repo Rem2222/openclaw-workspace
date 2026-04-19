@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.64"
+VERSION = "2.2.65"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3408,7 +3408,7 @@ class PremiumWidgetManager:
 
     def update(self, pct, prov, wp=0):
         """Write update to temp file — both widgets read it. wp = weekly %."""
-        self._write_data(pct, prov)
+        self._write_data(pct, prov, wp)  # FIX: pass wp!
         # Also write weekly data for widgets that support it
         if wp > 0:
             try:
