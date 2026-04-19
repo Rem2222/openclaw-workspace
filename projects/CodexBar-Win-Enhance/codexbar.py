@@ -2117,10 +2117,14 @@ class CodexBarPopup(ctk.CTkToplevel):
     # ── animation ──
 
     def _animate_in(self, step, total=14):
+        _d(f"[POPUP] _animate_in step={step}")
         if step > total:
             return
         if step == 0:
-            self._do_swap()  # Set initial tab content before first frame
+            try:
+                self._do_swap()  # Set initial tab content before first frame
+            except Exception as e:
+                _d(f"[POPUP] _animate_in _do_swap ERROR: {e}")
         t = step / total
         ease = 1.0 - (1.0 - t) ** 3
         y = int(self._target_y + 18 * (1.0 - ease))
@@ -2337,7 +2341,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
     def _build_ui(self):
         # ── TAB BAR - tiny icon pills, top-left ──
-        tab_bar = ctk.CTkFrame(content, fg_color=self.CL_BG, corner_radius=0, height=34)
+        tab_bar = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0, height=34)
         tab_bar.pack(fill="x")
         tab_bar.pack_propagate(False)
         self._tab_bar = tab_bar
@@ -2426,32 +2430,32 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._ollama_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
 
         # ── CLAUDE CONTENT ──
-        self._claude_frame = ctk.CTkFrame(content, fg_color=self.CL_BG, corner_radius=0)
+        self._claude_frame = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0)
         self._build_claude_panel(self._claude_frame)
         self._claude_frame.pack(fill="both", expand=True)
 
         # ── OPENAI CONTENT ──
-        self._openai_frame = ctk.CTkFrame(content, fg_color=self.OA_BG, corner_radius=0)
+        self._openai_frame = ctk.CTkFrame(self, fg_color=self.OA_BG, corner_radius=0)
         self._build_openai_panel(self._openai_frame)
         # starts hidden
 
         # ── Z.AI CONTENT ──
-        self._zai_frame = ctk.CTkFrame(content, fg_color=self.ZA_BG, corner_radius=0)
+        self._zai_frame = ctk.CTkFrame(self, fg_color=self.ZA_BG, corner_radius=0)
         self._build_zai_panel(self._zai_frame)
         # starts hidden
 
         # ── MiniMax CONTENT ──
-        self._minimax_frame = ctk.CTkFrame(content, fg_color=self.MM_BG, corner_radius=0)
+        self._minimax_frame = ctk.CTkFrame(self, fg_color=self.MM_BG, corner_radius=0)
         self._build_minimax_panel(self._minimax_frame)
         # starts hidden
 
         # ── OpenCode CONTENT ──
-        self._opencode_frame = ctk.CTkFrame(content, fg_color=self.OC_BG, corner_radius=0)
+        self._opencode_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
         self._build_opencode_panel(self._opencode_frame)
         # starts hidden
 
         # ── Ollama CONTENT ──
-        self._ollama_frame = ctk.CTkFrame(content, fg_color=self.OC_BG, corner_radius=0)
+        self._ollama_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
         self._build_ollama_panel(self._ollama_frame)
         # starts hidden
 
@@ -2466,7 +2470,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._fixed_panel_h = max(heights)
 
         # ── FOOTER (always visible, bottom) ──
-        self._footer_frame = ctk.CTkFrame(content, fg_color="transparent", corner_radius=0)
+        self._footer_frame = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         self._build_footer(self._footer_frame)
         self._footer_frame.pack(fill="x", side="bottom")
 
