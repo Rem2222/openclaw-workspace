@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.52"
+VERSION = "2.2.53"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3308,11 +3308,11 @@ class PremiumWidgetManager:
             f.write(f"{pct}|{prov}")
 
     def start(self, pct=0, prov="CL"):
-        if not _os.path.exists(self._widget_path):
-            print(f"[PW] Not found: {self._widget_path}")
-            return
         self._write_data(pct, prov)
-        self._launch()
+        if _os.path.exists(self._widget_path):
+            self._launch("premium")
+        if _os.path.exists(self._bar_path):
+            self._launch("bar")
 
     def _launch(self, which="both"):
         import subprocess as _sp
