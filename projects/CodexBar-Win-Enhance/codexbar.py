@@ -1469,6 +1469,7 @@ class MiniMaxDataFetcher:
         """Load bearer token (API key) or browser cookies from .minimax.io."""
         # First try env var (set by app on startup from settings.json)
         token = os.environ.get("MINIMAX_API_KEY", "")
+        print(f"[MiniMax._load] env token={'YES' if token else 'EMPTY'}")
         if not token:
             # Try reading directly from settings.json
             settings_path = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
@@ -1478,10 +1479,13 @@ class MiniMaxDataFetcher:
                 if settings_path.exists():
                     data = json.loads(settings_path.read_text())
                     token = data.get("minimax_token", "")
-            except Exception:
-                pass
+                    print(f"[MiniMax._load] settings.json token={'YES' if token else 'EMPTY'} ({settings_path})")
+            except Exception as e:
+                print(f"[MiniMax._load] settings.json error: {e}")
         if token:
+            print(f"[MiniMax._load] returning bearer token")
             return {"__bearer_token__": token}
+        print(f"[MiniMax._load] falling back to cookies")
         return _CookieDecryptor.get_cookies(".minimax.io", "HMACCCS", "locale")
 
     def fetch(self):
@@ -3451,7 +3455,7 @@ class CodexBarApp:
         # --- MiniMax fetch (added by Romul) ---
         try:
             self.minimax_data = self.minimax_fetcher.fetch()
-            print(f"[CodexBar] MiniMax: {'available' if not self.minimax_data.get('error') else self.minimax_data.get('error')}")
+            print(f"[CodexBar] MiniMax: {'available' if not self.minimax_data.get('error') else self.minimax_data.get('error')}, sp={self.minimax_data.get('session_used_pct', '?')}")
         except Exception as e:
             print(f"[CodexBar] MiniMax fetch err: {e}")
             self.minimax_data = MiniMaxDataFetcher._empty()
@@ -3475,6 +3479,32 @@ class CodexBarApp:
         _p = self._active_provider if self._active_provider in _provider_map else "claude"
         _d, _k = _provider_map[_p]
         _sp = (_d.get(_k, 0) or 0) if _d else 0
+
+        # REM-42: retry fetch for active provider if sp is 0 (initial fetch may fail due to network)
+        if _sp == 0 and _p != "claude":
+            print(f"[CodexBar] REM-42: sp=0 for provider={_p}, retrying fetch in 3s...")
+            import time as _time
+            _time.sleep(3)
+            _retry_map = {
+                "openai": lambda: self.codex_fetcher.fetch(),
+                "zai": lambda: self.zai_fetcher.fetch(),
+                "minimax": lambda: self.minimax_fetcher.fetch(),
+                "opencode": lambda: self.opencode_fetcher.fetch(),
+            }
+            try:
+                new_data = _retry_map[_p]()
+                new_sp = new_data.get("session_used_pct", 0) or 0
+                print(f"[CodexBar] REM-42: retry returned sp={new_sp}")
+                if new_sp > 0:
+                    # Store refreshed data
+                    _data_attr = {"openai": "codex_data", "zai": "zai_data", "minimax": "minimax_data", "opencode": "opencode_data"}
+                    setattr(self, _data_attr[_p], new_data)
+                    _d = new_data
+                    _sp = new_sp
+            except Exception as e:
+                print(f"[CodexBar] REM-42: retry fetch failed: {e}")
+
+        print(f"[CodexBar] Final: provider={_p}, sp={_sp}")
 
         # ── hidden tkinter root ──
         ctk.set_appearance_mode("light")
