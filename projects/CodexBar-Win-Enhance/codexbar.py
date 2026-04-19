@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.54"
+VERSION = "2.2.55"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3035,6 +3035,28 @@ class SettingsPopup(ctk.CTkToplevel):
             text_color="#8E94AE", anchor="w")
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
+        # ── Widget mode selector ──
+        wm_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        wm_header.pack(fill="x", padx=20, pady=(12, 4))
+        ctk.CTkLabel(wm_header, text="Widget Mode",
+                     font=("Segoe UI Semibold", 13),
+                     text_color="#1A1A2E").pack(side="left")
+
+        self._widget_mode = ctk.CTkOptionMenu(
+            self, values=["Both", "Large only", "Small only"],
+            font=("Segoe UI", 12), height=30, corner_radius=6,
+            fg_color="#FFFFFF", button_color="#4A6CF7",
+            button_hover_color="#3A5CE5",
+            dropdown_fg_color="#FFFFFF")
+        self._widget_mode.pack(fill="x", padx=20, pady=(0, 4))
+        # Load saved mode
+        try:
+            saved_mode = json.loads(cls._config_path().read_text()).get("widget_mode", "both") if cls._config_path().exists() else "both"
+        except Exception:
+            saved_mode = "both"
+        mode_map = {"both": "Both", "large": "Large only", "small": "Small only"}
+        self._widget_mode.set(mode_map.get(saved_mode, "Both"))
+
         self._token_entry.focus_set()
 
         # ── DEBUG: version label ──
@@ -3094,6 +3116,10 @@ class SettingsPopup(ctk.CTkToplevel):
 
             zai_tok = self._token_entry.get().strip()
             mm_tok = self._mm_entry.get().strip()
+            # Save widget mode
+            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small"}
+            data["widget_mode"] = mode_reverse.get(self._widget_mode.get(), "both")
+
             oc_cook = self._oc_entry.get().strip()
 
             # Guard against duplicated tokens (if same string concatenated >2x, truncate to first occurrence)
@@ -3302,6 +3328,35 @@ class PremiumWidgetManager:
         self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
         self._bar_path = _os.path.join(_os.path.dirname(__file__), "bar_widget.py")
         self._data_file = _os.path.join(_tf.gettempdir(), "codexbar_widget.txt")
+        self._settings_path = self._settings_file()
+
+    @staticmethod
+    def _settings_file():
+        p = Path(_os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+        if not p.parent.exists():
+            p = Path.home() / ".codexbar" / "settings.json"
+        return p
+
+    def _load_settings(self):
+        try:
+            if self._settings_path.exists():
+                return json.loads(self._settings_path.read_text())
+        except Exception:
+            pass
+        return {}
+
+    def _save_pos(self, key, x, y):
+        try:
+            self._settings_path.parent.mkdir(parents=True, exist_ok=True)
+            data = self._load_settings()
+            data[key] = {"x": int(x), "y": int(y)}
+            self._settings_path.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
+
+    def _get_widget_mode(self):
+        data = self._load_settings()
+        return data.get("widget_mode", "both")
 
     def _write_data(self, pct, prov):
         with open(self._data_file, 'w') as f:
@@ -3309,39 +3364,47 @@ class PremiumWidgetManager:
 
     def start(self, pct=0, prov="CL"):
         self._write_data(pct, prov)
-        if _os.path.exists(self._widget_path):
+        mode = self._get_widget_mode()
+        if mode in ("both", "large") and _os.path.exists(self._widget_path):
             self._launch("premium")
-        if _os.path.exists(self._bar_path):
+        if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
 
     def _launch(self, which="both"):
         import subprocess as _sp
-        def launch_one(path, ref):
+        def launch_one(path, ref, pos=None):
             if ref and ref.poll() is None:
                 ref.terminate()
                 try: ref.wait(timeout=2)
                 except: ref.kill()
+            cmd = [sys.executable, path]
+            if pos:
+                cmd += ["--pos", f"{pos['x']},{pos['y']}"]
             return _sp.Popen(
-                [sys.executable, path],
+                cmd,
                 cwd=_os.path.dirname(__file__),
                 stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
                 stderr=_sp.STDOUT, creationflags=0)
+        settings = self._load_settings()
         if which in ("both", "premium"):
-            self._proc = launch_one(self._widget_path, self._proc)
+            self._proc = launch_one(self._widget_path, self._proc, settings.get("premium_widget_pos"))
         if which in ("both", "bar"):
-            self._bar_proc = launch_one(self._bar_path, self._bar_proc)
+            self._bar_proc = launch_one(self._bar_path, self._bar_proc, settings.get("bar_widget_pos"))
 
     def update(self, pct, prov):
         """Write update to temp file — both widgets read it."""
         self._write_data(pct, prov)
-        if self._proc and self._proc.poll() is None:
-            pass  # premium reads from file
-        else:
-            self._launch("premium")
-        if self._bar_proc and self._bar_proc.poll() is None:
-            pass  # bar reads from file
-        elif _os.path.exists(self._bar_path):
-            self._launch("bar")
+        mode = self._get_widget_mode()
+        if mode in ("both", "large"):
+            if self._proc and self._proc.poll() is None:
+                pass  # premium reads from file
+            else:
+                self._launch("premium")
+        if mode in ("both", "small"):
+            if self._bar_proc and self._bar_proc.poll() is None:
+                pass  # bar reads from file
+            elif _os.path.exists(self._bar_path):
+                self._launch("bar")
 
     def toggle(self, pct, prov):
         if self._visible:
