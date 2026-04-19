@@ -3475,14 +3475,22 @@ class CodexBarApp:
         self.tray = pystray.Icon('CodexBar', make_icon(sp=sp), 'CodexBar', menu)
         threading.Thread(target=self.tray.run, daemon=True).start()
 
-        # ── premium floating widget (PyQt6, in-process thread) ──
-        self.pw_manager = PremiumWidgetManager()
-        if self.pw_manager:
-            try:
-                self.pw_manager.start(sp, "CL")
-                print("[CodexBar] Premium widget started (in-process)")
-            except Exception as e:
-                print(f"[CodexBar] Premium widget start ERROR: {e}")
+        # ── premium floating widget (PyQt6, subprocess) ──
+        log_path = _os.path.join(_os.path.dirname(os.path.abspath(__file__)), "widget_launch.log")
+        try:
+            with open(log_path, 'w') as lf:
+                lf.write(f"Creating PremiumWidgetManager...\n")
+            self.pw_manager = PremiumWidgetManager()
+            with open(log_path, 'a') as lf:
+                lf.write(f"Manager created, widget_path={self.pw_manager._widget_path}\n")
+                lf.write(f"File exists: {os.path.exists(self.pw_manager._widget_path)}\n")
+            self.pw_manager.start(sp, "CL")
+            with open(log_path, 'a') as lf:
+                lf.write("start() called\n")
+        except Exception as e:
+            with open(log_path, 'a') as lf:
+                lf.write(f"ERROR: {e}\n")
+            import traceback; traceback.print_exc()
 
         # ── auto-refresh every 5 min ──
         self.root.after(300_000, self._auto_refresh)
