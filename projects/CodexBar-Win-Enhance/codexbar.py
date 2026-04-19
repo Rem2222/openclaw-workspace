@@ -1793,9 +1793,10 @@ class OllamaDataFetcher:
 
     LOG_FILE = "ollama_debug.log"
 
-    def _log(self, *args):
+    @classmethod
+    def _log(cls, *args):
         try:
-            log_path = Path(__file__).parent / self.LOG_FILE
+            log_path = Path(__file__).parent / cls.LOG_FILE
             with open(log_path, "a", encoding="utf-8") as f:
                 f.write(" ".join(str(a) for a in args) + "\n")
         except Exception:
@@ -3666,15 +3667,19 @@ class SettingsPopup(ctk.CTkToplevel):
     def _test_ollama(self):
         # Try browser cookies first, then fall back to manual entry
         browser_cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
+        OllamaDataFetcher._log("[Test] browser_cookies:", list(browser_cookies.keys()) if browser_cookies else "NONE")
         raw = self._ollama_entry.get().strip()
+        OllamaDataFetcher._log("[Test] manual entry:", "SET" if raw else "EMPTY")
 
         def do_test(cookie_header):
             try:
                 url = "https://ollama.com/account/usage"
+                OllamaDataFetcher._log("[Test] fetching:", url)
                 req = Request(url, headers={"Cookie": cookie_header,
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"})
                 with urlopen(req, timeout=15) as resp:
                     html = resp.read().decode("utf-8", errors="replace")
+                    OllamaDataFetcher._log("[Test] response length:", len(html), "preview:", html[:200])
                     # Try to find usage data
                     import re as _re
                     m = _re.search(r'(?:rollingUsage|usagePercent|resetIn)', html)
