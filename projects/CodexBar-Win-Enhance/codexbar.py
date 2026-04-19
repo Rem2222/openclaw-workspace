@@ -3407,7 +3407,16 @@ class CodexBarApp:
         self.zai_data = None                          # added by Romul
         self.minimax_data = None                      # added by Romul
         self.opencode_data = None                     # added by Romul
-        self._active_provider = "claude"  # Track currently active provider for icon
+        # Load last active provider from settings
+        try:
+            _sp = Path(os.environ.get("LOCALAPPDATA", "")) / "CodexBar" / "settings.json"
+            if not _sp.parent.exists(): _sp = Path.home() / ".codexbar" / "settings.json"
+            if _sp.exists():
+                self._active_provider = json.loads(_sp.read_text()).get("last_tab", "claude")
+            else:
+                self._active_provider = "claude"
+        except Exception:
+            self._active_provider = "claude"
 
         # Load saved tokens on startup
         saved = SettingsPopup._load_token()
