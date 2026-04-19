@@ -6,6 +6,19 @@ from PyQt6.QtGui import QPainter, QColor, QLinearGradient, QPen, QFont
 from PyQt6.QtCore import Qt, QTimer
 
 DATA_FILE = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', '/tmp')), 'codexbar_widget.txt')
+
+# Debug log next to bar_widget.py
+import __main__
+_DEBUG_FILE = __import__('pathlib').Path(__import__('os').path.dirname(__file__) or __import__('os').getcwd()) / 'bar_widget_debug.log'
+
+def _d(msg):
+    try:
+        with open(_DEBUG_FILE, 'a', encoding='utf-8') as f:
+            from datetime import datetime
+            f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
+            f.flush()
+    except Exception:
+        pass
 SETTINGS_FILE = None
 _sp = os.environ.get("LOCALAPPDATA", "")
 if _sp:
@@ -54,6 +67,7 @@ class BarWidget(QWidget):
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:
             self._set_click_through(True)
+            _d(f"__init__: applied click_through=True on startup")
         self.setWindowTitle("CodexBar Bar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -112,6 +126,7 @@ class BarWidget(QWidget):
             self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
+            _d(f"right-click: toggle click_through to {self._click_through}")
             self._set_click_through(self._click_through)
             self._save_settings()
 
@@ -202,6 +217,7 @@ def main():
     pos = None
     opacity_idx = 3
     click_through = False
+    _d(f"main() argv={sys.argv}")
     for i, arg in enumerate(sys.argv):
         if arg == "--pos" and i + 1 < len(sys.argv):
             parts = sys.argv[i + 1].split(",")

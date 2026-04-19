@@ -1,4 +1,4 @@
-"""Premium Floating Widget v6 - Square layout with weekly progress bar"""
+"""Premium Floating Widget v7 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
@@ -6,6 +6,19 @@ from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
 from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
 
 DATA_FILE = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', '/tmp')), 'codexbar_widget.txt')
+
+# Debug log next to premium_widget.py
+import __main__
+_DEBUG_FILE = __import__('pathlib').Path(__import__('os').path.dirname(__file__) or __import__('os').getcwd()) / 'premium_widget_debug.log'
+
+def _d(msg):
+    try:
+        with open(_DEBUG_FILE, 'a', encoding='utf-8') as f:
+            from datetime import datetime
+            f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
+            f.flush()
+    except Exception:
+        pass
 SETTINGS_FILE = None  # set from argv
 
 # Determine settings path
@@ -146,6 +159,7 @@ class PremiumWidget(QWidget):
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:
             self._set_click_through(True)
+            _d(f"__init__: applied click_through=True on startup")
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -272,6 +286,7 @@ class PremiumWidget(QWidget):
             self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
+            _d(f"right-click: toggle click_through to {self._click_through}")
             self._set_click_through(self._click_through)
             self._save_settings()
 
@@ -329,7 +344,10 @@ class PremiumWidget(QWidget):
                 hwnd, 0, 0, 0, 0, 0,
                 0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
 
-            print(f"[PW] click_through={'ON' if enabled else 'OFF'}", flush=True)
+            ctypes.windll.user32.SetWindowPos(
+                hwnd, 0, 0, 0, 0, 0,
+                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
+            print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
             print(f"[PW] click_through error: {e}", flush=True)
     def closeEvent(self, e):
@@ -366,6 +384,7 @@ def main():
     pos = None
     opacity_idx = 3  # default 100%
     click_through = False  # default OFF
+    _d(f"main() argv={sys.argv}")
     for i, arg in enumerate(sys.argv):
         if arg == "--pos" and i + 1 < len(sys.argv):
             parts = sys.argv[i + 1].split(",")
