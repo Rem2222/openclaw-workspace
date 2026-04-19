@@ -3067,6 +3067,9 @@ class SettingsPopup(ctk.CTkToplevel):
             variable=self._ct_var, font=("Segoe UI", 11),
             onvalue=True, offvalue=False,
             command=self._on_ct_change)
+
+        # DEBUG: trace when switch is created and what default value is set
+        print(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()}", flush=True)
         self._ct_switch.pack(side="left")
         # Load saved click-through
         try:
@@ -3128,15 +3131,19 @@ class SettingsPopup(ctk.CTkToplevel):
     def _on_ct_change(self):
         """Apply click-through setting change immediately."""
         ct = self._ct_var.get()
+        print(f"[SETTINGS] _on_ct_change called: ct={ct}", flush=True)
         # Save to settings.json so it's preserved
         try:
             data = {}
             cfg = SettingsPopup._config_path()
+            print(f"[SETTINGS] config path: {cfg}, exists={cfg.exists()}", flush=True)
             if cfg.exists():
                 data = json.loads(cfg.read_text())
             data["widgets_click_through"] = ct
             cfg.write_text(json.dumps(data, indent=2))
-        except Exception:
+            print(f"[SETTINGS] wrote widgets_click_through={ct} to {cfg}", flush=True)
+        except Exception as e:
+            print(f"[SETTINGS] _on_ct_change error: {e}", flush=True)
             pass
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
@@ -3355,12 +3362,15 @@ class SettingsPopup(ctk.CTkToplevel):
         try:
             data = {}
             cfg = SettingsPopup._config_path()
+            print(f"[SETTINGS] _save_and_close: cfg={cfg}, exists={cfg.exists()}", flush=True)
             if cfg.exists():
                 data = json.loads(cfg.read_text())
-            if hasattr(self, '_ct_var'):
-                data["widgets_click_through"] = self._ct_var.get()
+            ct = self._ct_var.get() if hasattr(self, '_ct_var') else False
+            print(f"[SETTINGS] _save_and_close: writing widgets_click_through={ct}", flush=True)
+            data["widgets_click_through"] = ct
             cfg.write_text(json.dumps(data, indent=2))
-        except Exception:
+        except Exception as e:
+            print(f"[SETTINGS] _save_and_close error: {e}", flush=True)
             pass
         if self._on_save:
             self._on_save()
