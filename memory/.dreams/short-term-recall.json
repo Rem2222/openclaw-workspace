@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-19T01:01:30.582Z",
+  "updatedAt": "2026-04-19T21:21:17.292Z",
   "entries": {
     "memory:memory/2026-04-11.md:1:27": {
       "key": "memory:memory/2026-04-11.md:1:27",
@@ -21063,6 +21063,32 @@
         "теста",
         "виджета",
         "отдельно"
+      ]
+    },
+    "memory:memory/2026-04-12.md:1:46": {
+      "key": "memory:memory/2026-04-12.md:1:46",
+      "path": "memory/2026-04-12.md",
+      "startLine": 1,
+      "endLine": 46,
+      "source": "memory",
+      "snippet": "а CodexBar",
+      "recallCount": 3,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 1.4225220759888852,
+      "maxScore": 0.4825616918694585,
+      "firstRecalledAt": "2026-04-19T21:21:10.693Z",
+      "lastRecalledAt": "2026-04-19T21:21:17.292Z",
+      "queryHashes": [
+        "3e4094479f56",
+        "83619226950a",
+        "f0ae5545c13c"
+      ],
+      "recallDays": [
+        "2026-04-19"
+      ],
+      "conceptTags": [
+        "codexbar"
       ]
     }
   }
