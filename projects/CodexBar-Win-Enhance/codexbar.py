@@ -2324,7 +2324,7 @@ class CodexBarPopup(ctk.CTkToplevel):
 
     def _build_ui(self):
         # ── TAB BAR - tiny icon pills, top-left ──
-        tab_bar = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0, height=34)
+        tab_bar = ctk.CTkFrame(content, fg_color=self.CL_BG, corner_radius=0, height=34)
         tab_bar.pack(fill="x")
         tab_bar.pack_propagate(False)
         self._tab_bar = tab_bar
@@ -2413,32 +2413,32 @@ class CodexBarPopup(ctk.CTkToplevel):
             self._ollama_tab_btn.configure(fg_color=self.ZA_TRACK, hover_color=self.ZA_HOVER, text_color=self.ZA_PRIMARY)
 
         # ── CLAUDE CONTENT ──
-        self._claude_frame = ctk.CTkFrame(self, fg_color=self.CL_BG, corner_radius=0)
+        self._claude_frame = ctk.CTkFrame(content, fg_color=self.CL_BG, corner_radius=0)
         self._build_claude_panel(self._claude_frame)
         self._claude_frame.pack(fill="both", expand=True)
 
         # ── OPENAI CONTENT ──
-        self._openai_frame = ctk.CTkFrame(self, fg_color=self.OA_BG, corner_radius=0)
+        self._openai_frame = ctk.CTkFrame(content, fg_color=self.OA_BG, corner_radius=0)
         self._build_openai_panel(self._openai_frame)
         # starts hidden
 
         # ── Z.AI CONTENT ──
-        self._zai_frame = ctk.CTkFrame(self, fg_color=self.ZA_BG, corner_radius=0)
+        self._zai_frame = ctk.CTkFrame(content, fg_color=self.ZA_BG, corner_radius=0)
         self._build_zai_panel(self._zai_frame)
         # starts hidden
 
         # ── MiniMax CONTENT ──
-        self._minimax_frame = ctk.CTkFrame(self, fg_color=self.MM_BG, corner_radius=0)
+        self._minimax_frame = ctk.CTkFrame(content, fg_color=self.MM_BG, corner_radius=0)
         self._build_minimax_panel(self._minimax_frame)
         # starts hidden
 
         # ── OpenCode CONTENT ──
-        self._opencode_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
+        self._opencode_frame = ctk.CTkFrame(content, fg_color=self.OC_BG, corner_radius=0)
         self._build_opencode_panel(self._opencode_frame)
         # starts hidden
 
         # ── Ollama CONTENT ──
-        self._ollama_frame = ctk.CTkFrame(self, fg_color=self.OC_BG, corner_radius=0)
+        self._ollama_frame = ctk.CTkFrame(content, fg_color=self.OC_BG, corner_radius=0)
         self._build_ollama_panel(self._ollama_frame)
         # starts hidden
 
@@ -2453,7 +2453,7 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._fixed_panel_h = max(heights)
 
         # ── FOOTER (always visible, bottom) ──
-        self._footer_frame = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
+        self._footer_frame = ctk.CTkFrame(content, fg_color="transparent", corner_radius=0)
         self._build_footer(self._footer_frame)
         self._footer_frame.pack(fill="x", side="bottom")
 
@@ -3154,21 +3154,28 @@ class SettingsPopup(ctk.CTkToplevel):
     def __init__(self, master, on_save=None):
         super().__init__(master)
         self.title("CodexBar Settings")
-        self.geometry("420x700")
+        self.geometry("420x650")
         self.resizable(False, False)
-        self.configure(fg_color="#F8FAFE")
+        self.configure(fg_color="#F0F2F8")
         self.attributes("-topmost", True)
         self.grab_set()
         self._on_save = on_save
 
+        # Scrollable content
+        scroll = ctk.CTkScrollableFrame(self, fg_color="transparent",
+                                        scrollbar_button_color="#D0D4E0",
+                                        scrollbar_button_hover_color="#B0B4C0")
+        scroll.pack(fill="both", expand=True, padx=0, pady=0)
+        content = scroll
+
         # ── z.ai section ──
-        header = ctk.CTkFrame(self, fg_color="transparent")
+        header = ctk.CTkFrame(content, fg_color="transparent")
         header.pack(fill="x", padx=20, pady=(16, 8))
         ctk.CTkLabel(header, text="Z.AI API Token",
                      font=("Segoe UI Semibold", 14),
                      text_color="#1A1A2E").pack(side="left")
 
-        row = ctk.CTkFrame(self, fg_color="transparent")
+        row = ctk.CTkFrame(content, fg_color="transparent")
         row.pack(fill="x", padx=20, pady=4)
 
         saved_token = self._load_token()
@@ -3194,7 +3201,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._test_result.pack(fill="x", padx=20, pady=(4, 0))
 
         # ── MiniMax section ──
-        mm_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        mm_header = ctk.CTkFrame(content, fg_color="#F0F2F8")
         mm_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(mm_header, text="MiniMax",
                      font=("Segoe UI Semibold", 13),
@@ -3204,13 +3211,13 @@ class SettingsPopup(ctk.CTkToplevel):
                      font=("Segoe UI", 10),
                      text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
-        mm_hint = ctk.CTkLabel(self,
+        mm_hint = ctk.CTkLabel(content,
                                text="Make sure you.re logged in at minimaxi.com / platform.minimax.io",
                                font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         mm_hint.pack(fill="x", padx=20, pady=(0, 2))
 
-        mm_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        mm_row = ctk.CTkFrame(content, fg_color="#F0F2F8")
         mm_row.pack(fill="x", padx=20, pady=4)
         saved_mm = self._load_token("minimax_token")
         self._mm_entry = ctk.CTkEntry(
@@ -3234,7 +3241,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
 
         # ── OpenCode section ──
-        oc_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        oc_header = ctk.CTkFrame(content, fg_color="#F0F2F8")
         oc_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(oc_header, text="OpenCode",
                      font=("Segoe UI Semibold", 13),
@@ -3244,13 +3251,13 @@ class SettingsPopup(ctk.CTkToplevel):
                      font=("Segoe UI", 10),
                      text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
-        oc_hint = ctk.CTkLabel(self,
+        oc_hint = ctk.CTkLabel(content,
                                text="Make sure you're logged in at opencode.ai",
                                font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         oc_hint.pack(fill="x", padx=20, pady=(0, 2))
 
-        oc_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        oc_row = ctk.CTkFrame(content, fg_color="#F0F2F8")
         oc_row.pack(fill="x", padx=20, pady=4)
         saved_oc = self._load_token("opencode_cookie")
         self._oc_entry = ctk.CTkEntry(
@@ -3274,7 +3281,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
         # ── Ollama section ──
-        ollama_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        ollama_header = ctk.CTkFrame(content, fg_color="#F0F2F8")
         ollama_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(ollama_header, text="Ollama",
                      font=("Segoe UI Semibold", 13),
@@ -3284,13 +3291,13 @@ class SettingsPopup(ctk.CTkToplevel):
                      font=("Segoe UI", 10),
                      text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
-        ollama_hint = ctk.CTkLabel(self,
+        ollama_hint = ctk.CTkLabel(content,
                                text="Make sure you're logged in at ollama.com",
                                font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         ollama_hint.pack(fill="x", padx=20, pady=(0, 2))
 
-        ollama_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        ollama_row = ctk.CTkFrame(content, fg_color="#F0F2F8")
         ollama_row.pack(fill="x", padx=20, pady=4)
         saved_ollama = self._load_token("ollama_cookie")
         self._ollama_entry = ctk.CTkEntry(
@@ -3314,7 +3321,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._ollama_result.pack(fill="x", padx=20, pady=(2, 0))
 
         # ── Widget mode selector ──
-        wm_header = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        wm_header = ctk.CTkFrame(content, fg_color="#F0F2F8")
         wm_header.pack(fill="x", padx=20, pady=(12, 4))
         ctk.CTkLabel(wm_header, text="Widget Mode",
                      font=("Segoe UI Semibold", 13),
@@ -3338,7 +3345,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         # Click-through checkbox (widgets transparent for mouse)
         self._ct_var = ctk.BooleanVar(value=False)
-        ct_frame = ctk.CTkFrame(self, fg_color="transparent")
+        ct_frame = ctk.CTkFrame(content, fg_color="transparent")
         ct_frame.pack(fill="x", padx=20, pady=(0, 8))
         self._ct_switch = ctk.CTkSwitch(
             ct_frame, text="Transparent for mouse (click-through)",
@@ -3366,7 +3373,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._token_entry.focus_set()
 
         # ── DEBUG: version label ──
-        ver_frame = ctk.CTkFrame(self, fg_color="#FFE0B2", height=24)
+        ver_frame = ctk.CTkFrame(content, fg_color="#FFE0B2", height=24)
         ver_frame.pack(fill="x", padx=0, pady=(0, 2))
         ctk.CTkLabel(
             ver_frame,
@@ -3377,7 +3384,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
 
         # ── Bottom buttons ──
-        bottom_row = ctk.CTkFrame(self, fg_color="#F0F2F8")
+        bottom_row = ctk.CTkFrame(content, fg_color="#F0F2F8")
         bottom_row.pack(side="bottom", fill="x", padx=20, pady=(8, 16))
 
         ctk.CTkButton(
