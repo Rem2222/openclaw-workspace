@@ -3551,7 +3551,8 @@ class PremiumWidgetManager:
         settings = self._load_settings()
         settings["premium_click_through"] = click_through
         settings["bar_click_through"] = click_through
-        self._save_settings(settings)
+        self._settings_path.parent.mkdir(parents=True, exist_ok=True)
+        self._settings_path.write_text(json.dumps(settings, indent=2))
         self._kill_all()
         import time as _time
         _time.sleep(0.3)
