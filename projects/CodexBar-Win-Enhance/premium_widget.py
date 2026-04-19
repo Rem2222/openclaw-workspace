@@ -153,6 +153,7 @@ class PremiumWidget(QWidget):
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons()&Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint()-self._drag)
+            self._save_position()  # save on drag
     def closeEvent(self, e):
         self._save_position()
         super().closeEvent(e)

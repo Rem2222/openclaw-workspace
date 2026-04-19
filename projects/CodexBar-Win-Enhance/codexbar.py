@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.55"
+VERSION = "2.2.56"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3105,7 +3105,7 @@ class SettingsPopup(ctk.CTkToplevel):
         from codexbar import CodexBarApp
         mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
         mode = mode_map.get(value, "both")
-        # Save immediately to settings.json
+        # Save to settings.json
         try:
             settings_path = self._config_path()
             data = {}
@@ -3117,35 +3117,10 @@ class SettingsPopup(ctk.CTkToplevel):
             settings_path.write_text(json.dumps(data, indent=2))
         except Exception:
             pass
-        # Apply immediately via PremiumWidgetManager
+        # Apply via PremiumWidgetManager
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
-                pct = inst._get_current_percentage()
-                prov = inst._get_current_provider_label()
-                if mode == "none":
-                    # Hide all widgets
-                    if inst.pw_manager._proc and inst.pw_manager._proc.poll() is None:
-                        inst.pw_manager._proc.terminate()
-                    if inst.pw_manager._bar_proc and inst.pw_manager._bar_proc.poll() is None:
-                        inst.pw_manager._bar_proc.terminate()
-                    inst.pw_manager._write_data(0, "off")
-                    inst.pw_manager._visible = False
-                else:
-                    # Update which widgets are shown
-                    inst.pw_manager._write_data(pct, prov)
-                    inst.pw_manager._visible = True
-                    # Stop widgets not in mode
-                    if mode == "large" and inst.pw_manager._bar_proc:
-                        if inst.pw_manager._bar_proc.poll() is None:
-                            inst.pw_manager._bar_proc.terminate()
-                    if mode == "small" and inst.pw_manager._proc:
-                        if inst.pw_manager._proc.poll() is None:
-                            inst.pw_manager._proc.terminate()
-                    # Launch correct widgets
-                    if mode in ("both", "large") and os.path.exists(inst.pw_manager._widget_path):
-                        inst.pw_manager._launch("premium")
-                    if mode in ("both", "small") and os.path.exists(inst.pw_manager._bar_path):
-                        inst.pw_manager._launch("bar")
+                inst.pw_manager._apply_mode_change(mode)
 
     def save_all_tokens(self):
         """Save all tokens to config file and set env vars."""
@@ -3469,6 +3444,62 @@ class PremiumWidgetManager:
             self._launch("both")
             self._visible = True
 
+    def _apply_mode_change(self, mode):
+        """Switch widget mode: save positions before killing, then launch needed widgets."""
+        import json as _json
+        # Read current positions from settings (widgets save here on close)
+        settings = self._load_settings()
+        p_pos = settings.get("premium_widget_pos")
+        b_pos = settings.get("bar_widget_pos")
+        print(f"[PWM] _apply_mode_change: mode={mode}, p_pos={p_pos}, b_pos={b_pos}")
+        # Get current data if widgets are running
+        pct, prov = 0, "off"
+        try:
+            with open(self._data_file) as f:
+                parts = f.read().strip().split("|")
+                if len(parts) == 2 and parts[1] != "off":
+                    pct, prov = int(parts[0]), parts[1]
+        except:
+            pass
+        if mode == "none":
+            # Hide all: kill both (positions already saved in settings from last closeEvent)
+            if self._proc and self._proc.poll() is None:
+                self._proc.terminate()
+            if self._bar_proc and self._bar_proc.poll() is None:
+                self._bar_proc.terminate()
+            self._write_data(0, "off")
+            self._visible = False
+            return
+        # Save positions to settings BEFORE killing
+        try:
+            sp = self._settings_file()
+            data = {}
+            if sp.exists():
+                try: data = _json.loads(sp.read_text())
+                except: pass
+            data["widget_mode"] = mode
+            # Keep existing positions (widgets saved them on closeEvent)
+            data["premium_widget_pos"] = p_pos or {"x": 300, "y": 200}
+            data["bar_widget_pos"] = b_pos or {"x": 100, "y": 600}
+            sp.parent.mkdir(parents=True, exist_ok=True)
+            sp.write_text(_json.dumps(data, indent=2))
+        except Exception as e:
+            print(f"[PWM] _apply_mode_change save error: {e}")
+        # Kill widgets not in new mode
+        if mode == "large":
+            if self._bar_proc and self._bar_proc.poll() is None:
+                self._bar_proc.terminate()
+        elif mode == "small":
+            if self._proc and self._proc.poll() is None:
+                self._proc.terminate()
+        # Launch widgets for new mode
+        self._write_data(pct, prov)
+        self._visible = True
+        if mode in ("both", "large") and _os.path.exists(self._widget_path):
+            self._launch("premium")
+        if mode in ("both", "small") and _os.path.exists(self._bar_path):
+            self._launch("bar")
+
     def stop(self):
         self._write_data(0, "quit")
         for ref in [self._proc, self._bar_proc]:
@@ -3635,8 +3666,7 @@ class CodexBarApp:
             MenuItem('Open CodexBar', self._tray_open, default=True),
             MenuItem('Refresh', self._tray_refresh),
             Menu.SEPARATOR,
-            MenuItem('Show/Hide Premium Widget', self._tray_toggle_widget),
-            MenuItem('Show/Hide Bar Widget', self._tray_toggle_bar_widget),
+            MenuItem('Show/Hide Widget', self._tray_toggle_widget),
             Menu.SEPARATOR,
             MenuItem('Settings', self._tray_open_settings),
             Menu.SEPARATOR,

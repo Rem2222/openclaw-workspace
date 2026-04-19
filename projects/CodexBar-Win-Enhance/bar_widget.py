@@ -107,6 +107,7 @@ class BarWidget(QWidget):
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons()&Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint()-self._drag)
+            self._save_position()  # save on drag
 
 def main():
     pos = None
