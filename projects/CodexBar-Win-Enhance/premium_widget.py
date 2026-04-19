@@ -144,6 +144,7 @@ class PremiumWidget(QWidget):
                 idx = data.get("premium_opacity_idx", 3)
                 # Settings popup writes widgets_click_through; widget writes premium_click_through
                 ct = data.get("widgets_click_through", data.get("premium_click_through", False))
+                _d(f"_load_widget_settings: file={SETTINGS_FILE}, ct={ct}, raw={data.get('widgets_click_through')}")
                 return idx, ct
         except Exception:
             pass
@@ -156,10 +157,13 @@ class PremiumWidget(QWidget):
         self.wp = 0  # Weekly percentage
         # Load saved settings
         self._opacity_idx, self._click_through = self._load_widget_settings()
+        _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:
+            _d(f"__init__: calling _set_click_through True")
             self._set_click_through(True)
-            _d(f"__init__: applied click_through=True on startup")
+        else:
+            _d(f"__init__: _click_through is False, skipping _set_click_through")
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -347,8 +351,10 @@ class PremiumWidget(QWidget):
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
                 0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
+            _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
+            _d(f"_set_click_through exception: {e}")
             print(f"[PW] click_through error: {e}", flush=True)
     def closeEvent(self, e):
         self._save_position()
