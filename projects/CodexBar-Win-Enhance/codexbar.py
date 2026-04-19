@@ -1904,14 +1904,23 @@ class OllamaDataFetcher:
         url = self._usage_url()
         self._log("[Ollama] Fetching URL: " + url)
 
-        # Normalise to ollama_session= prefix if raw value passed
-        cookie_header = cookie if cookie.startswith("ollama_session=") else f"ollama_session={cookie}"
+        # Build cookie header from manual entry or browser cookie
+        cookie_header = cookie  # already formatted as "__Secure-session=...; aid=..." from browser
+        # If it's a raw value without = sign, wrap it as __Secure-session
+        if "=" not in cookie_header:
+            cookie_header = f"__Secure-session={cookie_header}"
 
         try:
             req = Request(url, headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT})
-            with urlopen(req, timeout=self.TIMEOUT) as resp:
-                html = resp.read().decode("utf-8", errors="replace")
-                self._log("[Ollama] Response received, HTML length: " + str(len(html)) + " chars")
+            self._log("[Ollama] Request headers: Cookie=" + cookie_header[:60] + "...")
+            try:
+                with urlopen(req, timeout=self.TIMEOUT) as resp:
+                    html = resp.read().decode("utf-8", errors="replace")
+                    self._log("[Ollama] Response received, HTML length: " + str(len(html)) + " chars")
+            except Exception as http_err:
+                self._log("[Ollama] HTTP error: " + str(http_err))
+                d["error"] = f"HTTP error: {http_err}"
+                return d
 
             # TODO: Ollama.com HTML structure for usage data is not yet reverse-engineered.
             # The following parsing matches OpenCode.ai pattern as a reasonable fallback.
