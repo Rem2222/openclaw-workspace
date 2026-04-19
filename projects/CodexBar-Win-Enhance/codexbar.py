@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.51"
+VERSION = "2.2.52"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3294,11 +3294,13 @@ import os as _os
 import tempfile as _tf
 
 class PremiumWidgetManager:
-    """Manages premium_widget.py as subprocess. Updates via temp file — no stdin needed."""
+    """Manages premium_widget.py and bar_widget.py as subprocesses. Updates via temp file."""
     def __init__(self):
         self._proc = None
+        self._bar_proc = None
         self._visible = True
         self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
+        self._bar_path = _os.path.join(_os.path.dirname(__file__), "bar_widget.py")
         self._data_file = _os.path.join(_tf.gettempdir(), "codexbar_widget.txt")
 
     def _write_data(self, pct, prov):
@@ -3312,53 +3314,54 @@ class PremiumWidgetManager:
         self._write_data(pct, prov)
         self._launch()
 
-    def _launch(self):
+    def _launch(self, which="both"):
         import subprocess as _sp
-        if self._proc and self._proc.poll() is None:
-            self._proc.terminate()
-            try: self._proc.wait(timeout=2)
-            except: self._proc.kill()
-        # Write launch log
-        log_path = _os.path.join(_os.path.dirname(__file__), "widget_launch.log")
-        with open(log_path, 'a') as lf:
-            lf.write(f"Launching widget: {sys.executable} {self._widget_path}\n")
-            lf.write(f"File exists: {_os.path.exists(self._widget_path)}\n")
-        self._proc = _sp.Popen(
-            [sys.executable, self._widget_path],
-            cwd=_os.path.dirname(__file__),
-            stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
-            stderr=_sp.STDOUT,
-            creationflags=0
-        )
-        with open(log_path, 'a') as lf:
-            lf.write(f"PID={self._proc.pid}\n")
+        def launch_one(path, ref):
+            if ref and ref.poll() is None:
+                ref.terminate()
+                try: ref.wait(timeout=2)
+                except: ref.kill()
+            return _sp.Popen(
+                [sys.executable, path],
+                cwd=_os.path.dirname(__file__),
+                stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
+                stderr=_sp.STDOUT, creationflags=0)
+        if which in ("both", "premium"):
+            self._proc = launch_one(self._widget_path, self._proc)
+        if which in ("both", "bar"):
+            self._bar_proc = launch_one(self._bar_path, self._bar_proc)
 
     def update(self, pct, prov):
-        """Write update to temp file — no stdin needed."""
+        """Write update to temp file — both widgets read it."""
         self._write_data(pct, prov)
-        if not (self._proc and self._proc.poll() is None):
-            self._launch()
+        if self._proc and self._proc.poll() is None:
+            pass  # premium reads from file
+        else:
+            self._launch("premium")
+        if self._bar_proc and self._bar_proc.poll() is None:
+            pass  # bar reads from file
+        elif _os.path.exists(self._bar_path):
+            self._launch("bar")
 
     def toggle(self, pct, prov):
         if self._visible:
             if self._proc and self._proc.poll() is None:
                 self._proc.terminate()
+            if self._bar_proc and self._bar_proc.poll() is None:
+                self._bar_proc.terminate()
             self._write_data(0, "off")
             self._visible = False
         else:
             self._write_data(pct, prov)
-            self._launch()
+            self._launch("both")
             self._visible = True
 
     def stop(self):
         self._write_data(0, "quit")
-        if self._proc and self._proc.poll() is None:
-            try:
-                self._proc.stdin.write(b"quit\n")
-                self._proc.stdin.flush()
-            except: pass
-            try: self._proc.terminate()
-            except: pass
+        for ref in [self._proc, self._bar_proc]:
+            if ref and ref.poll() is None:
+                try: ref.terminate()
+                except: pass
 
 
 class CodexBarApp:
