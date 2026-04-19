@@ -3309,14 +3309,25 @@ class PremiumWidgetManager:
         self._launch()
 
     def _launch(self):
+        import subprocess as _sp
         if self._proc and self._proc.poll() is None:
             self._proc.terminate()
             try: self._proc.wait(timeout=2)
             except: self._proc.kill()
-        # Use os.startfile to launch via Windows Shell (works from pythonw)
-        _os.startfile(self._widget_path)
-        self._proc = None  # startfile doesn't return Popen
-        print(f"[PW] Launched via startfile")
+        # Write launch log
+        log_path = _os.path.join(_os.path.dirname(__file__), "widget_launch.log")
+        with open(log_path, 'a') as lf:
+            lf.write(f"Launching widget: {sys.executable} {self._widget_path}\n")
+            lf.write(f"File exists: {_os.path.exists(self._widget_path)}\n")
+        self._proc = _sp.Popen(
+            [sys.executable, self._widget_path],
+            cwd=_os.path.dirname(__file__),
+            stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
+            stderr=_sp.STDOUT,
+            creationflags=0
+        )
+        with open(log_path, 'a') as lf:
+            lf.write(f"PID={self._proc.pid}\n")
 
     def update(self, pct, prov):
         """Write update to temp file — no stdin needed."""
