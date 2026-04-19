@@ -1925,41 +1925,36 @@ class OllamaDataFetcher:
             # TODO: Ollama.com HTML structure for usage data is not yet reverse-engineered.
             # The following parsing matches OpenCode.ai pattern as a reasonable fallback.
             # Adjust the regex patterns based on actual Ollama.com HTML once available.
-            def _parse_usage(html, label):
-                pattern = label + r':\$R\[\d+\]=\{([^}]+)\}'
-                m = _re.search(pattern, html)
+            def _parse_usage_block(html, label):
+                """Parse ollama.com/settings HTML for usage percent and reset time."""
+                # Find block like: <span class="text-sm">Session usage</span> ... <span class="text-sm">0% used</span>
+                pattern = label + r'</span>.*?<span class="text-sm">(\d+)% used</span>'
+                m = _re.search(pattern, html, _re.DOTALL)
+                pct = int(m.group(1)) if m else None
+                self._log(f"  {label}: pct={pct}")
+                # Find reset time: data-time="..." or "Resets in ..."
+                reset = "unknown"
+                # Find the data-time attribute after this label
                 if m:
-                    try:
-                        fields = m.group(1)
-                        secs_m = _re.search(r'resetInSec:(\d+)', fields)
-                        pct_m = _re.search(r'usagePercent:(\d+)', fields)
-                        if secs_m and pct_m:
-                            secs = int(secs_m.group(1))
-                            pct = int(pct_m.group(1))
-                            self._log(f"  {label}: secs={secs}, pct={pct}")
-                            h, mn = divmod(secs // 60, 60)
-                            if h >= 24:
-                                reset = f"{h // 24}d {h % 24}h"
-                            else:
-                                reset = f"{h}h {mn:02d}m"
-                            return pct, reset
-                    except Exception as e:
-                        self._log(f"  {label}: parse error: {e}")
-                self._log(f"  {label}: no match")
-                return None, "unknown"
+                    after = html[m.end():m.end()+500]
+                    dt_m = _re.search(r'data-time="([^"]+)"', after)
+                    if dt_m:
+                        reset = dt_m.group(1)  # ISO timestamp
+                        self._log(f"  {label}: reset_time={reset}")
+                    else:
+                        ri_m = _re.search(r'Resets in ([^<]+)', after)
+                        if ri_m:
+                            reset = ri_m.group(1).strip()
+                            self._log(f"  {label}: reset={reset}")
+                return pct, reset
 
-            session_pct, session_reset = _parse_usage(html, "rollingUsage")
-            weekly_pct, weekly_reset = _parse_usage(html, "weeklyUsage")
+            session_pct, session_reset = _parse_usage_block(html, "Session usage")
+            weekly_pct, weekly_reset = _parse_usage_block(html, "Weekly usage")
 
             if weekly_pct is None and session_pct is None:
                 self._log("[Ollama] ERROR: no usage data found in page")
                 self._log("[Ollama] HTML preview (first 2000): " + html[:2000])
-            # Search for usage-related patterns
-            import re as _re2
-            for pattern in [r'usage', r'Usage', r'limit', r'Limit', r'percent', r'Percent', r'remaining', r'Remaining', r'cost', r'Cost', r'dollars', r'credit', r'Credit', r'spend', r'Spend', r'rollover', r'weekly', r'monthly', r'reset']:
-                matches = _re2.findall(pattern + r"[^<]{0,80}", html)
-                if matches:
-                    self._log(f"[Ollama] Pattern '{pattern}': {matches[:5]}")
+
                 d["error"] = "no usage data found in page (HTML structure may differ)"
                 return d
 
