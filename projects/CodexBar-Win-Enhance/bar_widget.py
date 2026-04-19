@@ -27,10 +27,14 @@ def get_theme(pct):
     else: return "critical"
 
 class BarWidget(QWidget):
+    _OPACITY_LEVELS = [0.25, 0.50, 0.75, 1.0]  # click cycles through these
+
     def __init__(self, pos=None):
         super().__init__()
         self.pct = 0
         self.prov = ""
+        self._opacity_idx = 3  # start at 100% (index 3)
+        self._click_through = False
         self.setWindowTitle("CodexBar Bar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -84,8 +88,33 @@ class BarWidget(QWidget):
         p.end()
 
     def mousePressEvent(self, e):
-        if e.button()==Qt.MouseButton.LeftButton:
-            self._drag = e.globalPosition().toPoint()-self.pos()
+        if e.button() == Qt.MouseButton.LeftButton:
+            # Cycle opacity: 25→50→75→100→25
+            self._opacity_idx = (self._opacity_idx + 1) % len(self._OPACITY_LEVELS)
+            self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
+            self._drag = e.globalPosition().toPoint() - self.pos()
+        elif e.button() == Qt.MouseButton.RightButton:
+            # Toggle click-through (mouse passes through to desktop)
+            self._click_through = not self._click_through
+            self._set_click_through(self._click_through)
+
+    def _set_click_through(self, enabled):
+        """Make this widget click-through (mouse events pass to windows behind it)."""
+        try:
+            import ctypes
+            GWL_EXSTYLE = -20
+            WS_EX_TRANSPARENT = 0x00000020
+            WS_EX_NOACTIVATE = 0x08000000
+            style = ctypes.windll.user32.GetWindowLongPtrW(self.winId(), GWL_EXSTYLE)
+            if enabled:
+                style |= (WS_EX_TRANSPARENT | WS_EX_NOACTIVATE)
+            else:
+                style &= ~(WS_EX_TRANSPARENT | WS_EX_NOACTIVATE)
+            ctypes.windll.user32.SetWindowLongPtrW(self.winId(), GWL_EXSTYLE, style)
+            print(f"[BW] click_through={'ON' if enabled else 'OFF'}", flush=True)
+        except Exception as e:
+            print(f"[BW] click_through error: {e}", flush=True)
+
     def closeEvent(self, e):
         self._save_position()
         super().closeEvent(e)
