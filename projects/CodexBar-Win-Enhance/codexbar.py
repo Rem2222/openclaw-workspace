@@ -3052,7 +3052,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._widget_mode.pack(fill="x", padx=20, pady=(0, 4))
         # Load saved mode
         try:
-            saved_mode = json.loads(cls._config_path().read_text()).get("widget_mode", "both") if cls._config_path().exists() else "both"
+            saved_mode = json.loads(SettingsPopup._config_path().read_text()).get("widget_mode", "both") if SettingsPopup._config_path().exists() else "both"
         except Exception:
             saved_mode = "both"
         mode_map = {"both": "Both", "large": "Large only", "small": "Small only", "none": "Don't show"}
@@ -3072,14 +3072,15 @@ class SettingsPopup(ctk.CTkToplevel):
         self._ct_switch.pack(side="left")
         # Load saved click-through
         try:
-            saved_ct = json.loads(cls._config_path().read_text()).get("widgets_click_through", False) if cls._config_path().exists() else False
+            saved_ct = json.loads(SettingsPopup._config_path().read_text()).get("widgets_click_through", False) if SettingsPopup._config_path().exists() else False
         except Exception:
             saved_ct = False
         self._ct_var.set(saved_ct)
         # Log actual file contents for debugging
         try:
-            cfg_content = cls._config_path().read_text() if cls._config_path().exists() else "<file not found>"
-            _d(f"[SETTINGS] File contents: {cfg_content[:200]}")
+            cfg_path = SettingsPopup._config_path()
+            cfg_content = cfg_path.read_text() if cfg_path.exists() else "<file not found>"
+            _d(f"[SETTINGS] File contents: {cfg_content[:300]}")
         except Exception as e:
             _d(f"[SETTINGS] File read error: {e}")
         _d(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()} (saved_ct={saved_ct})")
@@ -3119,8 +3120,8 @@ class SettingsPopup(ctk.CTkToplevel):
     def _load_token(cls, key="zai_token"):
         """Load saved z.ai token from config file."""
         try:
-            if cls._config_path().exists():
-                data = json.loads(cls._config_path().read_text())
+            if SettingsPopup._config_path().exists():
+                data = json.loads(SettingsPopup._config_path().read_text())
                 return data.get(key, "")
         except Exception:
             pass
