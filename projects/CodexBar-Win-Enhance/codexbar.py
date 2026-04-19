@@ -3493,9 +3493,11 @@ class CodexBarApp:
             with open(log_path, 'a') as lf:
                 lf.write(f"Manager created, widget_path={self.pw_manager._widget_path}\n")
                 lf.write(f"File exists: {os.path.exists(self.pw_manager._widget_path)}\n")
-            self.pw_manager.start(sp, "CL")
+            provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
+            init_label = provider_labels.get(self._active_provider, "CL")
+            self.pw_manager.start(sp, init_label)
             with open(log_path, 'a') as lf:
-                lf.write("start() called\n")
+                lf.write(f"start() called with {init_label}\n")
         except Exception as e:
             with open(log_path, 'a') as lf:
                 lf.write(f"ERROR: {e}\n")
