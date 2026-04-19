@@ -3540,6 +3540,31 @@ class PremiumWidgetManager:
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
 
+    def _kill_all(self):
+        """Kill all widget processes gracefully via WM_CLOSE before force kill."""
+        import ctypes
+        WM_CLOSE = 0x0010
+        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+            if proc and proc.poll() is None:
+                try:
+                    # Send WM_CLOSE first (allows Qt to save settings via closeEvent)
+                    ctypes.windll.user32.PostMessageW(int(proc.pid), WM_CLOSE, 0, 0)
+                except Exception:
+                    pass
+        import time as _time
+        _time.sleep(0.15)  # give widgets time to save and close
+        # Force kill any remaining
+        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+            if proc and proc.poll() is None:
+                try:
+                    proc.terminate()
+                    try: proc.wait(timeout=1)
+                    except: proc.kill()
+                except Exception:
+                    pass
+        self._proc = None
+        self._bar_proc = None
+
     def _apply_mode_change(self, mode):
         """Switch widget mode: kill all → wait → restart needed widgets with saved positions."""
         import json as _json
