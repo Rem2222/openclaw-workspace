@@ -3128,6 +3128,16 @@ class SettingsPopup(ctk.CTkToplevel):
     def _on_ct_change(self):
         """Apply click-through setting change immediately."""
         ct = self._ct_var.get()
+        # Save to settings.json so it's preserved
+        try:
+            data = {}
+            cfg = SettingsPopup._config_path()
+            if cfg.exists():
+                data = json.loads(cfg.read_text())
+            data["widgets_click_through"] = ct
+            cfg.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
                 inst.pw_manager._apply_ct_change(ct)
@@ -3341,6 +3351,17 @@ class SettingsPopup(ctk.CTkToplevel):
 
     def _save_and_close(self):
         self.save_all_tokens()
+        # Save click-through setting too
+        try:
+            data = {}
+            cfg = SettingsPopup._config_path()
+            if cfg.exists():
+                data = json.loads(cfg.read_text())
+            if hasattr(self, '_ct_var'):
+                data["widgets_click_through"] = self._ct_var.get()
+            cfg.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
         if self._on_save:
             self._on_save()
         self.destroy()
