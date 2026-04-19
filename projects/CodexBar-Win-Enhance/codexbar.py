@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.56"
+VERSION = "2.2.57"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3102,22 +3102,8 @@ class SettingsPopup(ctk.CTkToplevel):
 
     def _on_widget_mode_change(self, value):
         """Apply widget change immediately when user selects new value."""
-        from codexbar import CodexBarApp
         mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
         mode = mode_map.get(value, "both")
-        # Save to settings.json
-        try:
-            settings_path = self._config_path()
-            data = {}
-            if settings_path.exists():
-                try: data = json.loads(settings_path.read_text())
-                except: pass
-            data["widget_mode"] = mode
-            settings_path.parent.mkdir(parents=True, exist_ok=True)
-            settings_path.write_text(json.dumps(data, indent=2))
-        except Exception:
-            pass
-        # Apply via PremiumWidgetManager
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
                 inst.pw_manager._apply_mode_change(mode)
@@ -3445,60 +3431,79 @@ class PremiumWidgetManager:
             self._visible = True
 
     def _apply_mode_change(self, mode):
-        """Switch widget mode: save positions before killing, then launch needed widgets."""
+        """Switch widget mode: kill all → wait → restart needed widgets with saved positions."""
         import json as _json
-        # Read current positions from settings (widgets save here on close)
-        settings = self._load_settings()
-        p_pos = settings.get("premium_widget_pos")
-        b_pos = settings.get("bar_widget_pos")
-        print(f"[PWM] _apply_mode_change: mode={mode}, p_pos={p_pos}, b_pos={b_pos}")
-        # Get current data if widgets are running
-        pct, prov = 0, "off"
-        try:
-            with open(self._data_file) as f:
-                parts = f.read().strip().split("|")
-                if len(parts) == 2 and parts[1] != "off":
-                    pct, prov = int(parts[0]), parts[1]
-        except:
-            pass
-        if mode == "none":
-            # Hide all: kill both (positions already saved in settings from last closeEvent)
-            if self._proc and self._proc.poll() is None:
-                self._proc.terminate()
-            if self._bar_proc and self._bar_proc.poll() is None:
-                self._bar_proc.terminate()
-            self._write_data(0, "off")
-            self._visible = False
-            return
-        # Save positions to settings BEFORE killing
+        print(f"[PWM] _apply_mode_change: {mode}")
+        # 1. Save new mode to settings
         try:
             sp = self._settings_file()
             data = {}
             if sp.exists():
                 try: data = _json.loads(sp.read_text())
                 except: pass
+            # Preserve existing positions
+            p_pos = data.get("premium_widget_pos") or {"x": 300, "y": 200}
+            b_pos = data.get("bar_widget_pos") or {"x": 100, "y": 600}
             data["widget_mode"] = mode
-            # Keep existing positions (widgets saved them on closeEvent)
-            data["premium_widget_pos"] = p_pos or {"x": 300, "y": 200}
-            data["bar_widget_pos"] = b_pos or {"x": 100, "y": 600}
+            data["premium_widget_pos"] = p_pos
+            data["bar_widget_pos"] = b_pos
             sp.parent.mkdir(parents=True, exist_ok=True)
             sp.write_text(_json.dumps(data, indent=2))
         except Exception as e:
-            print(f"[PWM] _apply_mode_change save error: {e}")
-        # Kill widgets not in new mode
-        if mode == "large":
-            if self._bar_proc and self._bar_proc.poll() is None:
-                self._bar_proc.terminate()
-        elif mode == "small":
-            if self._proc and self._proc.poll() is None:
-                self._proc.terminate()
-        # Launch widgets for new mode
+            print(f"[PWM] save error: {e}")
+        # 2. Kill ALL running widgets
+        for ref, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+            if ref and ref.poll() is None:
+                ref.terminate()
+                try: ref.wait(timeout=2)
+                except: ref.kill()
+                print(f"[PWM] killed {name}")
+        self._proc = None
+        self._bar_proc = None
+        # 3. Wait for windows to destroy
+        import time as _time; _time.sleep(0.3)
+        # 4. If mode == none, do nothing
+        if mode == "none":
+            self._write_data(0, "off")
+            self._visible = False
+            return
+        # 5. Read current pct/prov from data file
+        pct, prov = 0, "CL"
+        try:
+            with open(self._data_file) as f:
+                parts = f.read().strip().split("|")
+                if len(parts) >= 2:
+                    pct = int(parts[0])
+                    prov = parts[1]
+        except: pass
+        # 6. Launch only widgets needed for this mode
         self._write_data(pct, prov)
         self._visible = True
+        settings = self._load_settings()
         if mode in ("both", "large") and _os.path.exists(self._widget_path):
-            self._launch("premium")
+            self._launch_single("premium", settings.get("premium_widget_pos"))
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
-            self._launch("bar")
+            self._launch_single("bar", settings.get("bar_widget_pos"))
+        print(f"[PWM] _apply_mode_change done: mode={mode}")
+
+    def _launch_single(self, which, pos):
+        """Launch one widget (premium or bar) with given position."""
+        import subprocess as _sp
+        path = self._widget_path if which == "premium" else self._bar_path
+        ref = self._proc if which == "premium" else self._bar_proc
+        cmd = [sys.executable, path]
+        if pos:
+            cmd += ["--pos", f"{pos['x']},{pos['y']}"]
+        proc = _sp.Popen(
+            cmd,
+            cwd=_os.path.dirname(__file__),
+            stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
+            stderr=_sp.STDOUT, creationflags=0)
+        if which == "premium":
+            self._proc = proc
+        else:
+            self._bar_proc = proc
+        print(f"[PWM] launched {which} at pos={pos}")
 
     def stop(self):
         self._write_data(0, "quit")
