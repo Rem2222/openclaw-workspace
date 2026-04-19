@@ -3196,7 +3196,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         # ── test result label ──
         self._test_result = ctk.CTkLabel(
-            self, text="", font=("Segoe UI", 11),
+            content, text="", font=("Segoe UI", 11),
             text_color="#8E94AE", anchor="w")
         self._test_result.pack(fill="x", padx=20, pady=(4, 0))
 
@@ -3212,7 +3212,7 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#8E94AE").pack(side="left", padx=(4, 0))
 
         mm_hint = ctk.CTkLabel(content,
-                               text="Make sure you.re logged in at minimaxi.com / platform.minimax.io",
+                               text="Make sure you're logged in at minimaxi.com / platform.minimax.io",
                                font=("Segoe UI", 10), text_color="#8E94AE",
                                anchor="w")
         mm_hint.pack(fill="x", padx=20, pady=(0, 2))
@@ -3236,7 +3236,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._mm_test_btn.pack(side="left")
 
         self._mm_result = ctk.CTkLabel(
-            self, text="", font=("Segoe UI", 11),
+            content, text="", font=("Segoe UI", 11),
             text_color="#8E94AE", anchor="w")
         self._mm_result.pack(fill="x", padx=20, pady=(2, 0))
 
@@ -3276,7 +3276,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._oc_test_btn.pack(side="left")
 
         self._oc_result = ctk.CTkLabel(
-            self, text="", font=("Segoe UI", 11),
+            content, text="", font=("Segoe UI", 11),
             text_color="#8E94AE", anchor="w")
         self._oc_result.pack(fill="x", padx=20, pady=(2, 0))
 
@@ -3316,7 +3316,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._ollama_test_btn.pack(side="left")
 
         self._ollama_result = ctk.CTkLabel(
-            self, text="", font=("Segoe UI", 11),
+            content, text="", font=("Segoe UI", 11),
             text_color="#8E94AE", anchor="w")
         self._ollama_result.pack(fill="x", padx=20, pady=(2, 0))
 
@@ -3328,7 +3328,7 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#1A1A2E").pack(side="left")
 
         self._widget_mode = ctk.CTkOptionMenu(
-            self, values=["Both", "Large only", "Small only", "Don't show"],
+            content, values=["Both", "Large only", "Small only", "Don't show"],
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", button_color="#4A6CF7",
             button_hover_color="#3A5CE5",
@@ -3385,7 +3385,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
         # ── Bottom buttons ──
         bottom_row = ctk.CTkFrame(content, fg_color="#F0F2F8")
-        bottom_row.pack(side="bottom", fill="x", padx=20, pady=(8, 16))
+        bottom_row.pack(fill="x", padx=20, pady=(12, 16))
 
         ctk.CTkButton(
             bottom_row, text="Save", font=("Segoe UI Semibold", 12),
