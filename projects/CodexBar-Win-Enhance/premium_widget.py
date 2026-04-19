@@ -118,13 +118,30 @@ class WeeklyBar(QFrame):
 class PremiumWidget(QWidget):
     _OPACITY_LEVELS = [0.25, 0.50, 0.75, 1.0]  # click cycles through these
 
+    @staticmethod
+    def _load_widget_settings():
+        """Load opacity_idx and click_through from settings file."""
+        try:
+            if os.path.exists(SETTINGS_FILE):
+                with open(SETTINGS_FILE, 'r') as f:
+                    data = json.load(f)
+                idx = data.get("premium_opacity_idx", 3)
+                ct = data.get("premium_click_through", False)
+                return idx, ct
+        except Exception:
+            pass
+        return 3, False  # defaults: 100% opacity, click-through OFF
+
     def __init__(self, pos=None):
         super().__init__()
         self.pct = 0
         self.prov = "CL"
         self.wp = 0  # Weekly percentage
-        self._opacity_idx = 3  # start at 100% (index 3)
-        self._click_through = False
+        # Load saved settings
+        self._opacity_idx, self._click_through = self._load_widget_settings()
+        self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
+        if self._click_through:
+            self._set_click_through(True)
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -247,21 +264,32 @@ class PremiumWidget(QWidget):
 
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
-            # Cycle opacity: 25→50→75→100→25
-            self._opacity_idx = (self._opacity_idx + 1) % len(self._OPACITY_LEVELS)
-            opacity = self._OPACITY_LEVELS[self._opacity_idx]
-            self.setWindowOpacity(opacity)
-            self._drag = e.globalPosition().toPoint() - self.pos()
+            self._click_pos = e.globalPosition().toPoint()
+            self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
-            # Toggle click-through (mouse passes through to desktop)
             self._click_through = not self._click_through
             self._set_click_through(self._click_through)
+            self._save_settings()
+
+    def mouseMoveEvent(self, e):
+        if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
+            self.move(e.globalPosition().toPoint() - self._drag)
+            self._save_position()
+
+    def mouseReleaseEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton and self._drag:
+            moved = (e.globalPosition().toPoint() - self._click_pos).manhattanLength() > 5
+            if not moved:
+                # Click (no drag) → cycle opacity
+                self._opacity_idx = (self._opacity_idx + 1) % len(self._OPACITY_LEVELS)
+                self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
+                self._save_settings()
+        self._drag = None
 
     def _set_click_through(self, enabled):
         """Make this widget click-through (mouse events pass to windows behind it)."""
         try:
             import ctypes
-            ctypes.windll.user32.SetMenu(self.winId(), None)
             GWL_EXSTYLE = -20
             WS_EX_TRANSPARENT = 0x00000020
             WS_EX_NOACTIVATE = 0x08000000
@@ -274,16 +302,15 @@ class PremiumWidget(QWidget):
             print(f"[PW] click_through={'ON' if enabled else 'OFF'}", flush=True)
         except Exception as e:
             print(f"[PW] click_through error: {e}", flush=True)
-
-    def mouseMoveEvent(self, e):
-        if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
-            self.move(e.globalPosition().toPoint() - self._drag)
-            self._save_position()  # save on drag
     def closeEvent(self, e):
         self._save_position()
         super().closeEvent(e)
 
     def _save_position(self):
+        self._save_settings()
+
+    def _save_settings(self):
+        """Save position + opacity + click_through to settings."""
         try:
             pos = self.pos()
             data = {}
@@ -291,6 +318,8 @@ class PremiumWidget(QWidget):
                 with open(SETTINGS_FILE, 'r') as f:
                     data = json.load(f)
             data["premium_widget_pos"] = {"x": pos.x(), "y": pos.y()}
+            data["premium_opacity_idx"] = self._opacity_idx
+            data["premium_click_through"] = self._click_through
             os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
             with open(SETTINGS_FILE, 'w') as f:
                 json.dump(data, f, indent=2)
@@ -305,13 +334,54 @@ class PremiumWidget(QWidget):
 
 def main():
     pos = None
+    opacity_idx = 3  # default 100%
+    click_through = False  # default OFF
     for i, arg in enumerate(sys.argv):
         if arg == "--pos" and i + 1 < len(sys.argv):
             parts = sys.argv[i + 1].split(",")
             if len(parts) == 2:
                 pos = (int(parts[0]), int(parts[1]))
+        elif arg == "--opacity" and i + 1 < len(sys.argv):
+            try:
+                opacity_idx = int(sys.argv[i + 1])
+            except ValueError:
+                pass
+        elif arg == "--click-through" and i + 1 < len(sys.argv):
+            click_through = sys.argv[i + 1] == "1"
     app = QApplication(sys.argv)
-    w = PremiumWidget(pos=pos)
+    w = PremiumWidget.__new__(PremiumWidget)
+    QWidget.__init__(w)
+    w.pct = 0
+    w.prov = "CL"
+    w.wp = 0
+    w._opacity_idx = opacity_idx
+    w._click_through = click_through
+    w._drag = None
+    w._click_pos = None
+    w.setWindowTitle("CodexBar")
+    w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+    w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    side = 220
+    w.setFixedSize(side, side)
+    if pos:
+        w.move(pos[0], pos[1])
+    else:
+        s = QApplication.primaryScreen().geometry()
+        w.move((s.width()-side)//2, (s.height()-side)//2)
+    w._last_data = ""
+    w._poll_count = 0
+    w._timer = QTimer(w)
+    w._timer.timeout.connect(w._poll_file)
+    w._timer.start(200)
+    w._ui()
+    w.update_pct(0, "CL", wp=0)
+    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
+    if w._click_through:
+        w._set_click_through(True)
+    w.show()
+    w.raise_()
+    print("[PW] Ready", flush=True)
+    sys.exit(app.exec())
     w.show()
     w.raise_()
     print("[PW] Ready", flush=True)

@@ -3058,6 +3058,23 @@ class SettingsPopup(ctk.CTkToplevel):
         mode_map = {"both": "Both", "large": "Large only", "small": "Small only", "none": "Don't show"}
         self._widget_mode.set(mode_map.get(saved_mode, "Both"))
 
+        # Click-through checkbox (widgets transparent for mouse)
+        self._ct_var = ctk.BooleanVar(value=False)
+        ct_frame = ctk.CTkFrame(self, fg_color="transparent")
+        ct_frame.pack(fill="x", padx=20, pady=(0, 8))
+        self._ct_switch = ctk.CTkSwitch(
+            ct_frame, text="Transparent for mouse (click-through)",
+            variable=self._ct_var, font=("Segoe UI", 11),
+            onvalue=True, offvalue=False,
+            command=self._on_ct_change)
+        self._ct_switch.pack(side="left")
+        # Load saved click-through
+        try:
+            saved_ct = json.loads(cls._config_path().read_text()).get("widgets_click_through", False) if cls._config_path().exists() else False
+        except Exception:
+            saved_ct = False
+        self._ct_var.set(saved_ct)
+
         self._token_entry.focus_set()
 
         # ── DEBUG: version label ──
@@ -3108,6 +3125,13 @@ class SettingsPopup(ctk.CTkToplevel):
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
                 inst.pw_manager._apply_mode_change(mode)
 
+    def _on_ct_change(self):
+        """Apply click-through setting change immediately."""
+        ct = self._ct_var.get()
+        for inst in CodexBarApp.instances:
+            if hasattr(inst, 'pw_manager') and inst.pw_manager:
+                inst.pw_manager._apply_ct_change(ct)
+
     def save_all_tokens(self):
         """Save all tokens to config file and set env vars."""
         try:
@@ -3128,6 +3152,7 @@ class SettingsPopup(ctk.CTkToplevel):
             # Save widget mode
             mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
             data["widget_mode"] = mode_reverse.get(self._widget_mode.get(), "both")
+            data["widgets_click_through"] = self._ct_var.get()
 
             oc_cook = self._oc_entry.get().strip()
 
@@ -3403,7 +3428,8 @@ class PremiumWidgetManager:
 
     def _launch(self, which="both"):
         import subprocess as _sp
-        def launch_one(path, ref, pos=None):
+        settings = self._load_settings()
+        def launch_one(path, ref, pos=None, opacity_idx=3, click_through=False):
             if ref and ref.poll() is None:
                 ref.terminate()
                 try: ref.wait(timeout=2)
@@ -3411,16 +3437,23 @@ class PremiumWidgetManager:
             cmd = [sys.executable, path]
             if pos:
                 cmd += ["--pos", f"{pos['x']},{pos['y']}"]
+            cmd += ["--opacity", str(opacity_idx)]
+            cmd += ["--click-through", "1" if click_through else "0"]
             return _sp.Popen(
                 cmd,
                 cwd=_os.path.dirname(__file__),
                 stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
                 stderr=_sp.STDOUT, creationflags=0)
-        settings = self._load_settings()
         if which in ("both", "premium"):
-            self._proc = launch_one(self._widget_path, self._proc, settings.get("premium_widget_pos"))
+            self._proc = launch_one(self._widget_path, self._proc,
+                settings.get("premium_widget_pos"),
+                settings.get("premium_opacity_idx", 3),
+                settings.get("premium_click_through", False))
         if which in ("both", "bar"):
-            self._bar_proc = launch_one(self._bar_path, self._bar_proc, settings.get("bar_widget_pos"))
+            self._bar_proc = launch_one(self._bar_path, self._bar_proc,
+                settings.get("bar_widget_pos"),
+                settings.get("bar_opacity_idx", 3),
+                settings.get("bar_click_through", False))
 
     def update(self, pct, prov, wp=0):
         """Write update to temp file — both widgets read it. wp = weekly %."""
@@ -3491,6 +3524,21 @@ class PremiumWidgetManager:
                 data["widget_visible"] = True
                 sp.write_text(json.dumps(data, indent=2))
             except: pass
+
+    def _apply_ct_change(self, click_through):
+        """Update click-through setting and restart widgets."""
+        settings = self._load_settings()
+        settings["premium_click_through"] = click_through
+        settings["bar_click_through"] = click_through
+        self._save_settings(settings)
+        self._kill_all()
+        import time as _time
+        _time.sleep(0.3)
+        mode = self._get_widget_mode()
+        if mode in ("both", "large") and _os.path.exists(self._widget_path):
+            self._launch("premium")
+        if mode in ("both", "small") and _os.path.exists(self._bar_path):
+            self._launch("bar")
 
     def _apply_mode_change(self, mode):
         """Switch widget mode: kill all → wait → restart needed widgets with saved positions."""
@@ -3569,14 +3617,19 @@ class PremiumWidgetManager:
             self._launch_single("bar", settings.get("bar_widget_pos"))
         print(f"[PWM] _apply_mode_change done: mode={mode}")
 
-    def _launch_single(self, which, pos):
+    def _launch_single(self, which, pos=None):
         """Launch one widget (premium or bar) with given position."""
         import subprocess as _sp
+        settings = self._load_settings()
         path = self._widget_path if which == "premium" else self._bar_path
         ref = self._proc if which == "premium" else self._bar_proc
+        opacity_idx = settings.get("premium_opacity_idx" if which == "premium" else "bar_opacity_idx", 3)
+        click_through = settings.get("premium_click_through" if which == "premium" else "bar_click_through", False)
         cmd = [sys.executable, path]
         if pos:
             cmd += ["--pos", f"{pos['x']},{pos['y']}"]
+        cmd += ["--opacity", str(opacity_idx)]
+        cmd += ["--click-through", "1" if click_through else "0"]
         proc = _sp.Popen(
             cmd,
             cwd=_os.path.dirname(__file__),
@@ -3586,7 +3639,7 @@ class PremiumWidgetManager:
             self._proc = proc
         else:
             self._bar_proc = proc
-        print(f"[PWM] launched {which} at pos={pos}")
+        print(f"[PWM] launched {which} at pos={pos}, opacity={opacity_idx}, ct={click_through}")
 
     def stop(self):
         self._write_data(0, "quit")
