@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.65"
+VERSION = "2.2.66"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3371,6 +3371,22 @@ class PremiumWidgetManager:
         with open(self._data_file, 'w') as f:
             f.write(f"{pct}|{prov}|{wp}")
 
+    def update_wp(self, wp):
+        """Update weekly % in data file without changing pct/prov or relaunching widgets."""
+        if wp <= 0:
+            return
+        try:
+            with open(self._data_file) as f:
+                old = f.read().strip()
+            parts = old.split("|")
+            if len(parts) >= 2:
+                pct = parts[0]
+                prov = parts[1]
+                with open(self._data_file, 'w') as f:
+                    f.write(f"{pct}|{prov}|{wp}")
+        except Exception:
+            pass
+
     def start(self, pct=0, prov="CL"):
         self._write_data(pct, prov)
         settings = self._load_settings()
@@ -3726,7 +3742,8 @@ class CodexBarApp:
             except Exception as e:
                 print(f"[CodexBar] REM-42: retry fetch failed: {e}")
 
-        print(f"[CodexBar] Final: provider={_p}, sp={_sp}")
+        _wp = (_d.get("weekly_used_pct", 0) or 0) if _d else 0
+        print(f"[CodexBar] Final: provider={_p}, sp={_sp}, wp={_wp}")
 
         # ── hidden tkinter root ──
         ctk.set_appearance_mode("light")
@@ -3759,6 +3776,8 @@ class CodexBarApp:
             provider_labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC"}
             init_label = provider_labels.get(self._active_provider, "CL")
             self.pw_manager.start(_sp, init_label)
+            if _wp > 0:
+                self.pw_manager.update_wp(_wp)
             with open(log_path, 'a') as lf:
                 lf.write(f"start() called with sp={_sp}, label={init_label}\n")
         except Exception as e:
