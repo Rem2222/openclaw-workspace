@@ -1,7 +1,7 @@
 """Premium Floating Widget v4 - PyQt6 + file-based IPC (no stdin needed)"""
 
 import sys, os, time
-from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QFrame, QMenu)
 from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen)
 from PyQt6.QtCore import (Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QTimer)
 
@@ -109,18 +109,6 @@ class PremiumWidget(QWidget):
         self.pcl.setStyleSheet("color:white;")
         self.pcl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lo.addWidget(self.pcl)
-        # ── Progress Bar ──────────────────────────────────────
-        bar_row = QHBoxLayout()
-        bar_row.setContentsMargins(8,4,8,0)
-        bar_row.setSpacing(0)
-        self.bar_bg = QFrame(self)
-        self.bar_bg.setFixedHeight(6)
-        self.bar_bg.setStyleSheet("background:rgba(255,255,255,20);border-radius:3px;")
-        self.bar_fill = QFrame(self.bar_bg)
-        self.bar_fill.setGeometry(0,0,0,6)
-        self.bar_fill.setStyleSheet("background:rgba(16,185,129,255);border-radius:3px;")
-        bar_row.addWidget(self.bar_bg)
-        lo.addLayout(bar_row)
         # ── Status ─────────────────────────────────────────────
         self.sl = QLabel("Active")
         self.sl.setFont(QFont("Segoe UI",9))
@@ -136,11 +124,6 @@ class PremiumWidget(QWidget):
         self.pl.setText(self.prov)
         self.pcl.setStyleSheet(f"color:{t['p'].name()};")
         self.ring.set_val(pct/100.0)
-        # Update progress bar fill
-        bar_w = self.bar_bg.width()
-        fill_w = int(bar_w * pct / 100)
-        self.bar_fill.setGeometry(0, 0, fill_w, 6)
-        self.bar_fill.setStyleSheet(f"background:{t['p'].name()};border-radius:3px;")
 
     def paintEvent(self, e):
         p = QPainter(self)
@@ -159,13 +142,6 @@ class PremiumWidget(QWidget):
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons()&Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint()-self._drag)
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-        # Re-apply bar fill on layout changes
-        bar_w = self.bar_bg.width()
-        fill_w = int(bar_w * self.pct / 100)
-        self.bar_fill.setGeometry(0, 0, fill_w, 6)
-
     def contextMenuEvent(self, e):
         m = QMenu(self)
         a=m.addAction("Close"); a.triggered.connect(lambda: self.close())
