@@ -159,7 +159,7 @@ class BarWidget(QWidget):
             WS_EX_NOACTIVATE  = 0x08000000
             LWA_ALPHA         = 0x00000002
 
-            hwnd = self.winId()
+            hwnd = int(self.winId())  # PyQt6: winId() returns an object, convert to int for ctypes
             style = ctypes.windll.user32.GetWindowLongPtrW(hwnd, GWL_EXSTYLE)
 
             if enabled:
