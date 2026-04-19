@@ -1408,7 +1408,7 @@ class ZaiDataFetcher:
         return result
 
 
-VERSION = "2.2.57"
+VERSION = "2.2.58"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3373,13 +3373,17 @@ class PremiumWidgetManager:
 
     def start(self, pct=0, prov="CL"):
         self._write_data(pct, prov)
+        settings = self._load_settings()
+        visible = settings.get("widget_visible", True)
         mode = self._get_widget_mode()
+        if not visible or mode == "none":
+            self._visible = False
+            return
         if mode in ("both", "large") and _os.path.exists(self._widget_path):
             self._launch("premium")
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
-        if mode == "none":
-            self._visible = False
+        self._visible = True
 
     def _launch(self, which="both"):
         import subprocess as _sp
@@ -3418,17 +3422,53 @@ class PremiumWidgetManager:
                 self._launch("bar")
 
     def toggle(self, pct, prov):
+        """Show/Hide all widgets based on current widget_mode setting."""
+        mode = self._get_widget_mode()
         if self._visible:
-            if self._proc and self._proc.poll() is None:
-                self._proc.terminate()
-            if self._bar_proc and self._bar_proc.poll() is None:
-                self._bar_proc.terminate()
+            for ref in [self._proc, self._bar_proc]:
+                if ref and ref.poll() is None:
+                    ref.terminate()
+                    try: ref.wait(timeout=2)
+                    except: pass
+            self._proc = None
+            self._bar_proc = None
             self._write_data(0, "off")
             self._visible = False
+            try:
+                sp = self._settings_file()
+                data = {}
+                if sp.exists():
+                    try: data = json.loads(sp.read_text())
+                    except: pass
+                data["widget_visible"] = False
+                sp.write_text(json.dumps(data, indent=2))
+            except: pass
         else:
+            if mode == "none":
+                return
+            try:
+                with open(self._data_file) as f:
+                    parts = f.read().strip().split("|")
+                    if len(parts) >= 2:
+                        pct = int(parts[0])
+                        prov = parts[1]
+            except: pass
             self._write_data(pct, prov)
-            self._launch("both")
+            settings = self._load_settings()
+            if mode in ("both", "large") and _os.path.exists(self._widget_path):
+                self._launch_single("premium", settings.get("premium_widget_pos"))
+            if mode in ("both", "small") and _os.path.exists(self._bar_path):
+                self._launch_single("bar", settings.get("bar_widget_pos"))
             self._visible = True
+            try:
+                sp = self._settings_file()
+                data = {}
+                if sp.exists():
+                    try: data = json.loads(sp.read_text())
+                    except: pass
+                data["widget_visible"] = True
+                sp.write_text(json.dumps(data, indent=2))
+            except: pass
 
     def _apply_mode_change(self, mode):
         """Switch widget mode: kill all → wait → restart needed widgets with saved positions."""
@@ -3466,6 +3506,16 @@ class PremiumWidgetManager:
         if mode == "none":
             self._write_data(0, "off")
             self._visible = False
+            # Save widget_visible=False
+            try:
+                sp = self._settings_file()
+                data = {}
+                if sp.exists():
+                    try: data = _json.loads(sp.read_text())
+                    except: pass
+                data["widget_mode"] = "none"
+                sp.write_text(_json.dumps(data, indent=2))
+            except: pass
             return
         # 5. Read current pct/prov from data file
         pct, prov = 0, "CL"
@@ -3479,6 +3529,17 @@ class PremiumWidgetManager:
         # 6. Launch only widgets needed for this mode
         self._write_data(pct, prov)
         self._visible = True
+        # Save widget_visible=True when we start widgets
+        try:
+            sp = self._settings_file()
+            data = {}
+            if sp.exists():
+                try: data = _json.loads(sp.read_text())
+                except: pass
+            data["widget_visible"] = True
+            data["widget_mode"] = mode
+            sp.write_text(_json.dumps(data, indent=2))
+        except: pass
         settings = self._load_settings()
         if mode in ("both", "large") and _os.path.exists(self._widget_path):
             self._launch_single("premium", settings.get("premium_widget_pos"))
