@@ -1806,8 +1806,37 @@ class OllamaDataFetcher:
     def _load_cookies_from_browser(cls) -> str | None:
         """Extract auth cookie from .ollama.com in any browser. Returns cookie header or None."""
         cls._log("[Ollama] _load_cookies_from_browser: trying .ollama.com")
+        # Debug: list ALL cookies for ollama.com (any host_key pattern)
+        try:
+            for bname, bpath in _CookieDecryptor.BROWSERS:
+                cdb = bpath / "Default" / "Network" / "Cookies"
+                if cdb.exists():
+                    import tempfile, sqlite3, shutil
+                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+                    tmp.close()
+                    try:
+                        shutil.copy2(cdb, tmp.name)
+                    except Exception:
+                        continue
+                    conn = sqlite3.connect(tmp.name)
+                    rows = conn.execute("SELECT DISTINCT host_key FROM cookies WHERE host_key LIKE '%ollama%'").fetchall()
+                    if rows:
+                        cls._log(f"[Ollama]   {bname} ollama hosts: {[r[0] for r in rows]}")
+                        # Also get cookie names for those hosts
+                        for r in rows:
+                            names = conn.execute("SELECT name FROM cookies WHERE host_key = ?", (r[0],)).fetchall()
+                            cls._log(f"[Ollama]     {r[0]}: cookie names = {[n[0] for n in names]}")
+                    conn.close()
+                    try: os.unlink(tmp.name)
+                    except: pass
+        except Exception as e:
+            cls._log(f"[Ollama]   debug scan error: {e}")
         cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
         cls._log("[Ollama]   browser result: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
+        # Also try without leading dot
+        if not cookies:
+            cookies = _CookieDecryptor.get_cookies("ollama.com", "ollama_session", "csrf_token")
+            cls._log("[Ollama]   retry without dot: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
         if not cookies:
             cls._log("[Ollama]   no cookies from browser")
             return None
