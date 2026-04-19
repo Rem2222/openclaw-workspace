@@ -1804,8 +1804,11 @@ class OllamaDataFetcher:
     @classmethod
     def _load_cookies_from_browser(cls) -> str | None:
         """Extract auth cookie from .ollama.com in any browser. Returns cookie header or None."""
+        cls._log("[Ollama] _load_cookies_from_browser: trying .ollama.com")
         cookies = _CookieDecryptor.get_cookies(".ollama.com", "ollama_session", "csrf_token")
+        cls._log("[Ollama]   browser result: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
         if not cookies:
+            cls._log("[Ollama]   no cookies from browser")
             return None
         parts = []
         if "ollama_session" in cookies and cookies["ollama_session"]:
@@ -1856,16 +1859,23 @@ class OllamaDataFetcher:
         d = self._empty()
 
         # Priority: manual cookie > browser cookie
+        self._log("[Ollama] fetch: checking cookie sources...")
         cookie = self._cookie_header or self._load_cookie_from_settings()
+        self._log("[Ollama]   _cookie_header (manual): " + ("SET" if self._cookie_header else "EMPTY"))
+        settings_cookie = self._load_cookie_from_settings()
+        self._log("[Ollama]   settings/env cookie: " + ("SET" if settings_cookie else "EMPTY"))
         if not cookie:
             cookie = self._load_cookies_from_browser()
         if not cookie:
+            self._log("[Ollama] ERROR: no cookie found from any source")
             d["error"] = "cookie not found in browser; please login at ollama.com"
             return d
+        self._log("[Ollama]   browser cookie: READ OK")
         d["available"] = True
 
         import re as _re
         url = self._usage_url()
+        self._log("[Ollama] Fetching URL: " + url)
 
         # Normalise to ollama_session= prefix if raw value passed
         cookie_header = cookie if cookie.startswith("ollama_session=") else f"ollama_session={cookie}"
@@ -1874,6 +1884,7 @@ class OllamaDataFetcher:
             req = Request(url, headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT})
             with urlopen(req, timeout=self.TIMEOUT) as resp:
                 html = resp.read().decode("utf-8", errors="replace")
+                self._log("[Ollama] Response received, HTML length: " + str(len(html)) + " chars")
 
             # TODO: Ollama.com HTML structure for usage data is not yet reverse-engineered.
             # The following parsing matches OpenCode.ai pattern as a reasonable fallback.
@@ -1905,7 +1916,8 @@ class OllamaDataFetcher:
             weekly_pct, weekly_reset = _parse_usage(html, "weeklyUsage")
 
             if weekly_pct is None and session_pct is None:
-                self._log(f"ERROR: no usage data found in page")
+                self._log("[Ollama] ERROR: no usage data found in page")
+                self._log("[Ollama] HTML preview (first 500): " + html[:500])
                 d["error"] = "no usage data found in page (HTML structure may differ)"
                 return d
 
