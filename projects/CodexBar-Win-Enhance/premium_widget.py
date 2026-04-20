@@ -150,20 +150,24 @@ class PremiumWidget(QWidget):
             pass
         return 3, False  # defaults: 100% opacity, click-through OFF
 
-    def __init__(self, pos=None):
+    def __init__(self, pos=None, opacity_idx=None, click_through=None):
         super().__init__()
         self.pct = 0
         self.prov = "CL"
         self.wp = 0  # Weekly percentage
-        # Load saved settings
-        self._opacity_idx, self._click_through = self._load_widget_settings()
+        # Use passed values, or load from settings
+        if opacity_idx is not None:
+            self._opacity_idx = opacity_idx
+        else:
+            self._opacity_idx = 0
+        if click_through is not None:
+            self._click_through = click_through
+        else:
+            self._click_through = False
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:
-            _d(f"__init__: calling _set_click_through True")
             self._set_click_through(True)
-        else:
-            _d(f"__init__: _click_through is False, skipping _set_click_through")
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -388,39 +392,7 @@ def main():
         elif arg == "--click-through" and i + 1 < len(sys.argv):
             click_through = sys.argv[i + 1] == "1"
     app = QApplication(sys.argv)
-    w = PremiumWidget.__new__(PremiumWidget)
-    QWidget.__init__(w)
-    w.pct = 0
-    w.prov = "CL"
-    w.wp = 0
-    w._opacity_idx = opacity_idx
-    w._click_through = click_through
-    w._drag = None
-    w._click_pos = None
-    w.setWindowTitle("CodexBar")
-    w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-    w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-    side = 220
-    w.setFixedSize(side, side)
-    if pos:
-        w.move(pos[0], pos[1])
-    else:
-        s = QApplication.primaryScreen().geometry()
-        w.move((s.width()-side)//2, (s.height()-side)//2)
-    w._last_data = ""
-    w._poll_count = 0
-    w._timer = QTimer(w)
-    w._timer.timeout.connect(w._poll_file)
-    w._timer.start(200)
-    w._ui()
-    w.update_pct(0, "CL", wp=0)
-    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
-    if w._click_through:
-        w._set_click_through(True)
-    w.show()
-    w.raise_()
-    print("[PW] Ready", flush=True)
-    sys.exit(app.exec())
+    w = PremiumWidget(pos, opacity_idx, click_through)
     w.show()
     w.raise_()
     print("[PW] Ready", flush=True)

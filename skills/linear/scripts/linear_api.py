@@ -1,17 +1,34 @@
 #!/usr/bin/env python3
 """
 Linear API wrapper for OpenClaw
+Tokens loaded from auth-profiles.json — no hardcoded secrets
 """
 
 import subprocess
 import json
+import os
 from typing import Optional
 
 LINEAR_API = "https://api.linear.app/graphql"
-AUTH_TOKEN = "lin_api_64ssmuFiW5KjeTX8pmiG83nFiCma02PSa5R2oL1k"
+_AUTH_TOKEN = None
+
+def _get_token():
+    """Load Linear token from auth-profiles.json"""
+    global _AUTH_TOKEN
+    if _AUTH_TOKEN is None:
+        path = os.path.join(os.path.dirname(__file__),
+                           "..", "..", "..", "..", "..",
+                           "agents", "main", "agent", "auth-profiles.json")
+        try:
+            with open(path) as f:
+                d = json.load(f)
+            _AUTH_TOKEN = d["profiles"]["linear:default"]["key"]
+        except Exception:
+            _AUTH_TOKEN = os.environ.get("LINEAR_API_KEY", "")
+    return _AUTH_TOKEN
+
 TEAM_ID = "43e2e0cc-5bbf-401b-8d72-a7f3b58ed9f5"
 
-# State IDs (need to be updated with real IDs)
 STATES = {
     "Backlog": "92a1d96d-2b34-448f-b52e-7f3a905d6390",
     "Todo": "8c4211ec-5753-427a-8536-db31e30dca6a",
@@ -27,7 +44,7 @@ def _query(query: str, variables: dict = None) -> dict:
 
     result = subprocess.run(
         ["curl", "-s", "-X", "POST", LINEAR_API,
-         "-H", f"Authorization: {AUTH_TOKEN}",
+         "-H", "Authorization: " + _get_token(),
          "-H", "Content-Type: application/json",
          "-d", json.dumps(payload)],
         capture_output=True, text=True
@@ -43,7 +60,7 @@ def _mutation(query: str, variables: dict = None) -> dict:
 
     result = subprocess.run(
         ["curl", "-s", "-X", "POST", LINEAR_API,
-         "-H", f"Authorization: {AUTH_TOKEN}",
+         "-H", "Authorization: " + _get_token(),
          "-H", "Content-Type: application/json",
          "-d", json.dumps(payload)],
         capture_output=True, text=True
@@ -170,7 +187,7 @@ def milestone_list(project_id: str) -> dict:
 
 def project_update_create(project_id: str, body: str, health: str = "onTrack") -> dict:
     """Create a project update (progress/status report)
-    
+
     Args:
         project_id: Linear project ID
         body: Update text (markdown supported)
@@ -232,14 +249,7 @@ def issue_create(project_id: str, title: str, body: str = "", milestone_id: str 
 
 
 def issue_update(issue_id: str, state: str = None, state_id: str = None) -> dict:
-    """Update issue state
-    
-    Args:
-        issue_id: Issue ID
-        state: State name (Backlog, Todo, In Progress, Done, Canceled, Duplicate)
-               OR
-        state_id: Direct state ID (bypasses name lookup)
-    """
+    """Update issue state"""
     if state and not state_id:
         state_id = STATES.get(state)
         if not state_id:
@@ -312,14 +322,7 @@ def issue_add_comment(issue_id: str, body: str) -> dict:
 # ============ Attachments ============
 
 def attachment_create(issue_id: str, title: str, url: str, subtitle: str = "") -> dict:
-    """Attach a file/link to an issue
-    
-    Args:
-        issue_id: Issue ID
-        title: Attachment title (e.g., "ТЗ.md")
-        url: URL or path to the file
-        subtitle: Optional description
-    """
+    """Attach a file/link to an issue"""
     mutation = """
     mutation attachmentCreate($issueId: String!, $title: String!, $url: String!, $subtitle: String) {
       attachmentCreate(input: {
@@ -346,17 +349,10 @@ def attachment_create(issue_id: str, title: str, url: str, subtitle: str = "") -
 
 
 def check_recent_comments(minutes: int = 5) -> dict:
-    """Check for comments created in the last N minutes
-    
-    Args:
-        minutes: Number of minutes to look back (default 5)
-    
-    Returns:
-        { comments: [{ id, body, createdAt, issue: { id, identifier, title }, actor: { name } }] }
-    """
+    """Check for comments created in the last N minutes"""
     from datetime import datetime, timedelta
     since = (datetime.utcnow() - timedelta(minutes=minutes)).isoformat() + "Z"
-    
+
     query = """
     query commentsSince($since: DateTime!) {
       comments(first: 50, filter: { createdAt: { gte: $since } }) {
@@ -381,31 +377,21 @@ def check_recent_comments(minutes: int = 5) -> dict:
     variables = {"since": since}
     data = _query(query, variables)
     comments = data.get("data", {}).get("comments", {}).get("nodes", [])
-    
-    # Filter out bot's own comments (we'll identify by name or lack of actor)
+
     filtered = []
     for c in comments:
         actor_name = c.get("actor", {}).get("name", "")
-        # Skip empty comments or bot comments
         if c.get("body", "").strip() and actor_name and "Rom" not in actor_name and "romul" not in actor_name.lower():
             filtered.append(c)
-    
+
     return {"comments": filtered, "checked_at": datetime.utcnow().isoformat(), "since": since}
 
 
 def check_comments_for_issue(issue_id: str, since_minutes: int = 60) -> dict:
-    """Check for new comments on a specific issue since N minutes ago
-    
-    Args:
-        issue_id: Linear issue ID
-        since_minutes: Number of minutes to look back
-    
-    Returns:
-        { comments: [...] }
-    """
+    """Check for new comments on a specific issue since N minutes ago"""
     from datetime import datetime, timedelta
     since = (datetime.utcnow() - timedelta(minutes=since_minutes)).isoformat() + "Z"
-    
+
     query = """
     query issueComments($issueId: String!, $since: DateTime!) {
       issue(id: $issueId) {
@@ -428,7 +414,7 @@ def check_comments_for_issue(issue_id: str, since_minutes: int = 60) -> dict:
     data = _query(query, variables)
     issue_data = data.get("data", {}).get("issue", {})
     comments = issue_data.get("comments", {}).get("nodes", [])
-    
+
     return {
         "issue": {"identifier": issue_data.get("identifier"), "title": issue_data.get("title")},
         "comments": comments,
@@ -443,17 +429,9 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print("Usage: python linear_api.py <command> [args...]")
-        print("Commands:")
-        print("  project-list")
-        print("  project-create <name> [description]")
-        print("  project-get <id>")
-        print("  milestone-create <project_id> <name>")
-        print("  project-update <project_id> <body> [health]")
-        print("  issue-create <project_id> <title> [body]")
-        print("  issue-update <issue_id> <state>")
-        print("  issue-get <id>")
-        print("  issue-comment <issue_id> <body>")
-        print("  attachment-create <issue_id> <title> <url> [subtitle]")
+        print("Commands: project-list, project-create, project-get, milestone-create,")
+        print("          project-update, issue-create, issue-update, issue-get,")
+        print("          issue-comment, attachment-create, check-comments, check-issue-comments")
         sys.exit(1)
 
     cmd = sys.argv[1]

@@ -156,7 +156,8 @@ class _CookieDecryptor:
         if not ok:
             return None
         raw = ctypes.string_at(blob_out.pbData, blob_out.cbData)
-        ctypes.windll.kernel32.LocalFree(blob_out.pbData)
+        if ctypes.windll.kernel32.LocalFree(blob_out.pbData):
+            pass  # LocalFree succeeded
         return raw
 
     # ── AES-256-GCM via Windows BCrypt ──────────
@@ -292,7 +293,9 @@ class _CookieDecryptor:
             with open(dst, "wb") as f:
                 f.write(bytes(buf[:read.value]))
         finally:
-            _k.CloseHandle(hFile)
+            if not _k.CloseHandle(hFile):
+                err = ctypes.GetLastError()
+                # Log but don't raise — the data was already read
 
     @classmethod
     def _read_cookie(cls, cookie_db: Path, master_key: bytes) -> str | None:
@@ -504,9 +507,10 @@ class ClaudeDataFetcher:
         # Use home dir as cwd to avoid "Pty is closed" conflict when another
         # Claude Code session is active in the current working directory.
         neutral_cwd = str(Path.home())
-        # Use simple 'cmd.exe /c claude' to avoid quoting issues with paths.
+        # Use the resolved claude path from _find_claude() instead of bare 'claude'.
+        claude_cmd = cmd if cmd else "claude"
         proc = PtyProcess.spawn(
-            "cmd.exe /c claude",
+            f"cmd.exe /c {claude_cmd}",
             dimensions=(40, 120),
             cwd=neutral_cwd,
         )
@@ -1405,8 +1409,6 @@ class ZaiDataFetcher:
             print(f"    Z.AI: parse error: {e}")
             return None
 
-        return result
-
 
 VERSION = "2.2.70"
 
@@ -1806,31 +1808,6 @@ class OllamaDataFetcher:
     def _load_cookies_from_browser(cls) -> str | None:
         """Extract auth cookie from .ollama.com in any browser. Returns cookie header or None."""
         cls._log("[Ollama] _load_cookies_from_browser: trying .ollama.com")
-        # Debug: list ALL cookies for ollama.com (any host_key pattern)
-        try:
-            for bname, bpath in _CookieDecryptor.BROWSERS:
-                cdb = bpath / "Default" / "Network" / "Cookies"
-                if cdb.exists():
-                    import tempfile, sqlite3, shutil
-                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-                    tmp.close()
-                    try:
-                        shutil.copy2(cdb, tmp.name)
-                    except Exception:
-                        continue
-                    conn = sqlite3.connect(tmp.name)
-                    rows = conn.execute("SELECT DISTINCT host_key FROM cookies WHERE host_key LIKE '%ollama%'").fetchall()
-                    if rows:
-                        cls._log(f"[Ollama]   {bname} ollama hosts: {[r[0] for r in rows]}")
-                        # Also get cookie names for those hosts
-                        for r in rows:
-                            names = conn.execute("SELECT name FROM cookies WHERE host_key = ?", (r[0],)).fetchall()
-                            cls._log(f"[Ollama]     {r[0]}: cookie names = {[n[0] for n in names]}")
-                    conn.close()
-                    try: os.unlink(tmp.name)
-                    except: pass
-        except Exception as e:
-            cls._log(f"[Ollama]   debug scan error: {e}")
         # ollama.com uses __Secure-session + aid cookies
         cookies = _CookieDecryptor.get_cookies("ollama.com", "__Secure-session", "aid")
         cls._log("[Ollama]   browser result: " + ("keys=" + str(list(cookies.keys())) if cookies else "NONE"))
