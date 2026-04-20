@@ -1913,13 +1913,23 @@ class OllamaDataFetcher:
         try:
             req = Request(url, headers={"Cookie": cookie_header, "User-Agent": self.USER_AGENT})
             self._log("[Ollama] Request headers: Cookie=" + cookie_header[:60] + "...")
-            try:
-                with urlopen(req, timeout=self.TIMEOUT) as resp:
-                    html = resp.read().decode("utf-8", errors="replace")
-                    self._log("[Ollama] Response received, HTML length: " + str(len(html)) + " chars")
-            except Exception as http_err:
-                self._log("[Ollama] HTTP error: " + str(http_err))
-                d["error"] = f"HTTP error: {http_err}"
+            html = None
+            last_err = None
+            for attempt in range(3):
+                try:
+                    with urlopen(req, timeout=self.TIMEOUT) as resp:
+                        html = resp.read().decode("utf-8", errors="replace")
+                        self._log("[Ollama] Response received, HTML length: " + str(len(html)) + " chars")
+                        break
+                except Exception as http_err:
+                    last_err = http_err
+                    self._log(f"[Ollama] Attempt {attempt+1}/3 failed: {http_err}")
+                    if attempt < 2:
+                        import time; time.sleep(2)
+            
+            if html is None:
+                self._log("[Ollama] All retry attempts failed: " + str(last_err))
+                d["error"] = f"HTTP error (after 3 attempts): {last_err}"
                 return d
 
             # TODO: Ollama.com HTML structure for usage data is not yet reverse-engineered.
