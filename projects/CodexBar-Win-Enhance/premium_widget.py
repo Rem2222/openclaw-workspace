@@ -155,15 +155,16 @@ class PremiumWidget(QWidget):
         self.pct = 0
         self.prov = "CL"
         self.wp = 0  # Weekly percentage
-        # Use passed values, or load from settings
+        # Use passed values, or load from settings as fallback
+        saved_idx, saved_ct = PremiumWidget._load_widget_settings()
         if opacity_idx is not None:
             self._opacity_idx = opacity_idx
         else:
-            self._opacity_idx = 0
+            self._opacity_idx = saved_idx  # was hardcoded 0 — FIX: use saved value
         if click_through is not None:
             self._click_through = click_through
         else:
-            self._click_through = False
+            self._click_through = saved_ct  # was hardcoded False — FIX: use saved value
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:

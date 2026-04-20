@@ -3883,10 +3883,12 @@ class PremiumWidgetManager:
                 stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
                 stderr=_sp.STDOUT, creationflags=0)
         if which in ("both", "premium"):
+            # SettingsPopup writes widgets_click_through (not premium_click_through)
+            ct = settings.get("widgets_click_through", settings.get("premium_click_through", False))
             self._proc = launch_one(self._widget_path, self._proc,
                 settings.get("premium_widget_pos"),
                 settings.get("premium_opacity_idx", 3),
-                settings.get("premium_click_through", False))
+                ct)
         if which in ("both", "bar"):
             self._bar_proc = launch_one(self._bar_path, self._bar_proc,
                 settings.get("bar_widget_pos"),
@@ -4087,8 +4089,14 @@ class PremiumWidgetManager:
         settings = self._load_settings()
         path = self._widget_path if which == "premium" else self._bar_path
         ref = self._proc if which == "premium" else self._bar_proc
-        opacity_idx = settings.get("premium_opacity_idx" if which == "premium" else "bar_opacity_idx", 3)
-        click_through = settings.get("premium_click_through" if which == "premium" else "bar_click_through", False)
+        # Premium widget: SettingsPopup writes widgets_click_through (not premium_click_through)
+        if which == "premium":
+            # Read widgets_click_through (Settings popup primary key) with fallback to premium_click_through (widget key)
+            opacity_idx = settings.get("premium_opacity_idx", 3)
+            click_through = settings.get("widgets_click_through", settings.get("premium_click_through", False))
+        else:
+            opacity_idx = settings.get("bar_opacity_idx", 3)
+            click_through = settings.get("bar_click_through", False)
         cmd = [sys.executable, path]
         if pos:
             cmd += ["--pos", f"{pos['x']},{pos['y']}"]
