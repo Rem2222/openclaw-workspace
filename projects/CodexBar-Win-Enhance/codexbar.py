@@ -3161,6 +3161,10 @@ class CodexBarPopup(ctk.CTkToplevel):
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
 
+        wp = d.get("weekly_used_pct", 0)
+        if wp > 0:
+            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
+
 class SettingsPopup(ctk.CTkToplevel):
     """Settings window for API tokens."""
 
