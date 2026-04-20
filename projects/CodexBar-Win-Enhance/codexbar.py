@@ -3859,6 +3859,15 @@ class PremiumWidgetManager:
         import subprocess as _sp
         settings = self._load_settings()
         def launch_one(path, ref, pos=None, opacity_idx=3, click_through=False):
+            # Validate position: if x is way off-screen (e.g. > 90% of 4K width 3840),
+            # treat as corrupted and don't pass — widget will center itself.
+            import subprocess as _ps
+            try:
+                sw = _ps.screen_width() if hasattr(_ps, 'screen_width') else 3840
+            except:
+                sw = 3840
+            if pos and pos.get('x', 0) > sw * 0.9:
+                pos = None  # invalid/off-screen position — let widget center
             if ref and ref.poll() is None:
                 ref.terminate()
                 try: ref.wait(timeout=2)
