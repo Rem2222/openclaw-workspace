@@ -336,9 +336,11 @@ class PremiumWidget(QWidget):
             ctypes.windll.user32.SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style)
 
             # Force window to recalculate non-client area so new styles take effect
+            # SWP_NOZORDER prevents Z-order change (fly-to-corner fix)
+            # SWP_NOACTIVATE prevents activation change
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
+                0x0020 | 0x0001 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
             _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
