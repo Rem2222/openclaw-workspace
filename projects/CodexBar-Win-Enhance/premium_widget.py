@@ -167,10 +167,12 @@ class PremiumWidget(QWidget):
             self._click_through = saved_ct  # was hardcoded False — FIX: use saved value
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
-        if self._click_through:
-            self._set_click_through(True)
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+        # MUST set click-through AFTER setWindowFlags — otherwise SetWindowLong inside
+        # setWindowFlags overwrites GWL_EXSTYLE and wipes WS_EX_TRANSPARENT
+        if self._click_through:
+            self._set_click_through(True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Square: 220x220
         side = 220
@@ -290,22 +292,25 @@ class PremiumWidget(QWidget):
         p.end()
 
     def mousePressEvent(self, e):
+        # Only track left-button for dragging — right-click is reserved for context menu
+        # and must NOT set _drag (prevents fly-to-corner on context menu close)
         if e.button() == Qt.MouseButton.LeftButton:
             self._click_pos = e.globalPosition().toPoint()
             self._drag = self._click_pos - self.pos()
-        elif e.button() == Qt.MouseButton.RightButton:
-            self._click_through = not self._click_through
-            _d(f"right-click: toggle click_through to {self._click_through}")
-            self._set_click_through(self._click_through)
-            self._save_settings()
+        # Click-through toggle on right-click is handled in mouseReleaseEvent
+        # to avoid double-toggle with contextMenuEvent
 
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint() - self._drag)
-            self._save_position()
 
     def mouseReleaseEvent(self, e):
-        if e.button() == Qt.MouseButton.LeftButton and self._drag:
+        if e.button() == Qt.MouseButton.RightButton:
+            self._click_through = not self._click_through
+            _d(f"right-click release: toggle click_through to {self._click_through}")
+            self._set_click_through(self._click_through)
+            self._save_settings()
+        elif e.button() == Qt.MouseButton.LeftButton and self._drag:
             moved = (e.globalPosition().toPoint() - self._click_pos).manhattanLength() > 5
             if not moved:
                 # Click (no drag) → cycle opacity
