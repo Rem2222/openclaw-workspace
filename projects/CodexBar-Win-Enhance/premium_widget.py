@@ -167,10 +167,10 @@ class PremiumWidget(QWidget):
             self._click_through = saved_ct  # was hardcoded False — FIX: use saved value
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
-        if self._click_through:
-            self._set_click_through(True)
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+        if self._click_through:
+            self._set_click_through(True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Square: 220x220
         side = 220
@@ -302,7 +302,6 @@ class PremiumWidget(QWidget):
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint() - self._drag)
-            self._save_position()
 
     def mouseReleaseEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton and self._drag:
