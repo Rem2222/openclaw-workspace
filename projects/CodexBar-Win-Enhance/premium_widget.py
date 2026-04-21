@@ -171,7 +171,8 @@ class PremiumWidget(QWidget):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         if self._click_through:
             self._set_click_through(True)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # NOTE: WA_TranslucentBackground REMOVED — it conflicts with WS_EX_TRANSPARENT (CT)
+        # causing DWM to render WITHOUT rounded corners. PaintEvent handles visuals.
         # Square: 220x220
         side = 220
         self.setFixedSize(side, side)
