@@ -1,5 +1,5 @@
 """
-CodexBar for Windows v2.2.9-Stable
+CodexBar for Windows v2.3
 ============================
 System tray app that shows your REAL Claude usage.
 Native customtkinter popup - no browser hack needed.
@@ -1759,8 +1759,8 @@ class OpenCodeDataFetcher:
             d["session_reset"] = session_reset
             d["weekly_used_pct"] = weekly_pct if weekly_pct is not None else 0
             d["weekly_reset"] = weekly_reset
-            d["monthly_used_pct"] = monthly_pct if monthly_pct is not None else 0
-            d["monthly_reset"] = monthly_reset if monthly_reset != "unknown" else d["session_reset"]
+            d["session_used_pct"] = monthly_pct if monthly_pct is not None else d["session_used_pct"]
+            d["session_reset"] = monthly_reset if monthly_reset != "unknown" else d["session_reset"]
             d["source"] = "html"
             d["updated"] = datetime.now().strftime("Updated %H:%M")
 
@@ -3058,14 +3058,10 @@ class CodexBarPopup(ctk.CTkToplevel):
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
 
-
         wp = d.get("weekly_used_pct", 0)
         if wp > 0:
             self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
 
-        mp = d.get("monthly_used_pct", 0)
-        if mp > 0:
-            self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
     # ── OpenCode panel ─────────────────────────────────────────
 
     def _build_opencode_panel(self, parent):
@@ -3111,14 +3107,6 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
 
     def _build_ollama_panel(self, parent):
-
-        wp = d.get("weekly_used_pct", 0)
-        if wp > 0:
-            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
-
-        mp = d.get("monthly_used_pct", 0)
-        if mp > 0:
-            self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
         d = self._ollama
         available = not d.get("error") and d.get("available", False)
 
@@ -3833,9 +3821,9 @@ class PremiumWidgetManager:
         data = self._load_settings()
         return data.get("widget_mode", "both")
 
-    def _write_data(self, pct, prov, wp=0, mp=0):
+    def _write_data(self, pct, prov, wp=0):
         with open(self._data_file, 'w') as f:
-            f.write(f"{pct}|{prov}|{wp}|{mp}")
+            f.write(f"{pct}|{prov}|{wp}")
 
     def update_wp(self, wp):
         """Update weekly % in data file without changing pct/prov or relaunching widgets."""
@@ -3895,21 +3883,19 @@ class PremiumWidgetManager:
                 stdout=open(_os.path.join(_os.path.dirname(__file__), "widget_stdout.log"), 'w'),
                 stderr=_sp.STDOUT, creationflags=0)
         if which in ("both", "premium"):
-            # SettingsPopup writes widgets_click_through (not premium_click_through)
-            ct = settings.get("widgets_click_through", settings.get("premium_click_through", False))
             self._proc = launch_one(self._widget_path, self._proc,
                 settings.get("premium_widget_pos"),
                 settings.get("premium_opacity_idx", 3),
-                ct)
+                settings.get("premium_click_through", False))
         if which in ("both", "bar"):
             self._bar_proc = launch_one(self._bar_path, self._bar_proc,
                 settings.get("bar_widget_pos"),
                 settings.get("bar_opacity_idx", 3),
                 settings.get("bar_click_through", False))
 
-    def update(self, pct, prov, wp=0, mp=0):
-        """Write update to temp file — both widgets read it. wp = weekly %, mp = monthly %."""
-        self._write_data(pct, prov, wp, mp)
+    def update(self, pct, prov, wp=0):
+        """Write update to temp file — both widgets read it. wp = weekly %."""
+        self._write_data(pct, prov, wp)  # FIX: pass wp!
         # Also write weekly data for widgets that support it
         if wp > 0:
             try:
@@ -4101,14 +4087,8 @@ class PremiumWidgetManager:
         settings = self._load_settings()
         path = self._widget_path if which == "premium" else self._bar_path
         ref = self._proc if which == "premium" else self._bar_proc
-        # Premium widget: SettingsPopup writes widgets_click_through (not premium_click_through)
-        if which == "premium":
-            # Read widgets_click_through (Settings popup primary key) with fallback to premium_click_through (widget key)
-            opacity_idx = settings.get("premium_opacity_idx", 3)
-            click_through = settings.get("widgets_click_through", settings.get("premium_click_through", False))
-        else:
-            opacity_idx = settings.get("bar_opacity_idx", 3)
-            click_through = settings.get("bar_click_through", False)
+        opacity_idx = settings.get("premium_opacity_idx" if which == "premium" else "bar_opacity_idx", 3)
+        click_through = settings.get("premium_click_through" if which == "premium" else "bar_click_through", False)
         cmd = [sys.executable, path]
         if pos:
             cmd += ["--pos", f"{pos['x']},{pos['y']}"]
@@ -4512,9 +4492,9 @@ class CodexBarApp:
             try:
                 if self.pw_manager:
                     wp = data_src.get("weekly_used_pct", 0) if data_src else 0
-                    mp = data_src.get("monthly_used_pct", 0) if data_src else 0
-                    print(f"[PREMIUM] _set_tray_icon: sp={sp} label={label} wp={wp} mp={mp}")
-                    self.pw_manager.update(sp, label, wp, mp)
+                    print(f"[PREMIUM] _set_tray_icon: sp={sp} label={label} wp={wp} data_keys={list(data_src.keys())[:5] if data_src else None}")
+                    self.pw_manager.update(sp, label, wp)
+                    print(f"[PREMIUM] update called with sp={sp} label={label} wp={wp}")
             except Exception as pw_err:
                 print(f"[PREMIUM] update error: {pw_err}")
         except Exception as e:
@@ -4555,10 +4535,9 @@ class CodexBarApp:
                     src = pm.get(ap, self.fetcher.data)
                     sp = src.get("session_used_pct", 0) if src else 0
                     wp = src.get("weekly_used_pct", 0) if src else 0
-                    mp = src.get("monthly_used_pct", 0) if src else 0
                     labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
                     label = labels.get(ap, ap.upper())
-                    self.pw_manager.update(sp, label, wp, mp)
+                    self.pw_manager.update(sp, label, wp)
                     print(f"[PREMIUM] bg update: sp={sp} label={label} wp={wp} provider={ap}")
             except Exception as e:
                 print(f"[PREMIUM] bg update error: {e}")
@@ -4621,7 +4600,7 @@ def _d_settings(msg):
 if __name__ == '__main__':
     print(r"""
    ========================================
-    CodexBar for Windows v2.2.9-Stable
+    CodexBar for Windows v2.3
     Native popup - no browser needed
    ========================================
     """)

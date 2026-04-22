@@ -1,4 +1,4 @@
-"""Premium Floating Widget v9-Stable - Square layout with weekly progress bar"""
+"""Premium Floating Widget v2.3 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
@@ -150,29 +150,23 @@ class PremiumWidget(QWidget):
             pass
         return 3, False  # defaults: 100% opacity, click-through OFF
 
-    def __init__(self, pos=None, opacity_idx=None, click_through=None):
+    def __init__(self, pos=None):
         super().__init__()
         self.pct = 0
         self.prov = "CL"
         self.wp = 0  # Weekly percentage
-        # Use passed values, or load from settings as fallback
-        saved_idx, saved_ct = PremiumWidget._load_widget_settings()
-        if opacity_idx is not None:
-            self._opacity_idx = opacity_idx
-        else:
-            self._opacity_idx = saved_idx  # was hardcoded 0 — FIX: use saved value
-        if click_through is not None:
-            self._click_through = click_through
-        else:
-            self._click_through = saved_ct  # was hardcoded False — FIX: use saved value
+        # Load saved settings
+        self._opacity_idx, self._click_through = self._load_widget_settings()
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
+        if self._click_through:
+            _d(f"__init__: calling _set_click_through True")
+            self._set_click_through(True)
+        else:
+            _d(f"__init__: _click_through is False, skipping _set_click_through")
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        if self._click_through:
-            self._set_click_through(True)
-        # NOTE: WA_TranslucentBackground REMOVED — it conflicts with WS_EX_TRANSPARENT (CT)
-        # causing DWM to render WITHOUT rounded corners. PaintEvent handles visuals.
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Square: 220x220
         side = 220
         self.setFixedSize(side, side)
@@ -303,6 +297,7 @@ class PremiumWidget(QWidget):
     def mouseMoveEvent(self, e):
         if self._drag and e.buttons() & Qt.MouseButton.LeftButton:
             self.move(e.globalPosition().toPoint() - self._drag)
+            self._save_position()
 
     def mouseReleaseEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton and self._drag:
@@ -337,11 +332,9 @@ class PremiumWidget(QWidget):
             ctypes.windll.user32.SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style)
 
             # Force window to recalculate non-client area so new styles take effect
-            # SWP_NOZORDER prevents Z-order change (fly-to-corner fix)
-            # SWP_NOACTIVATE prevents activation change
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
+                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
             _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
@@ -395,7 +388,39 @@ def main():
         elif arg == "--click-through" and i + 1 < len(sys.argv):
             click_through = sys.argv[i + 1] == "1"
     app = QApplication(sys.argv)
-    w = PremiumWidget(pos, opacity_idx, click_through)
+    w = PremiumWidget.__new__(PremiumWidget)
+    QWidget.__init__(w)
+    w.pct = 0
+    w.prov = "CL"
+    w.wp = 0
+    w._opacity_idx = opacity_idx
+    w._click_through = click_through
+    w._drag = None
+    w._click_pos = None
+    w.setWindowTitle("CodexBar")
+    w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+    w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    side = 220
+    w.setFixedSize(side, side)
+    if pos:
+        w.move(pos[0], pos[1])
+    else:
+        s = QApplication.primaryScreen().geometry()
+        w.move((s.width()-side)//2, (s.height()-side)//2)
+    w._last_data = ""
+    w._poll_count = 0
+    w._timer = QTimer(w)
+    w._timer.timeout.connect(w._poll_file)
+    w._timer.start(200)
+    w._ui()
+    w.update_pct(0, "CL", wp=0)
+    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
+    if w._click_through:
+        w._set_click_through(True)
+    w.show()
+    w.raise_()
+    print("[PW] Ready", flush=True)
+    sys.exit(app.exec())
     w.show()
     w.raise_()
     print("[PW] Ready", flush=True)
