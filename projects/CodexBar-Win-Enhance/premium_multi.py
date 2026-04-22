@@ -56,6 +56,7 @@ class PremiumMultiWidget(QWidget):
         return 3, False
 
     def __init__(self, pos=None):
+        _d(f"__init__: pos={pos}, argv={sys.argv}")
         super().__init__()
         self._all_providers = {}
         self._active_cell = -1
@@ -97,12 +98,14 @@ class PremiumMultiWidget(QWidget):
             _d(f"_set_click_through exception: {e}")
 
     def _poll_file(self):
+        _d(f"_poll: checking {DATA_FILE}")
         try:
             with open(DATA_FILE, 'r') as f:
                 data = f.read().strip()
             if data in ("quit", "off"):
                 return
             parts = data.split("|")
+            _d(f"_poll parsed: {len(parts)} parts, raw={data[:100]}")
             if len(parts) < 2:
                 return
             pct = int(parts[0])
@@ -123,6 +126,7 @@ class PremiumMultiWidget(QWidget):
             print(f"[PM] poll error: {e}", flush=True)
 
     def update_display(self, pct, prov, wp, all_prov):
+        _d(f"update_display: pct={pct}, prov={prov}, wp={wp}, providers={list(all_prov.keys()) if all_prov else None}")
         try:
             if all_prov:
                 self._all_providers = all_prov
@@ -134,6 +138,7 @@ class PremiumMultiWidget(QWidget):
             print(f"[PM] update_display error: {e}", flush=True)
 
     def paintEvent(self, e):
+        _d(f"paintEvent: _all_providers={len(self._all_providers) if self._all_providers else 0}")
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -230,11 +235,13 @@ class PremiumMultiWidget(QWidget):
         p.end()
 
     def mousePressEvent(self, e):
+        _d(f"mousePress: btn={e.button()}, pos={e.globalPosition().toPoint()}, widget={self.pos()}")
         if e.button() == Qt.MouseButton.LeftButton:
             self._click_pos = e.globalPosition().toPoint()
             self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
+            _d(f"CT toggle: {self._click_through}")
             self._set_click_through(self._click_through)
             self._save_settings()
 
@@ -244,6 +251,7 @@ class PremiumMultiWidget(QWidget):
             self._save_position()
 
     def mouseReleaseEvent(self, e):
+        _d(f"mouseRelease: btn={e.button()}, widget={self.pos()}")
         if e.button() == Qt.MouseButton.LeftButton and self._drag:
             moved = (e.globalPosition().toPoint() - self._click_pos).manhattanLength() > 5
             if not moved:
@@ -253,6 +261,7 @@ class PremiumMultiWidget(QWidget):
         self._drag = None
 
     def _save_settings(self):
+        _d(f"_save_settings: pos={self.pos()}, ct={self._click_through}")
         try:
             data = {}
             if os.path.exists(SETTINGS_FILE):
