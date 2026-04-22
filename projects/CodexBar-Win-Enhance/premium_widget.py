@@ -200,6 +200,7 @@ class PremiumWidget(QWidget):
             if data == "off":
                 return
             parts = data.split("|")
+            _d(f"_poll parsed: {len(parts)} parts, raw={data[:80]}")
             if len(parts) >= 2:
                 pct = int(parts[0])
                 prov = parts[1]
@@ -214,6 +215,7 @@ class PremiumWidget(QWidget):
             print(f"[PW] poll error: {e}", flush=True)
 
     def _ui(self):
+        _d("_ui: creating child widgets")
         # Main vertical layout, evenly distributed
         main_lo = QVBoxLayout(self)
         main_lo.setContentsMargins(12, 10, 12, 10)
@@ -246,6 +248,7 @@ class PremiumWidget(QWidget):
         main_lo.addWidget(self.wb, alignment=Qt.AlignmentFlag.AlignCenter)
 
     def update_pct(self, pct, prov=None, wp=0):
+        _d(f"update_pct: pct={pct}, prov={prov}, wp={wp}")
         """
         Update percentage display.
         pct: session percentage (0-100)
@@ -282,6 +285,7 @@ class PremiumWidget(QWidget):
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
             self._click_pos = e.globalPosition().toPoint()
+            _d(f"LMB press at {e.globalPosition().toPoint()}, widget at {self.pos()}")
             self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
@@ -289,6 +293,7 @@ class PremiumWidget(QWidget):
             saved_pos = self.pos()  # Save position before CT change
             self._set_click_through(self._click_through)
             self.move(saved_pos)  # Restore position (guard against Windows moving window)
+            _d(f"CT: pos restored {saved_pos} -> actual {self.pos()}")
             self._drag = None  # Clear any stale drag state
             self._save_settings()
 
@@ -303,6 +308,7 @@ class PremiumWidget(QWidget):
             if not moved:
                 # Click (no drag) → cycle opacity
                 self._opacity_idx = (self._opacity_idx + 1) % len(self._OPACITY_LEVELS)
+                _d(f"opacity cycle: idx={self._opacity_idx}, opacity={self._OPACITY_LEVELS[self._opacity_idx]}")
                 self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
                 self._save_settings()
         self._drag = None
@@ -346,6 +352,7 @@ class PremiumWidget(QWidget):
         self._save_settings()
 
     def _save_settings(self):
+        _d(f"_save_settings: pos={self.pos()}, opacity_idx={self._opacity_idx}, ct={self._click_through}")
         """Save position + opacity + click_through to settings."""
         try:
             pos = self.pos()
@@ -416,10 +423,12 @@ def main():
     w._timer.start(200)
     w.show()
     w.raise_()
+    _d(f"main: shown at {w.pos()}, ct={w._click_through}, op_idx={w._opacity_idx}")
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
     w.show()
     w.raise_()
+    _d(f"main: shown at {w.pos()}, ct={w._click_through}, op_idx={w._opacity_idx}")
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
 
