@@ -1,5 +1,5 @@
 """
-CodexBar for Windows v2.4
+CodexBar for Windows v2.5
 ============================
 System tray app that shows your REAL Claude usage.
 Native customtkinter popup - no browser hack needed.
@@ -1410,7 +1410,7 @@ class ZaiDataFetcher:
             return None
 
 
-VERSION = "2.4"
+VERSION = "2.5"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3850,11 +3850,16 @@ class PremiumWidgetManager:
     def _load_settings(self):
         try:
             if self._settings_path.exists():
-                data = json.loads(self._settings_path.read_text())
+                raw = self._settings_path.read_text()
+                data = json.loads(raw)
                 if isinstance(data, dict):
                     return data
-        except Exception:
-            pass
+                else:
+                    print(f"[PWM] WARNING: settings.json is {type(data).__name__}, resetting to dict", flush=True)
+                    # Overwrite with empty dict to fix
+                    self._settings_path.write_text("{}")
+        except Exception as e:
+            print(f"[PWM] _load_settings error: {e}", flush=True)
         return {}
 
     def _save_pos(self, key, x, y):
@@ -4381,6 +4386,7 @@ class CodexBarApp:
         except Exception as e:
             with open(log_path, 'a') as lf:
                 lf.write(f"ERROR: {e}\n")
+                import traceback; traceback.print_exc(file=lf)
             import traceback; traceback.print_exc()
 
         # ── auto-refresh every 5 min ──
@@ -4762,7 +4768,7 @@ def _d_settings(msg):
 if __name__ == '__main__':
     print(r"""
    ========================================
-    CodexBar for Windows v2.4
+    CodexBar for Windows v2.5
     Native popup - no browser needed
    ========================================
     """)
