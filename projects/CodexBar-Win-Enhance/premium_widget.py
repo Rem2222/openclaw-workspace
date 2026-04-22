@@ -102,10 +102,8 @@ class WeeklyBar(QFrame):
     def paintEvent(self, e):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        if self._wp <= 0:
-            p.end()
-            return
-        t = get_week_theme(self._wp)
+        _wp = max(self._wp, 1)  # show bar at 1% minimum so it always renders
+        t = get_week_theme(_wp)
         rect = self.rect()
         # Semi-transparent background
         bg = QColor(255,255,255,15)
@@ -113,7 +111,7 @@ class WeeklyBar(QFrame):
         p.setPen(Qt.PenStyle.NoPen)
         p.drawRoundedRect(rect, 6, 6)
         # Foreground bar
-        bar_w = int(rect.width() * (self._wp / 100.0))
+        bar_w = int(rect.width() * (_wp / 100.0))
         if bar_w > 0:
             g = QLinearGradient(rect.left(), 0, rect.right(), 0)
             g.setColorAt(0, t['p'])
@@ -262,16 +260,9 @@ class PremiumWidget(QWidget):
             self.pl.setText(self.prov)
             self.pcl.setStyleSheet(f"color: {t['p'].name()};")
             self.ring.set_val(pct / 100.0)
-            if wp > 0:
-                try:
-                    self.wb.set_wp(wp)
-                    self.wb.setFixedHeight(24)
-                    self.wb.show()
-                except Exception as e:
-                    print(f"[PW] wb.set_wp error: {e}", flush=True)
-            else:
-                self.wb.setFixedHeight(0)
-                self.wb.hide()
+            self.wb.set_wp(wp)
+            self.wb.setFixedHeight(24)
+            self.wb.show()
             self._wp = wp
         except Exception as e:
             print(f"[PW] update_pct error: {e}", flush=True)

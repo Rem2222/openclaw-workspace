@@ -4480,6 +4480,32 @@ class CodexBarApp:
                 self.pw_manager.update(sp, label, wp)
         except Exception as e:
             print(f"[_on_tab_switch] premium widget update error: {e}")
+        # Force immediate fetch for the new tab provider (async, result flows to pw_manager.update in _do_refresh)
+        def _fetch_provider():
+            try:
+                fetcher_map = {"claude": self.fetcher, "openai": self.codex_fetcher,
+                               "zai": self.zai_fetcher, "minimax": self.minimax_fetcher,
+                               "opencode": self.opencode_fetcher, "ollama": self.ollama_fetcher}
+                data_map = {"claude": "data", "openai": "codex_data",
+                            "zai": "zai_data", "minimax": "minimax_data",
+                            "opencode": "opencode_data", "ollama": "ollama_data"}
+                fetcher = fetcher_map.get(tab)
+                if fetcher:
+                    fresh = fetcher.fetch()
+                    data_key = data_map.get(tab)
+                    if data_key:
+                        setattr(self, data_key, fresh)
+                    # After fetch, update premium widget with fresh data
+                    sp = fresh.get("session_used_pct", 0) if fresh else 0
+                    wp = src.get("weekly_used_pct", 0) if src else 0
+                    labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
+                    label = labels.get(tab, "CL")
+                    if self.pw_manager:
+                        self.pw_manager.update(sp, label, wp)
+                    print(f"[_on_tab_switch] fetched {tab}: sp={sp} wp={wp}")
+            except Exception as e:
+                print(f"[_on_tab_switch] fetch error for {tab}: {e}")
+        threading.Thread(target=_fetch_provider, daemon=True).start()
 
     def _set_tray_icon(self, provider):
         try:
