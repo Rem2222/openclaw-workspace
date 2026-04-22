@@ -3836,6 +3836,7 @@ class PremiumWidgetManager:
         self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
         self._bar_path = _os.path.join(_os.path.dirname(__file__), "bar_widget.py")
         self._multi_path = _os.path.join(_os.path.dirname(__file__), "premium_multi.py")
+        self._cached_all_prov = None
         self._data_file = _os.path.join(_tf.gettempdir(), "codexbar_widget.txt")
         self._settings_path = self._settings_file()
 
@@ -3894,7 +3895,7 @@ class PremiumWidgetManager:
             pass
 
     def start(self, pct=0, prov="CL"):
-        self._write_data(pct, prov)
+        self._write_data(pct, prov, 0, self._cached_all_prov)
         settings = self._load_settings()
         visible = settings.get("widget_visible", True)
         mode = self._get_widget_mode()
@@ -3954,7 +3955,9 @@ class PremiumWidgetManager:
 
     def update(self, pct, prov, wp=0, all_prov=None):
         """Write update to temp file — both widgets read it. wp = weekly %."""
-        self._write_data(pct, prov, wp, all_prov)
+        if all_prov:
+            self._cached_all_prov = all_prov
+        self._write_data(pct, prov, wp, self._cached_all_prov)
         # Also write weekly data for widgets that support it
         if wp > 0:
             try:
@@ -4005,7 +4008,7 @@ class PremiumWidgetManager:
                         pct = int(parts[0])
                         prov = parts[1]
             except: pass
-            self._write_data(pct, prov)
+            self._write_data(pct, prov, 0, self._cached_all_prov)
             settings = self._load_settings()
             if mode in ("both", "large") and _os.path.exists(self._widget_path):
                 self._launch_single("premium", settings.get("premium_widget_pos"))
@@ -4120,7 +4123,7 @@ class PremiumWidgetManager:
                     prov = parts[1]
         except: pass
         # 6. Launch only widgets needed for this mode
-        self._write_data(pct, prov)
+        self._write_data(pct, prov, 0, self._cached_all_prov)
         self._visible = True
         # Save widget_visible=True when we start widgets
         try:
@@ -4445,7 +4448,7 @@ class CodexBarApp:
         else:
             if mode == "none":
                 return
-            self.pw_manager._write_data(pct, prov)
+            self.pw_manager._write_data(pct, prov, 0, self.pw_manager._cached_all_prov)
             if mode in ("both", "large") and _os.path.exists(self.pw_manager._widget_path):
                 self.pw_manager._launch_single("premium", settings.get("premium_widget_pos"))
             if mode in ("both", "small") and _os.path.exists(self.pw_manager._bar_path):
@@ -4472,7 +4475,7 @@ class CodexBarApp:
             self.pw_manager._bar_proc.terminate()
             self.pw_manager._write_data(0, "off")
         else:
-            self.pw_manager._write_data(pct, prov)
+            self.pw_manager._write_data(pct, prov, 0, self.pw_manager._cached_all_prov)
             self.pw_manager._launch("bar")
     
     def _get_current_percentage(self):
