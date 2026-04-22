@@ -4466,6 +4466,20 @@ class CodexBarApp:
         # Store the active provider for icon refresh
         self._active_provider = tab if tab in ("openai", "zai", "minimax", "opencode", "ollama") else "claude"
         self._set_tray_icon(tab)
+        # Update premium widget with new provider's session + weekly data
+        try:
+            if self.pw_manager:
+                pm = {"claude": self.fetcher.data, "openai": self.codex_data,
+                      "zai": self.zai_data, "minimax": self.minimax_data,
+                      "opencode": self.opencode_data, "ollama": self.ollama_data}
+                src = pm.get(tab, self.fetcher.data)
+                sp = src.get("session_used_pct", 0) if src else 0
+                wp = src.get("weekly_used_pct", 0) if src else 0
+                labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
+                label = labels.get(tab, "CL")
+                self.pw_manager.update(sp, label, wp)
+        except Exception as e:
+            print(f"[_on_tab_switch] premium widget update error: {e}")
 
     def _set_tray_icon(self, provider):
         try:
