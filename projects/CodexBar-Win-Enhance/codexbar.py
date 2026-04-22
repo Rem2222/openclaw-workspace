@@ -1679,6 +1679,7 @@ class OpenCodeDataFetcher:
             "provider": "OpenCode", "plan": "Go", "updated": "Never",
             "source": "none", "session_used_pct": 0, "session_reset": "unknown",
             "weekly_used_pct": 0, "weekly_reset": "unknown",
+            "monthly_used_pct": 0, "monthly_reset": "unknown",
             "cost_today": 0, "cost_today_tokens": "0",
             "cost_30d": 0, "cost_30d_tokens": "0", "model": "", "error": None, "available": False,
         }
@@ -1761,6 +1762,8 @@ class OpenCodeDataFetcher:
             d["weekly_reset"] = weekly_reset
             d["session_used_pct"] = monthly_pct if monthly_pct is not None else d["session_used_pct"]
             d["session_reset"] = monthly_reset if monthly_reset != "unknown" else d["session_reset"]
+            d["monthly_used_pct"] = monthly_pct if monthly_pct is not None else 0
+            d["monthly_reset"] = monthly_reset
             d["source"] = "html"
             d["updated"] = datetime.now().strftime("Updated %H:%M")
 
@@ -3061,6 +3064,10 @@ class CodexBarPopup(ctk.CTkToplevel):
         wp = d.get("weekly_used_pct", 0)
         if wp > 0:
             self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
+
+        mp = d.get("monthly_used_pct", 0)
+        if mp > 0:
+            self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
 
     # ── OpenCode panel ─────────────────────────────────────────
 
