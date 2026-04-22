@@ -1,0 +1,25 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - GATEWAY_URL=${GATEWAY_URL}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ALLOWED_USERS=${ALLOWED_USERS}
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+  gateway:
+    image: openclaw/gateway:latest
+    restart: unless-stopped
+    ports:
+      - "18789:18789"
+    environment:
+      - GATEWAY_BIND=0.0.0.0:18789
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

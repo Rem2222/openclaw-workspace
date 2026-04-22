@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: bot_trueconf
+Version: 0.1.0
+Summary: TrueConf bot via OpenClaw Gateway
+Requires-Python: >=3.11
+Requires-Dist: python-trueconf-bot>=1.1.1
+Requires-Dist: httpx
+Requires-Dist: pydantic>=2
+Requires-Dist: python-dotenv
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: pytest-httpx; extra == "dev"
+Requires-Dist: ruff; extra == "dev"

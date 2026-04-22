@@ -3822,9 +3822,15 @@ class PremiumWidgetManager:
         data = self._load_settings()
         return data.get("widget_mode", "both")
 
-    def _write_data(self, pct, prov, wp=0):
-        with open(self._data_file, 'w') as f:
-            f.write(f"{pct}|{prov}|{wp}")
+    def _write_data(self, pct, prov, wp=0, all_prov=None):
+        if all_prov:
+            import json as _json
+            fld = _json.dumps(all_prov, ensure_ascii=False)
+            with open(self._data_file, 'w', encoding='utf-8') as f:
+                f.write(f"{pct}|{prov}|{wp}|{fld}")
+        else:
+            with open(self._data_file, 'w') as f:
+                f.write(f"{pct}|{prov}|{wp}")
 
     def update_wp(self, wp):
         """Update weekly % in data file without changing pct/prov or relaunching widgets."""
@@ -3894,9 +3900,9 @@ class PremiumWidgetManager:
                 settings.get("bar_opacity_idx", 3),
                 settings.get("bar_click_through", False))
 
-    def update(self, pct, prov, wp=0):
+    def update(self, pct, prov, wp=0, all_prov=None):
         """Write update to temp file — both widgets read it. wp = weekly %."""
-        self._write_data(pct, prov, wp)  # FIX: pass wp!
+        self._write_data(pct, prov, wp, all_prov)
         # Also write weekly data for widgets that support it
         if wp > 0:
             try:
@@ -4466,7 +4472,7 @@ class CodexBarApp:
         # Store the active provider for icon refresh
         self._active_provider = tab if tab in ("openai", "zai", "minimax", "opencode", "ollama") else "claude"
         self._set_tray_icon(tab)
-        # Update premium widget with new provider's session + weekly data
+        # Update premium widget with new provider's session + weekly data + all providers
         try:
             if self.pw_manager:
                 pm = {"claude": self.fetcher.data, "openai": self.codex_data,
@@ -4477,7 +4483,15 @@ class CodexBarApp:
                 wp = src.get("weekly_used_pct", 0) if src else 0
                 labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
                 label = labels.get(tab, "CL")
-                self.pw_manager.update(sp, label, wp)
+                all_prov = {}
+                for _k, _v in pm.items():
+                    if _v:
+                        all_prov[_k] = {
+                            "pct": _v.get("session_used_pct", 0) or 0,
+                            "reset": _v.get("session_reset", "—"),
+                            "fresh": _v.get("updated", "") not in ("", None),
+                        }
+                self.pw_manager.update(sp, label, wp, all_prov)
         except Exception as e:
             print(f"[_on_tab_switch] premium widget update error: {e}")
         # Force immediate fetch for the new tab provider (async, result flows to pw_manager.update in _do_refresh)
@@ -4495,13 +4509,22 @@ class CodexBarApp:
                     data_key = data_map.get(tab)
                     if data_key:
                         setattr(self, data_key, fresh)
-                    # After fetch, update premium widget with fresh data
+                    # After fetch, update premium widget with fresh data + all providers
                     sp = fresh.get("session_used_pct", 0) if fresh else 0
-                    wp = src.get("weekly_used_pct", 0) if src else 0
+                    wp = fresh.get("weekly_used_pct", 0) if fresh else 0
                     labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
                     label = labels.get(tab, "CL")
+                    # Build all-providers dict from current self.*_data
+                    all_prov = {}
+                    for _k, _v in pm.items():
+                        if _v:
+                            all_prov[_k] = {
+                                "pct": _v.get("session_used_pct", 0) or 0,
+                                "reset": _v.get("session_reset", "—"),
+                                "fresh": _v.get("updated", "") not in ("", None),
+                            }
                     if self.pw_manager:
-                        self.pw_manager.update(sp, label, wp)
+                        self.pw_manager.update(sp, label, wp, all_prov)
                     print(f"[_on_tab_switch] fetched {tab}: sp={sp} wp={wp}")
             except Exception as e:
                 print(f"[_on_tab_switch] fetch error for {tab}: {e}")
@@ -4566,7 +4589,7 @@ class CodexBarApp:
                 self.ollama_data = self.ollama_fetcher.fetch()
             except Exception:
                 pass
-            # Directly update premium widget with weekly data
+            # Directly update premium widget with weekly data + all providers
             try:
                 if self.pw_manager:
                     ap = self._active_provider
@@ -4578,7 +4601,16 @@ class CodexBarApp:
                     wp = src.get("weekly_used_pct", 0) if src else 0
                     labels = {"claude": "CL", "openai": "OA", "zai": "Z.AI", "minimax": "MM", "opencode": "OC", "ollama": "OLL"}
                     label = labels.get(ap, ap.upper())
-                    self.pw_manager.update(sp, label, wp)
+                    # Build all-providers dict for multi-provider widget
+                    all_prov = {}
+                    for _k, _v in pm.items():
+                        if _v:
+                            all_prov[_k] = {
+                                "pct": _v.get("session_used_pct", 0) or 0,
+                                "reset": _v.get("session_reset", "—"),
+                                "fresh": _v.get("updated", "") not in ("", None),
+                            }
+                    self.pw_manager.update(sp, label, wp, all_prov)
                     print(f"[PREMIUM] bg update: sp={sp} label={label} wp={wp} provider={ap}")
             except Exception as e:
                 print(f"[PREMIUM] bg update error: {e}")

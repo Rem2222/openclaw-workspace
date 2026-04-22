@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+bot_trueconf/__init__.py
+bot_trueconf.egg-info/PKG-INFO
+bot_trueconf.egg-info/SOURCES.txt
+bot_trueconf.egg-info/dependency_links.txt
+bot_trueconf.egg-info/requires.txt
+bot_trueconf.egg-info/top_level.txt
+bot_trueconf/auth/__init__.py
+bot_trueconf/auth/session.py
+bot_trueconf/gateway/__init__.py
+bot_trueconf/gateway/client.py
+bot_trueconf/handlers/__init__.py
+bot_trueconf/handlers/message.py
+bot_trueconf/utils/__init__.py
+bot_trueconf/utils/formatter.py
+tests/test_gateway.py
