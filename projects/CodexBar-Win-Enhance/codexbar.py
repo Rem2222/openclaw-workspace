@@ -1410,7 +1410,7 @@ class ZaiDataFetcher:
             return None
 
 
-VERSION = "2.2.9-Stable"
+VERSION = "2.3"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
