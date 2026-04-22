@@ -1,5 +1,5 @@
 """
-CodexBar for Windows v2.3
+CodexBar for Windows v2.2.9-Stable
 ============================
 System tray app that shows your REAL Claude usage.
 Native customtkinter popup - no browser hack needed.
@@ -3060,14 +3060,10 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
-
         wp = d.get("weekly_used_pct", 0)
-        if wp > 0:
-            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
-
+        self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
         mp = d.get("monthly_used_pct", 0)
-        if mp > 0:
-            self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
+        self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
 
     # ── OpenCode panel ─────────────────────────────────────────
 
@@ -3112,6 +3108,10 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
+        wp = d.get("weekly_used_pct", 0)
+        self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
+        mp = d.get("monthly_used_pct", 0)
+        self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
 
     def _build_ollama_panel(self, parent):
         d = self._ollama
@@ -3154,10 +3154,8 @@ class CodexBarPopup(ctk.CTkToplevel):
 
         sp = d.get("session_used_pct", 0)
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
-
         wp = d.get("weekly_used_pct", 0)
-        if wp > 0:
-            self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
+        self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
 
 class SettingsPopup(ctk.CTkToplevel):
     """Settings window for API tokens."""
@@ -4607,7 +4605,7 @@ def _d_settings(msg):
 if __name__ == '__main__':
     print(r"""
    ========================================
-    CodexBar for Windows v2.3
+    CodexBar for Windows v2.2.9-Stable
     Native popup - no browser needed
    ========================================
     """)
