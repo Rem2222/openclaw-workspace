@@ -320,7 +320,7 @@ class PremiumMultiWidget(QWidget):
                         data = json.load(f)
                 except Exception:
                     pass
-            data["premium_widget_pos"] = [self.x(), self.y()]
+            data["multi_widget_pos"] = {"x": self.x(), "y": self.y()}
             os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
             with open(SETTINGS_FILE, 'w') as f:
                 json.dump(data, f)
