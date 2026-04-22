@@ -1,4 +1,4 @@
-"""Premium Floating Widget v7 - Square layout with weekly progress bar"""
+"""Premium Floating Widget v9-Stable - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
