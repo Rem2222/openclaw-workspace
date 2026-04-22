@@ -102,7 +102,15 @@ class PremiumMultiWidget(QWidget):
         try:
             with open(DATA_FILE, 'r') as f:
                 data = f.read().strip()
-            if data in ("quit", "off"):
+            if data == "quit":
+                QApplication.quit()
+                return
+            if data == "off":
+                return
+            if data.startswith("ct:"):
+                ct_val = data[3:] == "1"
+                self._set_click_through(ct_val)
+                _d(f"_poll: CT command received: {ct_val}")
                 return
             parts = data.split("|")
             _d(f"_poll parsed: {len(parts)} parts, raw={data[:100]}")

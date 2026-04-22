@@ -3487,15 +3487,8 @@ class SettingsPopup(ctk.CTkToplevel):
             _d(f"[SETTINGS] Reset positions error: {e}")
             print(f"[SETTINGS] Reset error: {e}")
 
-        # Try to move running widgets live
-        try:
-            from codexbar import CodexBarApp
-            inst = CodexBarApp._instance
-            if inst and hasattr(inst, 'pw_manager'):
-                # Kill and relaunch with new positions
-                inst.pw_manager._apply_mode_change(inst.pw_manager._get_widget_mode())
-        except Exception as e:
-            _d(f"[SETTINGS] Relaunch after reset failed: {e}")
+        # No live relaunch from Settings — positions will apply on next CodexBar restart
+        # or next widget mode change
 
     @classmethod
     def _load_token(cls, key="zai_token"):
@@ -4030,22 +4023,18 @@ class PremiumWidgetManager:
             except: pass
 
     def _apply_ct_change(self, click_through):
-        """Update click-through setting and restart widgets."""
+        """Toggle click-through on live widgets via data file — no restart."""
         settings = self._load_settings()
-        settings["premium_click_through"] = click_through
-        settings["bar_click_through"] = click_through
+        settings["widgets_click_through"] = click_through
         self._settings_path.parent.mkdir(parents=True, exist_ok=True)
         self._settings_path.write_text(json.dumps(settings, indent=2))
-        self._kill_all()
-        import time as _time
-        _time.sleep(0.3)
-        mode = self._get_widget_mode()
-        if mode in ("both", "large") and _os.path.exists(self._widget_path):
-            self._launch("premium")
-        if mode in ("both", "small") and _os.path.exists(self._bar_path):
-            self._launch("bar")
-        if mode == "multi" and _os.path.exists(self._multi_path):
-            self._launch("multi")
+        # Write CT command to data file for widgets to pick up
+        ct_cmd = f"ct:{1 if click_through else 0}"
+        try:
+            with open(self._data_file, 'w') as f:
+                f.write(ct_cmd)
+        except Exception:
+            pass
 
     def _kill_all(self):
         """Kill all widget processes gracefully via WM_CLOSE before force kill."""

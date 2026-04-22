@@ -200,6 +200,14 @@ class PremiumWidget(QWidget):
                 return
             if data == "off":
                 return
+            # Handle CT toggle command from main app (no restart needed)
+            if data.startswith("ct:"):
+                ct_val = data[3:] == "1"
+                self._click_through = ct_val
+                self._set_click_through(ct_val)
+                self._save_settings()
+                _d(f"_poll: CT command received: {ct_val}")
+                return
             parts = data.split("|")
             if len(parts) >= 2:
                 pct = int(parts[0])
