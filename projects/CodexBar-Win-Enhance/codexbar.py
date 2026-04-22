@@ -1,5 +1,5 @@
 """
-CodexBar for Windows v2.2.9-Stable
+CodexBar for Windows v2.3
 ============================
 System tray app that shows your REAL Claude usage.
 Native customtkinter popup - no browser hack needed.
@@ -1410,7 +1410,7 @@ class ZaiDataFetcher:
             return None
 
 
-VERSION = "2.2.71"
+VERSION = "2.2.9-Stable"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -4615,7 +4615,7 @@ def _d_settings(msg):
 if __name__ == '__main__':
     print(r"""
    ========================================
-    CodexBar for Windows v2.2.9-Stable
+    CodexBar for Windows v2.3
     Native popup - no browser needed
    ========================================
     """)
