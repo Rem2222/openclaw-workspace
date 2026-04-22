@@ -3062,8 +3062,6 @@ class CodexBarPopup(ctk.CTkToplevel):
         self._zai_usage_bar(parent, "Session Quota", sp, d.get("session_reset"))
         wp = d.get("weekly_used_pct", 0)
         self._zai_usage_bar(parent, "Weekly Quota", wp, d.get("weekly_reset"))
-        mp = d.get("monthly_used_pct", 0)
-        self._zai_usage_bar(parent, "Monthly Quota", mp, d.get("monthly_reset"))
 
     # ── OpenCode panel ─────────────────────────────────────────
 
