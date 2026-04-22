@@ -1,4 +1,4 @@
-"""Premium Floating Widget v2.3 - Multi-provider 2x3 grid (REM-94)"""
+"""Premium Floating Widget v2.3 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
@@ -165,14 +165,14 @@ class PremiumWidget(QWidget):
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        # REM-94 Multi-provider: 260x200
-        side_w, side_h = 260, 200
-        self.setFixedSize(side_w, side_h)
+        # Square: 220x220
+        side = 220
+        self.setFixedSize(side, side)
         if pos:
             self.move(pos[0], pos[1])
         else:
             s = QApplication.primaryScreen().geometry()
-            self.move((s.width()-side_w)//2, (s.height()-side_h)//2)
+            self.move((s.width()-side)//2, (s.height()-side)//2)
         self._drag = None
         self._ui()
         self.update_pct(0, "CL", wp=0)
@@ -203,14 +203,8 @@ class PremiumWidget(QWidget):
                 pct = int(parts[0])
                 prov = parts[1]
                 wp = int(parts[2]) if len(parts) >= 3 else 0
-                all_prov = None
-                if len(parts) >= 4 and parts[3].startswith('{'):
-                    try:
-                        all_prov = json.loads(parts[3])
-                    except Exception:
-                        pass
-                print(f"[PW] poll #{self._poll_count}: pct={pct} prov={prov} wp={wp} all_prov_keys={list(all_prov.keys()) if all_prov else None}", flush=True)
-                self.update_pct(pct, prov, wp=wp, all_prov=all_prov)
+                print(f"[PW] poll #{self._poll_count}: pct={pct} prov={prov} wp={wp} raw={data!r}", flush=True)
+                self.update_pct(pct, prov, wp=wp)
         except FileNotFoundError:
             pass  # Normal - file not created yet
         except ValueError:
@@ -219,138 +213,69 @@ class PremiumWidget(QWidget):
             print(f"[PW] poll error: {e}", flush=True)
 
     def _ui(self):
-        # REM-94: Multi-provider widget — all drawing done in paintEvent
-        self.setLayout(None)
-        self.setFixedSize(260, 200)
-        # _all_providers: {k: {"pct": int, "reset": str, "fresh": bool}}
-        self._all_providers = {}
-        self._active_cell = 0  # which cell is active (0-5)
+        # Main vertical layout, evenly distributed
+        main_lo = QVBoxLayout(self)
+        main_lo.setContentsMargins(12, 10, 12, 10)
+        main_lo.setSpacing(0)
+        
+        # Top: Provider label (small, subtle)
+        self.pl = QLabel(self.prov)
+        self.pl.setFont(QFont("Segoe UI", 10, QFont.Weight.Medium))
+        self.pl.setStyleSheet("color: rgba(255,255,255,0.6);")
+        self.pl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_lo.addWidget(self.pl, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Center: Large percentage number
+        self.pcl = QLabel("0%")
+        self.pcl.setFont(QFont("Segoe UI", 38, QFont.Weight.Bold))
+        self.pcl.setStyleSheet("color: white;")
+        self.pcl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_lo.addWidget(self.pcl, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Below percentage: Ring (smaller, 65x65)
+        self.ring = Ring(self)
+        main_lo.addWidget(self.ring, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Spacer to push weekly bar to bottom
+        main_lo.addStretch(1)
+        
+        # Bottom: Weekly progress bar
+        self.wb = WeeklyBar(self)
+        self.wb.setFixedWidth(196)  # 220 - 12*2 padding
+        main_lo.addWidget(self.wb, alignment=Qt.AlignmentFlag.AlignCenter)
 
-    def update_pct(self, pct, prov=None, wp=0, all_prov=None):
+    def update_pct(self, pct, prov=None, wp=0):
         """
-        Update multi-provider display (REM-94).
-        all_prov: {k: {"pct": int, "reset": str, "fresh": bool}} or None (legacy)
-        When all_prov is None, falls back to single-provider mode.
+        Update percentage display.
+        pct: session percentage (0-100)
+        prov: provider name (optional)
+        wp: weekly percentage (0 = no data, don't show bar)
         """
         try:
             self.pct = pct
             if prov: self.prov = prov
             self.wp = wp
-            if all_prov:
-                self._all_providers = all_prov
-                # Determine which cell is active (by provider label match)
-                labels = {"claude": 0, "openai": 1, "zai": 2,
-                          "minimax": 3, "opencode": 4, "ollama": 5}
-                self._active_cell = labels.get(prov.lower(), -1)
-            self.update()  # trigger paintEvent redraw
+            t = THEME[get_theme(pct)]
+            self.pcl.setText(f'{pct}%')
+            self.pl.setText(self.prov)
+            self.pcl.setStyleSheet(f"color: {t['p'].name()};")
+            self.ring.set_val(pct / 100.0)
+            self.wb.set_wp(wp)
+            self.wb.setFixedHeight(24)
+            self.wb.show()
+            self._wp = wp
         except Exception as e:
             print(f"[PW] update_pct error: {e}", flush=True)
 
     def paintEvent(self, e):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        # Background
         g = QLinearGradient(0, 0, 0, self.height())
-        g.setColorAt(0, QColor(26, 31, 46, 235))
-        g.setColorAt(1, QColor(15, 20, 30, 235))
+        g.setColorAt(0, QColor(26, 31, 46, 230))
+        g.setColorAt(1, QColor(15, 20, 30, 230))
         p.setBrush(g)
         p.setPen(QPen(QColor(255,255,255,25), 1))
         p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1), 16, 16)
-
-        # REM-94: Multi-provider 2x3 grid
-        # Layout: 260x200, padding=12, gap_x=8, gap_y=8, 3 cols, 2 rows
-        PAD = 12
-        GAP = 8
-        W = self.width()   # 260
-        H = self.height()  # 200
-        CELL_W = (W - PAD*2 - GAP*2) // 3   # ~73
-        CELL_H = (H - PAD*2 - GAP) // 2     # ~84
-
-        # Provider definitions: (key, abbr, color)
-        PROVIDERS = [
-            ("claude",   "CL", QColor(99,102,241)),
-            ("openai",   "OA", QColor(168,85,247)),
-            ("zai",      "ZA", QColor(6,182,212)),
-            ("minimax",  "MM", QColor(34,197,94)),
-            ("opencode", "OC", QColor(249,115,22)),
-            ("ollama",   "OL", QColor(148,163,184)),
-        ]
-
-        for i, (key, abbr, accent) in enumerate(PROVIDERS):
-            row = i // 3
-            col = i % 3
-            x = PAD + col * (CELL_W + GAP)
-            y = PAD + row * (CELL_H + GAP)
-            rect = [x, y, CELL_W, CELL_H]
-
-            info = self._all_providers.get(key, {})
-            pct = info.get("pct", 0) if info else 0
-            reset = info.get("reset", "—") if info else "—"
-            is_active = (i == self._active_cell)
-            has_data = bool(info and pct >= 0)
-
-            alpha = 255 if has_data else 100  # dim if no data
-
-            # Active cell highlight border
-            if is_active and has_data:
-                p.setPen(QPen(QColor(255,255,255,80), 1))
-                p.setBrush(Qt.BrushStyle.NoBrush)
-                p.drawRoundedRect(x, y, CELL_W, CELL_H, 6, 6)
-                p.setPen(Qt.PenStyle.NoPen)
-
-            # Accent stripe (top)
-            accent_a = max(40, accent.alpha())
-            p.setBrush(QColor(accent.red(), accent.green(), accent.blue(), accent_a))
-            p.setPen(Qt.PenStyle.NoPen)
-            p.drawRoundedRect(x+2, y+2, CELL_W-4, 3, 2, 2)
-
-            # Provider abbreviation
-            p.setPen(QColor(255,255,255, max(100, int(0.7*255))))
-            fnt = QFont("Segoe UI", 9, QFont.Weight.Medium)
-            p.setFont(fnt)
-            p.drawText(x+4, y+16, abbr)
-
-            # Session % (large)
-            pct_clr = QColor(255,255,255, alpha)
-            if has_data and pct > 0:
-                theme_key = get_theme(pct)
-                pct_clr = THEME[theme_key]['p']
-                pct_clr = QColor(pct_clr.red(), pct_clr.green(), pct_clr.blue(), 255)
-            p.setPen(pct_clr)
-            fnt_big = QFont("Segoe UI", 16, QFont.Weight.Bold)
-            p.setFont(fnt_big)
-            pct_str = f"{pct}%" if has_data else "—"
-            p.drawText(x+4, y+44, pct_str)
-
-            # Progress bar
-            bar_x = x + 4
-            bar_y = y + 50
-            bar_w = CELL_W - 8
-            bar_h = 5
-            # Background
-            p.setBrush(QColor(255,255,255,15))
-            p.setPen(Qt.PenStyle.NoPen)
-            p.drawRoundedRect(bar_x, bar_y, bar_w, bar_h, 3, 3)
-            # Fill
-            if has_data and pct > 0:
-                fill_w = max(4, int(bar_w * pct / 100.0))
-                if pct <= 50:
-                    fill_c = QColor(16,185,129)
-                elif pct <= 70:
-                    fill_c = QColor(245,158,11)
-                else:
-                    fill_c = QColor(239,68,68)
-                p.setBrush(fill_c)
-                p.drawRoundedRect(bar_x, bar_y, fill_w, bar_h, 3, 3)
-
-            # Reset text
-            p.setPen(QColor(255,255,255, max(60, int(0.4*255))))
-            fnt_sm = QFont("Segoe UI", 7)
-            p.setFont(fnt_sm)
-            reset_short = reset if len(reset) <= 12 else reset[:11]+"…"
-            p.drawText(x+4, y+CELL_H-4, reset_short)
-
         p.end()
 
     def mousePressEvent(self, e):
