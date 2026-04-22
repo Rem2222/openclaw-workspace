@@ -262,13 +262,16 @@ class PremiumWidget(QWidget):
             self.pl.setText(self.prov)
             self.pcl.setStyleSheet(f"color: {t['p'].name()};")
             self.ring.set_val(pct / 100.0)
-            # Update weekly bar if wp > 0
             if wp > 0:
                 try:
                     self.wb.set_wp(wp)
+                    self.wb.setFixedHeight(24)
+                    self.wb.show()
                 except Exception as e:
                     print(f"[PW] wb.set_wp error: {e}", flush=True)
-            # Store wp for reference
+            else:
+                self.wb.setFixedHeight(0)
+                self.wb.hide()
             self._wp = wp
         except Exception as e:
             print(f"[PW] update_pct error: {e}", flush=True)
