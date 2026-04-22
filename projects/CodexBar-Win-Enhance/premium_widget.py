@@ -157,14 +157,15 @@ class PremiumWidget(QWidget):
         self._opacity_idx, self._click_through = self._load_widget_settings()
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
+        self.setWindowTitle("CodexBar")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # Apply click-through AFTER setWindowFlags so it doesn't get overwritten
         if self._click_through:
             _d(f"__init__: calling _set_click_through True")
             self._set_click_through(True)
         else:
             _d(f"__init__: _click_through is False, skipping _set_click_through")
-        self.setWindowTitle("CodexBar")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Square: 220x220
         side = 220
         self.setFixedSize(side, side)
@@ -328,7 +329,7 @@ class PremiumWidget(QWidget):
             # Force window to recalculate non-client area so new styles take effect
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
+                0x0020 | 0x0001 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
             _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:

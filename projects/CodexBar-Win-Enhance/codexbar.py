@@ -3373,7 +3373,7 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#1A1A2E").pack(side="left")
 
         self._widget_mode = ctk.CTkOptionMenu(
-            content, values=["Both", "Large only", "Small only", "Multi only", "Don't show"],
+            content, values=["All visible", "Large only", "Small only", "Multi only", "Don't show"],
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", button_color="#4A6CF7",
             button_hover_color="#3A5CE5",
@@ -3385,8 +3385,8 @@ class SettingsPopup(ctk.CTkToplevel):
             saved_mode = json.loads(SettingsPopup._config_path().read_text()).get("widget_mode", "both") if SettingsPopup._config_path().exists() else "both"
         except Exception:
             saved_mode = "both"
-        mode_map = {"both": "Both", "large": "Large only", "small": "Small only", "none": "Don't show"}
-        self._widget_mode.set(mode_map.get(saved_mode, "Both"))
+        mode_map = {"both": "All visible", "large": "Large only", "small": "Small only", "multi": "Multi only", "none": "Don't show"}
+        self._widget_mode.set(mode_map.get(saved_mode, "All visible"))
 
         # Click-through checkbox (widgets transparent for mouse)
         self._ct_var = ctk.BooleanVar(value=False)
@@ -3459,7 +3459,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
     def _on_widget_mode_change(self, value):
         """Apply widget change immediately when user selects new value."""
-        mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
+        mode_map = {"All visible": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
         mode = mode_map.get(value, "both")
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
@@ -3504,7 +3504,7 @@ class SettingsPopup(ctk.CTkToplevel):
             zai_tok = self._token_entry.get().strip()
             mm_tok = self._mm_entry.get().strip()
             # Save widget mode
-            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
+            mode_reverse = {"All visible": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
             data["widget_mode"] = mode_reverse.get(self._widget_mode.get(), "both")
             data["widgets_click_through"] = self._ct_var.get()
 
@@ -3861,6 +3861,8 @@ class PremiumWidgetManager:
             self._launch("premium")
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
+        if mode == "multi" and _os.path.exists(self._multi_path):
+            self._launch("multi")
         self._visible = True
 
     def _launch(self, which="both"):
@@ -3900,6 +3902,11 @@ class PremiumWidgetManager:
                 settings.get("bar_widget_pos"),
                 settings.get("bar_opacity_idx", 3),
                 settings.get("bar_click_through", False))
+        if which == "multi":
+            self._multi_proc = launch_one(self._multi_path, getattr(self, '_multi_proc', None),
+                settings.get("premium_widget_pos"),
+                settings.get("premium_opacity_idx", 3),
+                settings.get("premium_click_through", False))
 
     def update(self, pct, prov, wp=0, all_prov=None):
         """Write update to temp file — both widgets read it. wp = weekly %."""
