@@ -3382,7 +3382,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._widget_mode.pack(fill="x", padx=20, pady=(0, 4))
         # Load saved mode
         try:
-            saved_mode = json.loads(SettingsPopup._config_path().read_text()).get("widget_mode", "both") if SettingsPopup._config_path().exists() else "both"
+            saved_mode = (lambda d: d.get("widget_mode", "both") if isinstance(d, dict) else "both")(json.loads(SettingsPopup._config_path().read_text()) if SettingsPopup._config_path().exists() else {})
         except Exception:
             saved_mode = "both"
         mode_map = {"both": "All visible", "large": "Large only", "small": "Small only", "multi": "Multi only", "none": "Don't show"}
@@ -3402,7 +3402,7 @@ class SettingsPopup(ctk.CTkToplevel):
         self._ct_switch.pack(side="left")
         # Load saved click-through
         try:
-            saved_ct = json.loads(SettingsPopup._config_path().read_text()).get("widgets_click_through", False) if SettingsPopup._config_path().exists() else False
+            saved_ct = (lambda d: d.get("widgets_click_through", False) if isinstance(d, dict) else False)(json.loads(SettingsPopup._config_path().read_text()) if SettingsPopup._config_path().exists() else {})
         except Exception:
             saved_ct = False
         self._ct_var.set(saved_ct)
@@ -3850,7 +3850,9 @@ class PremiumWidgetManager:
     def _load_settings(self):
         try:
             if self._settings_path.exists():
-                return json.loads(self._settings_path.read_text())
+                data = json.loads(self._settings_path.read_text())
+                if isinstance(data, dict):
+                    return data
         except Exception:
             pass
         return {}
