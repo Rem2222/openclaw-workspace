@@ -329,7 +329,7 @@ class PremiumWidget(QWidget):
             # Force window to recalculate non-client area so new styles take effect
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
+                0x0020 | 0x0001 | 0x0002 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
             _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
@@ -397,9 +397,6 @@ def main():
     w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     if w._click_through:
         w._set_click_through(True)
-    # _ui() must be after opacity/flags so child widgets inherit correctly
-    w._ui()
-    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
     side = 220
     w.setFixedSize(side, side)
     if pos:
@@ -407,13 +404,13 @@ def main():
     else:
         s = QApplication.primaryScreen().geometry()
         w.move((s.width()-side)//2, (s.height()-side)//2)
+    w._ui()
+    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
     w._last_data = ""
     w._poll_count = 0
     w._timer = QTimer(w)
     w._timer.timeout.connect(w._poll_file)
     w._timer.start(200)
-    w._ui()
-    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
     w.show()
     w.raise_()
     print("[PW] Ready", flush=True)
