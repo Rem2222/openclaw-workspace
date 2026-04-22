@@ -1,5 +1,5 @@
 """
-CodexBar for Windows v2.3
+CodexBar for Windows v2.4
 ============================
 System tray app that shows your REAL Claude usage.
 Native customtkinter popup - no browser hack needed.
@@ -1410,7 +1410,7 @@ class ZaiDataFetcher:
             return None
 
 
-VERSION = "2.3"
+VERSION = "2.4"
 
 # ─────────────────────────────────────────────
 # MiniMax data fetcher  (added by Romul)
@@ -3455,40 +3455,40 @@ class SettingsPopup(ctk.CTkToplevel):
         ).pack(side="right", padx=(0, 8))
 
     def _reset_widget_positions(self):
-        """Reset all widget positions to left edge of screen, stacked vertically."""
-        try:
-            import tkinter as _tk
-            root = _tk.Tk()
-            sw = root.winfo_screenwidth()
-            sh = root.winfo_screenheight()
-            root.destroy()
-        except:
-            sw, sh = 1920, 1080
-
-        # Positions along left edge, stacked with gap
+        """Reset all widget positions: kill widgets, reset settings, relaunch at default positions."""
+        # Default positions: left edge, stacked vertically
         positions = {
             "premium_widget_pos": {"x": 10, "y": 10},
-            "bar_widget_pos":     {"x": 10, "y": 250},
-            "multi_widget_pos":   {"x": 10, "y": 300},
+            "bar_widget_pos":     {"x": 10, "y": 240},
+            "multi_widget_pos":   {"x": 10, "y": 440},
         }
 
+        # 1. Kill all running widgets
+        for inst in CodexBarApp.instances:
+            if hasattr(inst, 'pw_manager') and inst.pw_manager:
+                inst.pw_manager._apply_mode_change("none")
+
+        # 2. Write new positions to settings
         try:
             sp = SettingsPopup._config_path()
             data = {}
             if sp.exists():
-                import json as _json
-                data = _json.loads(sp.read_text())
+                data = json.loads(sp.read_text())
             data.update(positions)
             sp.parent.mkdir(parents=True, exist_ok=True)
             sp.write_text(json.dumps(data, indent=2))
-            _d(f"[SETTINGS] Reset positions to left edge: {positions}")
-            print(f"[SETTINGS] Widget positions reset to left edge")
+            _d(f"[SETTINGS] Reset positions: {positions}")
         except Exception as e:
             _d(f"[SETTINGS] Reset positions error: {e}")
-            print(f"[SETTINGS] Reset error: {e}")
 
-        # No live relaunch from Settings — positions will apply on next CodexBar restart
-        # or next widget mode change
+        # 3. Relaunch widgets with current mode after short delay
+        import time as _time
+        _time.sleep(0.3)
+        for inst in CodexBarApp.instances:
+            if hasattr(inst, 'pw_manager') and inst.pw_manager:
+                mode = inst.pw_manager._get_widget_mode()
+                inst.pw_manager._apply_mode_change(mode)
+                break
 
     @classmethod
     def _load_token(cls, key="zai_token"):
@@ -4141,8 +4141,8 @@ class PremiumWidgetManager:
             self._launch_single("premium", settings.get("premium_widget_pos"))
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch_single("bar", settings.get("bar_widget_pos"))
-        if mode == "multi" and _os.path.exists(self._multi_path):
-            self._launch_single("multi", settings.get("premium_widget_pos"))
+        if mode in ("both", "multi") and _os.path.exists(self._multi_path):
+            self._launch_single("multi", settings.get("multi_widget_pos"))
         print(f"[PWM] _apply_mode_change done: mode={mode}")
 
     def _launch_single(self, which, pos=None):
@@ -4760,7 +4760,7 @@ def _d_settings(msg):
 if __name__ == '__main__':
     print(r"""
    ========================================
-    CodexBar for Windows v2.3
+    CodexBar for Windows v2.4
     Native popup - no browser needed
    ========================================
     """)

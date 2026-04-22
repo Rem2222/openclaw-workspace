@@ -1,4 +1,4 @@
-"""Premium Multi-Provider Widget v2.3 — 2x3 grid showing all providers (REM-94)"""
+"""Premium Multi-Provider Widget v2.4 — 2x3 grid showing all providers (REM-94)"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import QApplication, QWidget
