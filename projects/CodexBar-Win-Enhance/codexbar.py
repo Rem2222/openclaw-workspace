@@ -3415,6 +3415,14 @@ class SettingsPopup(ctk.CTkToplevel):
             _d(f"[SETTINGS] File read error: {e}")
         _d(f"[SETTINGS] CTkSwitch created, _ct_var.get()={self._ct_var.get()} (saved_ct={saved_ct})")
 
+        # ── Reset widget positions button ──
+        reset_btn = ctk.CTkButton(
+            content, text="⟲ Reset Widget Positions",
+            font=("Segoe UI", 12), height=30, corner_radius=6,
+            fg_color="#E74C3C", hover_color="#C0392B",
+            text_color="#FFFFFF", command=self._reset_widget_positions)
+        reset_btn.pack(fill="x", padx=20, pady=(0, 8))
+
         self._token_entry.focus_set()
 
         # ── DEBUG: version label ──
@@ -3445,6 +3453,49 @@ class SettingsPopup(ctk.CTkToplevel):
             fg_color="#D0D4E0", hover_color="#B0B4C0",
             text_color="#1A1A2E", command=self.destroy
         ).pack(side="right", padx=(0, 8))
+
+    def _reset_widget_positions(self):
+        """Reset all widget positions to left edge of screen, stacked vertically."""
+        try:
+            import tkinter as _tk
+            root = _tk.Tk()
+            sw = root.winfo_screenwidth()
+            sh = root.winfo_screenheight()
+            root.destroy()
+        except:
+            sw, sh = 1920, 1080
+
+        # Positions along left edge, stacked with gap
+        positions = {
+            "premium_widget_pos": {"x": 10, "y": 10},
+            "bar_widget_pos":     {"x": 10, "y": 250},
+            "multi_widget_pos":   {"x": 10, "y": 300},
+        }
+
+        try:
+            sp = SettingsPopup._config_path()
+            data = {}
+            if sp.exists():
+                import json as _json
+                data = _json.loads(sp.read_text())
+            data.update(positions)
+            sp.parent.mkdir(parents=True, exist_ok=True)
+            sp.write_text(json.dumps(data, indent=2))
+            _d(f"[SETTINGS] Reset positions to left edge: {positions}")
+            print(f"[SETTINGS] Widget positions reset to left edge")
+        except Exception as e:
+            _d(f"[SETTINGS] Reset positions error: {e}")
+            print(f"[SETTINGS] Reset error: {e}")
+
+        # Try to move running widgets live
+        try:
+            from codexbar import CodexBarApp
+            inst = CodexBarApp._instance
+            if inst and hasattr(inst, 'pw_manager'):
+                # Kill and relaunch with new positions
+                inst.pw_manager._apply_mode_change(inst.pw_manager._get_widget_mode())
+        except Exception as e:
+            _d(f"[SETTINGS] Relaunch after reset failed: {e}")
 
     @classmethod
     def _load_token(cls, key="zai_token"):
