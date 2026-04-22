@@ -1760,8 +1760,6 @@ class OpenCodeDataFetcher:
             d["session_reset"] = session_reset
             d["weekly_used_pct"] = weekly_pct if weekly_pct is not None else 0
             d["weekly_reset"] = weekly_reset
-            d["session_used_pct"] = monthly_pct if monthly_pct is not None else d["session_used_pct"]
-            d["session_reset"] = monthly_reset if monthly_reset != "unknown" else d["session_reset"]
             d["monthly_used_pct"] = monthly_pct if monthly_pct is not None else 0
             d["monthly_reset"] = monthly_reset
             d["source"] = "html"
