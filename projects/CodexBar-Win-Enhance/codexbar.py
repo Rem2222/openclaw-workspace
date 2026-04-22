@@ -3993,12 +3993,14 @@ class PremiumWidgetManager:
             self._launch("premium")
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
+        if mode == "multi" and _os.path.exists(self._multi_path):
+            self._launch("multi")
 
     def _kill_all(self):
         """Kill all widget processes gracefully via WM_CLOSE before force kill."""
         import ctypes
         WM_CLOSE = 0x0010
-        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar"), (getattr(self, "_multi_proc", None), "multi")]:
             if proc and proc.poll() is None:
                 try:
                     # Send WM_CLOSE first (allows Qt to save settings via closeEvent)
@@ -4008,7 +4010,7 @@ class PremiumWidgetManager:
         import time as _time
         _time.sleep(0.15)  # give widgets time to save and close
         # Force kill any remaining
-        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+        for proc, name in [(self._proc, "premium"), (self._bar_proc, "bar"), (getattr(self, "_multi_proc", None), "multi")]:
             if proc and proc.poll() is None:
                 try:
                     proc.terminate()
@@ -4306,6 +4308,7 @@ class CodexBarApp:
             MenuItem('Refresh', self._tray_refresh),
             Menu.SEPARATOR,
             MenuItem('Show/Hide Widget', self._tray_toggle_widget),
+            MenuItem('Click-Through', self._tray_toggle_ct),
             Menu.SEPARATOR,
             MenuItem('Settings', self._tray_open_settings),
             Menu.SEPARATOR,
@@ -4355,6 +4358,21 @@ class CodexBarApp:
 
     def _tray_open_settings(self, *_):
         self.root.after(0, self._show_settings)
+    def _tray_toggle_ct(self, *_):
+        """Toggle click-through mode for premium widget from tray."""
+        if not self.pw_manager:
+            return
+        settings = self.pw_manager._load_settings()
+        current = settings.get("widgets_click_through", False)
+        new_ct = not current
+        settings["widgets_click_through"] = new_ct
+        try:
+            self.pw_manager._settings_path.parent.mkdir(parents=True, exist_ok=True)
+            self.pw_manager._settings_path.write_text(json.dumps(settings, indent=2))
+        except Exception as e:
+            print(f"[PWM] save CT error: {e}")
+        self.pw_manager._apply_ct_change(new_ct)
+        print(f"[PWM] click-through {'ON' if new_ct else 'OFF'}")
 
     def _tray_toggle_widget(self, *_):
         """Toggle primary widget (respects widget_mode: large/small/both/off)"""

@@ -159,7 +159,8 @@ class PremiumWidget(QWidget):
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         self.setWindowTitle("CodexBar")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # WA_TranslucentBackground conflicts with WS_EX_TRANSPARENT - DWM drops rounded corners
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)  # REMOVED: breaks CT
         # Apply click-through AFTER setWindowFlags so it doesn't get overwritten
         if self._click_through:
             _d(f"__init__: calling _set_click_through True")
@@ -176,8 +177,7 @@ class PremiumWidget(QWidget):
             self.move((s.width()-side)//2, (s.height()-side)//2)
         self._drag = None
         self._ui()
-        self.update_pct(0, "CL", wp=0)
-        # Poll data file every 200ms
+        # Poll data file every 200ms - let it read the initial data
         self._last_data = ""
         self._poll_count = 0
         self._timer = QTimer(self)
@@ -395,6 +395,11 @@ def main():
     w.setWindowTitle("CodexBar")
     w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
     w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    if w._click_through:
+        w._set_click_through(True)
+    # _ui() must be after opacity/flags so child widgets inherit correctly
+    w._ui()
+    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
     side = 220
     w.setFixedSize(side, side)
     if pos:
@@ -408,10 +413,7 @@ def main():
     w._timer.timeout.connect(w._poll_file)
     w._timer.start(200)
     w._ui()
-    w.update_pct(0, "CL", wp=0)
     w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
-    if w._click_through:
-        w._set_click_through(True)
     w.show()
     w.raise_()
     print("[PW] Ready", flush=True)
