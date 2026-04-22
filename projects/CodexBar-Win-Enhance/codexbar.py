@@ -3373,7 +3373,7 @@ class SettingsPopup(ctk.CTkToplevel):
                      text_color="#1A1A2E").pack(side="left")
 
         self._widget_mode = ctk.CTkOptionMenu(
-            content, values=["Both", "Large only", "Small only", "Don't show"],
+            content, values=["Both", "Large only", "Small only", "Multi only", "Don't show"],
             font=("Segoe UI", 12), height=30, corner_radius=6,
             fg_color="#FFFFFF", button_color="#4A6CF7",
             button_hover_color="#3A5CE5",
@@ -3459,7 +3459,7 @@ class SettingsPopup(ctk.CTkToplevel):
 
     def _on_widget_mode_change(self, value):
         """Apply widget change immediately when user selects new value."""
-        mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
+        mode_map = {"Both": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
         mode = mode_map.get(value, "both")
         for inst in CodexBarApp.instances:
             if hasattr(inst, 'pw_manager') and inst.pw_manager:
@@ -3504,7 +3504,7 @@ class SettingsPopup(ctk.CTkToplevel):
             zai_tok = self._token_entry.get().strip()
             mm_tok = self._mm_entry.get().strip()
             # Save widget mode
-            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small", "Don't show": "none"}
+            mode_reverse = {"Both": "both", "Large only": "large", "Small only": "small", "Multi only": "multi", "Don't show": "none"}
             data["widget_mode"] = mode_reverse.get(self._widget_mode.get(), "both")
             data["widgets_click_through"] = self._ct_var.get()
 
@@ -3791,6 +3791,7 @@ class PremiumWidgetManager:
         self._visible = True
         self._widget_path = _os.path.join(_os.path.dirname(__file__), "premium_widget.py")
         self._bar_path = _os.path.join(_os.path.dirname(__file__), "bar_widget.py")
+        self._multi_path = _os.path.join(_os.path.dirname(__file__), "premium_multi.py")
         self._data_file = _os.path.join(_tf.gettempdir(), "codexbar_widget.txt")
         self._settings_path = self._settings_file()
 
@@ -4033,7 +4034,7 @@ class PremiumWidgetManager:
         except Exception as e:
             print(f"[PWM] save error: {e}")
         # 2. Kill ALL running widgets
-        for ref, name in [(self._proc, "premium"), (self._bar_proc, "bar")]:
+        for ref, name in [(self._proc, "premium"), (self._bar_proc, "bar"), (getattr(self, '_multi_proc', None), "multi")]:
             if ref and ref.poll() is None:
                 ref.terminate()
                 try: ref.wait(timeout=2)
@@ -4041,6 +4042,8 @@ class PremiumWidgetManager:
                 print(f"[PWM] killed {name}")
         self._proc = None
         self._bar_proc = None
+        if hasattr(self, '_multi_proc'):
+            self._multi_proc = None
         # 3. Wait for windows to destroy
         import time as _time; _time.sleep(0.3)
         # 4. If mode == none, do nothing
@@ -4086,16 +4089,18 @@ class PremiumWidgetManager:
             self._launch_single("premium", settings.get("premium_widget_pos"))
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch_single("bar", settings.get("bar_widget_pos"))
+        if mode == "multi" and _os.path.exists(self._multi_path):
+            self._launch_single("multi", settings.get("premium_widget_pos"))
         print(f"[PWM] _apply_mode_change done: mode={mode}")
 
     def _launch_single(self, which, pos=None):
         """Launch one widget (premium or bar) with given position."""
         import subprocess as _sp
         settings = self._load_settings()
-        path = self._widget_path if which == "premium" else self._bar_path
-        ref = self._proc if which == "premium" else self._bar_proc
-        opacity_idx = settings.get("premium_opacity_idx" if which == "premium" else "bar_opacity_idx", 3)
-        click_through = settings.get("premium_click_through" if which == "premium" else "bar_click_through", False)
+        path = self._widget_path if which == "premium" else (self._bar_path if which == "bar" else self._multi_path)
+        ref = self._proc if which == "premium" else (self._bar_proc if which == "bar" else getattr(self, '_multi_proc', None))
+        opacity_idx = settings.get("premium_opacity_idx" if which in ("premium", "multi") else "bar_opacity_idx", 3)
+        click_through = settings.get("premium_click_through" if which in ("premium", "multi") else "bar_click_through", False)
         cmd = [sys.executable, path]
         if pos:
             cmd += ["--pos", f"{pos['x']},{pos['y']}"]
@@ -4108,8 +4113,10 @@ class PremiumWidgetManager:
             stderr=_sp.STDOUT, creationflags=0)
         if which == "premium":
             self._proc = proc
-        else:
+        elif which == "bar":
             self._bar_proc = proc
+        else:
+            self._multi_proc = proc
         print(f"[PWM] launched {which} at pos={pos}, opacity={opacity_idx}, ct={click_through}")
 
     def stop(self):
