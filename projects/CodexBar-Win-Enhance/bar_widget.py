@@ -87,14 +87,21 @@ class BarWidget(QWidget):
         try:
             with open(DATA_FILE, 'r') as f:
                 data = f.read().strip()
-            if data == self._last_data or data in ("quit", "off"):
+            if data in ("quit", "off"):
                 return
-            self._last_data = data
             parts = data.split("|")
             if len(parts) >= 2:
-                self.pct = int(parts[0])
-                self.prov = parts[1]
-                self.update()
+                new_pct = int(parts[0])
+                new_prov = parts[1]
+                new_wp = int(parts[2]) if len(parts) >= 3 else None
+                # Update if any value changed (including provider switch)
+                if new_pct != self.pct or new_prov != self.prov or (new_wp is not None and new_wp != getattr(self, '_wp', None)):
+                    self.pct = new_pct
+                    self.prov = new_prov
+                    if new_wp is not None:
+                        self._wp = new_wp
+                    self.update()
+                self._last_data = data
         except (FileNotFoundError, ValueError):
             pass
 
