@@ -3949,7 +3949,7 @@ class PremiumWidgetManager:
                 settings.get("bar_click_through", False))
         if which in ("both", "multi"):
             self._multi_proc = launch_one(self._multi_path, getattr(self, '_multi_proc', None),
-                settings.get("premium_widget_pos"),
+                settings.get("multi_widget_pos"),
                 settings.get("premium_opacity_idx", 3),
                 settings.get("premium_click_through", False))
 
@@ -3987,7 +3987,7 @@ class PremiumWidgetManager:
                     except: pass
             self._proc = None
             self._bar_proc = None
-            self._write_data(0, "off")
+            self._write_data(0, "off", 0, self._cached_all_prov)
             self._visible = False
             try:
                 sp = self._settings_file()
@@ -4100,7 +4100,7 @@ class PremiumWidgetManager:
         import time as _time; _time.sleep(0.3)
         # 4. If mode == none, do nothing
         if mode == "none":
-            self._write_data(0, "off")
+            self._write_data(0, "off", 0, self._cached_all_prov)
             self._visible = False
             try:
                 sp = self._settings_file()
@@ -4172,7 +4172,7 @@ class PremiumWidgetManager:
         print(f"[PWM] launched {which} at pos={pos}, opacity={opacity_idx}, ct={click_through}")
 
     def stop(self):
-        self._write_data(0, "quit")
+        self._write_data(0, "quit", 0, self._cached_all_prov)
         for ref in [self._proc, self._bar_proc, getattr(self, '_multi_proc', None)]:
             if ref and ref.poll() is None:
                 try: ref.terminate()
@@ -4434,7 +4434,7 @@ class CodexBarApp:
                     except: pass
             self.pw_manager._proc = None
             self.pw_manager._bar_proc = None
-            self.pw_manager._write_data(0, "off")
+            self.pw_manager._write_data(0, "off", 0, self.pw_manager._cached_all_prov)
             self.pw_manager._visible = False
             try:
                 sp = self.pw_manager._settings_file()
@@ -4473,7 +4473,7 @@ class CodexBarApp:
         
         if self.pw_manager._bar_proc and self.pw_manager._bar_proc.poll() is None:
             self.pw_manager._bar_proc.terminate()
-            self.pw_manager._write_data(0, "off")
+            self.pw_manager._write_data(0, "off", 0, self.pw_manager._cached_all_prov)
         else:
             self.pw_manager._write_data(pct, prov, 0, self.pw_manager._cached_all_prov)
             self.pw_manager._launch("bar")
