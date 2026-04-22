@@ -286,7 +286,10 @@ class PremiumWidget(QWidget):
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
             _d(f"right-click: toggle click_through to {self._click_through}")
+            saved_pos = self.pos()  # Save position before CT change
             self._set_click_through(self._click_through)
+            self.move(saved_pos)  # Restore position (guard against Windows moving window)
+            self._drag = None  # Clear any stale drag state
             self._save_settings()
 
     def mouseMoveEvent(self, e):
@@ -394,7 +397,7 @@ def main():
     w._click_pos = None
     w.setWindowTitle("CodexBar")
     w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-    w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    # WA_TranslucentBackground removed — conflicts with WS_EX_TRANSPARENT on CT toggle
     if w._click_through:
         w._set_click_through(True)
     side = 220
