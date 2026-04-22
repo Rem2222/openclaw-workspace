@@ -112,11 +112,13 @@ class PremiumMultiWidget(QWidget):
             prov = parts[1]
             wp = int(parts[2]) if len(parts) >= 3 else 0
             all_prov = None
-            if len(parts) >= 4 and parts[3].startswith('{'):
-                try:
-                    all_prov = json.loads(parts[3])
-                except Exception:
-                    pass
+            if len(parts) >= 4:
+                json_str = '|'.join(parts[3:])  # Rejoin in case JSON contains |
+                if json_str.startswith('{'):
+                    try:
+                        all_prov = json.loads(json_str)
+                    except Exception:
+                        pass
             self._poll_count += 1
             print(f"[PM] poll #{self._poll_count}: pct={pct} prov={prov} wp={wp} keys={list(all_prov.keys()) if all_prov else None}", flush=True)
             self.update_display(pct, prov, wp, all_prov)

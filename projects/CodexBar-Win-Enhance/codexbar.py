@@ -4071,6 +4071,7 @@ class PremiumWidgetManager:
                     pass
         self._proc = None
         self._bar_proc = None
+        self._multi_proc = None
 
     def _apply_mode_change(self, mode):
         """Switch widget mode: kill all → wait → restart needed widgets with saved positions."""
@@ -4102,8 +4103,7 @@ class PremiumWidgetManager:
                 print(f"[PWM] killed {name}")
         self._proc = None
         self._bar_proc = None
-        if hasattr(self, '_multi_proc'):
-            self._multi_proc = None
+        self._multi_proc = None
         # 3. Wait for windows to destroy
         import time as _time; _time.sleep(0.3)
         # 4. If mode == none, do nothing
@@ -4640,7 +4640,19 @@ class CodexBarApp:
                 if self.pw_manager:
                     wp = data_src.get("weekly_used_pct", 0) if data_src else 0
                     print(f"[PREMIUM] _set_tray_icon: sp={sp} label={label} wp={wp} data_keys={list(data_src.keys())[:5] if data_src else None}")
-                    self.pw_manager.update(sp, label, wp)
+                    # Build all-providers dict for multi-widget
+                    _pm = {"claude": self.fetcher.data, "openai": self.codex_data,
+                           "zai": self.zai_data, "minimax": self.minimax_data,
+                           "opencode": self.opencode_data, "ollama": self.ollama_data}
+                    _all_prov = {}
+                    for _k, _v in _pm.items():
+                        if _v:
+                            _all_prov[_k] = {
+                                "pct": _v.get("session_used_pct", 0) or 0,
+                                "reset": _v.get("session_reset", "—"),
+                                "fresh": _v.get("updated", "") not in ("", None),
+                            }
+                    self.pw_manager.update(sp, label, wp, _all_prov)
                     print(f"[PREMIUM] update called with sp={sp} label={label} wp={wp}")
             except Exception as pw_err:
                 print(f"[PREMIUM] update error: {pw_err}")

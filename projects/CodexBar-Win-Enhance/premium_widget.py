@@ -1,4 +1,4 @@
-"""Premium Floating Widget v2.3 - Square layout with weekly progress bar"""
+"""Premium Floating Widget v7 - Square layout with weekly progress bar"""
 
 import sys, os, time, json
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QMenu)
@@ -102,8 +102,10 @@ class WeeklyBar(QFrame):
     def paintEvent(self, e):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        _wp = max(self._wp, 1)  # show bar at 1% minimum so it always renders
-        t = get_week_theme(_wp)
+        if self._wp <= 0:
+            p.end()
+            return
+        t = get_week_theme(self._wp)
         rect = self.rect()
         # Semi-transparent background
         bg = QColor(255,255,255,15)
@@ -111,7 +113,7 @@ class WeeklyBar(QFrame):
         p.setPen(Qt.PenStyle.NoPen)
         p.drawRoundedRect(rect, 6, 6)
         # Foreground bar
-        bar_w = int(rect.width() * (_wp / 100.0))
+        bar_w = int(rect.width() * (self._wp / 100.0))
         if bar_w > 0:
             g = QLinearGradient(rect.left(), 0, rect.right(), 0)
             g.setColorAt(0, t['p'])
@@ -157,16 +159,14 @@ class PremiumWidget(QWidget):
         self._opacity_idx, self._click_through = self._load_widget_settings()
         _d(f"__init__: _load_widget_settings returned opacity={self._opacity_idx}, ct={self._click_through}, SETTINGS_FILE={SETTINGS_FILE}")
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
-        self.setWindowTitle("CodexBar")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-        # WA_TranslucentBackground conflicts with WS_EX_TRANSPARENT - DWM drops rounded corners
-        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)  # REMOVED: breaks CT
-        # Apply click-through AFTER setWindowFlags so it doesn't get overwritten
         if self._click_through:
             _d(f"__init__: calling _set_click_through True")
             self._set_click_through(True)
         else:
             _d(f"__init__: _click_through is False, skipping _set_click_through")
+        self.setWindowTitle("CodexBar")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Square: 220x220
         side = 220
         self.setFixedSize(side, side)
@@ -177,7 +177,8 @@ class PremiumWidget(QWidget):
             self.move((s.width()-side)//2, (s.height()-side)//2)
         self._drag = None
         self._ui()
-        # Poll data file every 200ms - let it read the initial data
+        self.update_pct(0, "CL", wp=0)
+        # Poll data file every 200ms
         self._last_data = ""
         self._poll_count = 0
         self._timer = QTimer(self)
@@ -200,7 +201,6 @@ class PremiumWidget(QWidget):
             if data == "off":
                 return
             parts = data.split("|")
-            _d(f"_poll parsed: {len(parts)} parts, raw={data[:80]}")
             if len(parts) >= 2:
                 pct = int(parts[0])
                 prov = parts[1]
@@ -215,7 +215,6 @@ class PremiumWidget(QWidget):
             print(f"[PW] poll error: {e}", flush=True)
 
     def _ui(self):
-        _d("_ui: creating child widgets")
         # Main vertical layout, evenly distributed
         main_lo = QVBoxLayout(self)
         main_lo.setContentsMargins(12, 10, 12, 10)
@@ -248,7 +247,6 @@ class PremiumWidget(QWidget):
         main_lo.addWidget(self.wb, alignment=Qt.AlignmentFlag.AlignCenter)
 
     def update_pct(self, pct, prov=None, wp=0):
-        _d(f"update_pct: pct={pct}, prov={prov}, wp={wp}")
         """
         Update percentage display.
         pct: session percentage (0-100)
@@ -264,9 +262,13 @@ class PremiumWidget(QWidget):
             self.pl.setText(self.prov)
             self.pcl.setStyleSheet(f"color: {t['p'].name()};")
             self.ring.set_val(pct / 100.0)
-            self.wb.set_wp(wp)
-            self.wb.setFixedHeight(24)
-            self.wb.show()
+            # Update weekly bar if wp > 0
+            if wp > 0:
+                try:
+                    self.wb.set_wp(wp)
+                except Exception as e:
+                    print(f"[PW] wb.set_wp error: {e}", flush=True)
+            # Store wp for reference
             self._wp = wp
         except Exception as e:
             print(f"[PW] update_pct error: {e}", flush=True)
@@ -285,16 +287,11 @@ class PremiumWidget(QWidget):
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
             self._click_pos = e.globalPosition().toPoint()
-            _d(f"LMB press at {e.globalPosition().toPoint()}, widget at {self.pos()}")
             self._drag = self._click_pos - self.pos()
         elif e.button() == Qt.MouseButton.RightButton:
             self._click_through = not self._click_through
             _d(f"right-click: toggle click_through to {self._click_through}")
-            saved_pos = self.pos()  # Save position before CT change
             self._set_click_through(self._click_through)
-            self.move(saved_pos)  # Restore position (guard against Windows moving window)
-            _d(f"CT: pos restored {saved_pos} -> actual {self.pos()}")
-            self._drag = None  # Clear any stale drag state
             self._save_settings()
 
     def mouseMoveEvent(self, e):
@@ -308,7 +305,6 @@ class PremiumWidget(QWidget):
             if not moved:
                 # Click (no drag) → cycle opacity
                 self._opacity_idx = (self._opacity_idx + 1) % len(self._OPACITY_LEVELS)
-                _d(f"opacity cycle: idx={self._opacity_idx}, opacity={self._OPACITY_LEVELS[self._opacity_idx]}")
                 self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
                 self._save_settings()
         self._drag = None
@@ -338,7 +334,7 @@ class PremiumWidget(QWidget):
             # Force window to recalculate non-client area so new styles take effect
             ctypes.windll.user32.SetWindowPos(
                 hwnd, 0, 0, 0, 0, 0,
-                0x0020 | 0x0001 | 0x0002 | 0x0004 | 0x0010)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
+                0x0020 | 0x0001)  # SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE
             _d(f"_set_click_through({enabled}): hwnd={hwnd}, style=0x{style:08x}, GWL_EXSTYLE={GWL_EXSTYLE}")
             print(f"[PW] click_through={'ON' if enabled else 'OFF'} (hwnd={hwnd}, style=0x{style:08x})", flush=True)
         except Exception as e:
@@ -352,7 +348,6 @@ class PremiumWidget(QWidget):
         self._save_settings()
 
     def _save_settings(self):
-        _d(f"_save_settings: pos={self.pos()}, opacity_idx={self._opacity_idx}, ct={self._click_through}")
         """Save position + opacity + click_through to settings."""
         try:
             pos = self.pos()
@@ -404,9 +399,7 @@ def main():
     w._click_pos = None
     w.setWindowTitle("CodexBar")
     w.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
-    # WA_TranslucentBackground removed — conflicts with WS_EX_TRANSPARENT on CT toggle
-    if w._click_through:
-        w._set_click_through(True)
+    w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     side = 220
     w.setFixedSize(side, side)
     if pos:
@@ -414,21 +407,22 @@ def main():
     else:
         s = QApplication.primaryScreen().geometry()
         w.move((s.width()-side)//2, (s.height()-side)//2)
-    w._ui()
-    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
     w._last_data = ""
     w._poll_count = 0
     w._timer = QTimer(w)
     w._timer.timeout.connect(w._poll_file)
     w._timer.start(200)
+    w._ui()
+    w.update_pct(0, "CL", wp=0)
+    w.setWindowOpacity(w._OPACITY_LEVELS[w._opacity_idx])
+    if w._click_through:
+        w._set_click_through(True)
     w.show()
     w.raise_()
-    _d(f"main: shown at {w.pos()}, ct={w._click_through}, op_idx={w._opacity_idx}")
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
     w.show()
     w.raise_()
-    _d(f"main: shown at {w.pos()}, ct={w._click_through}, op_idx={w._opacity_idx}")
     print("[PW] Ready", flush=True)
     sys.exit(app.exec())
 
