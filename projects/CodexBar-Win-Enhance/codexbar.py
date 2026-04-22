@@ -3905,7 +3905,7 @@ class PremiumWidgetManager:
             self._launch("premium")
         if mode in ("both", "small") and _os.path.exists(self._bar_path):
             self._launch("bar")
-        if mode == "multi" and _os.path.exists(self._multi_path):
+        if mode in ("both", "multi") and _os.path.exists(self._multi_path):
             self._launch("multi")
         self._visible = True
 
@@ -3946,7 +3946,7 @@ class PremiumWidgetManager:
                 settings.get("bar_widget_pos"),
                 settings.get("bar_opacity_idx", 3),
                 settings.get("bar_click_through", False))
-        if which == "multi":
+        if which in ("both", "multi"):
             self._multi_proc = launch_one(self._multi_path, getattr(self, '_multi_proc', None),
                 settings.get("premium_widget_pos"),
                 settings.get("premium_opacity_idx", 3),
