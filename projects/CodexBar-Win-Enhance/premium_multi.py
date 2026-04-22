@@ -61,11 +61,11 @@ class PremiumMultiWidget(QWidget):
         self._all_providers = {}
         self._active_cell = -1
         self._opacity_idx, self._click_through = self._load_settings()
+        self.setWindowTitle("CodexBar Multi")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowOpacity(self._OPACITY_LEVELS[self._opacity_idx])
         if self._click_through:
             self._set_click_through(True)
-        self.setWindowTitle("CodexBar Multi")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.Tool|Qt.WindowType.WindowStaysOnTopHint)
         self.setFixedSize(260, 200)
         if pos:
             self.move(pos[0], pos[1])
@@ -74,9 +74,32 @@ class PremiumMultiWidget(QWidget):
             self.move((s.width()-260)//2, (s.height()-200)//2)
         self._drag = None
         self._poll_count = 0
+        # Read initial data from file on startup
+        self._read_initial_data()
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._poll_file)
         self._timer.start(200)
+
+    def _read_initial_data(self):
+        """Read current data file on startup so we have provider info from the start."""
+        try:
+            with open(DATA_FILE, 'r') as f:
+                data = f.read().strip()
+            if not data or data in ("off", "quit"):
+                return
+            parts = data.split("|")
+            if len(parts) >= 4:
+                json_str = '|'.join(parts[3:])
+                if json_str.startswith('{'):
+                    all_prov = json.loads(json_str)
+                    self._all_providers = all_prov
+                    prov = parts[1] if len(parts) >= 2 else ""
+                    labels = {"claude": 0, "openai": 1, "zai": 2,
+                              "minimax": 3, "opencode": 4, "ollama": 5}
+                    self._active_cell = labels.get(prov.lower(), -1)
+                    _d(f"_read_initial_data: loaded {len(all_prov)} providers, active={prov}")
+        except Exception as e:
+            _d(f"_read_initial_data error: {e}")
 
     def _set_click_through(self, enabled):
         try:

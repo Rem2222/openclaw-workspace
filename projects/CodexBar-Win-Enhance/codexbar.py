@@ -4173,7 +4173,7 @@ class PremiumWidgetManager:
 
     def stop(self):
         self._write_data(0, "quit")
-        for ref in [self._proc, self._bar_proc]:
+        for ref in [self._proc, self._bar_proc, getattr(self, '_multi_proc', None)]:
             if ref and ref.poll() is None:
                 try: ref.terminate()
                 except: pass
