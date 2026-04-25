@@ -186,6 +186,8 @@
   },
   "active": "f1f3564624e3d76f",
   "lastOpenFiles": [
+    "tech/openai-routing.md",
+    "tech/markitdown.md",
     "tech/heisenberg-team-gpt.md",
     "tech/cursor-proxy-fix.md",
     "raw/cursor-proxy-fix.md",
@@ -215,8 +217,6 @@
     "tech/sdd-instruments.md",
     "tech/1c-mcp.md",
     "SDD инструменты сравнение.md",
-    "wiki/tech/proxy-acpx-x.md",
-    "wiki/tech/openclaw-billing-proxy.md",
     "wiki/books",
     "wiki/1c"
   ]

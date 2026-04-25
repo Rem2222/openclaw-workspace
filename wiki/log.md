@@ -87,3 +87,10 @@ _Append-only. Формат: `## [дата] type | описание`_
 - Найдены 16+ провайдеров в macOS версии включая OpenCode и MiniMax
 - Субагент исследовал архитектуру провайдеров
 - OpenRouter поддерживается! Через него можно проксировать на Minimax
+- [[JAWL]] — добавлена страница tech/jawl.md (2026-04-25)
+- [[links-from-sessions]] — собран все ссылки из 33 session файлов в один файл (2026-04-25)
+- [[tech/mcp-inspector]] — MCP Inspector страница (2026-04-25)
+- [[tools/linear-cli]] — Linear CLI страница (2026-04-25)
+- [[articles/adam-multiagent]] — Adam multi-agent тред (2026-04-25)
+- [[articles/anthropic-claude-code]] — Anthropic Claude Code тред (2026-04-25)
+- [[articles/orchestrator-year]] — Год оркестраторов статья (2026-04-25)
