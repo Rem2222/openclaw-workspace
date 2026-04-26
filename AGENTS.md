@@ -405,6 +405,17 @@ This is a starting point. Add your own conventions, style, and rules as you figu
 
 ## 🎛️ Custom Commands
 
+### `"Что с памятью?"`
+
+**Trigger:** Роман спрашивает "Что с памятью?"
+
+**Action:**
+1. Run: `bash ~/.openclaw/workspace/scripts/memory-health-check.sh`
+2. Report results in table format (LCM, MemPalace, ByteRover, Memory Files, HEARTBEAT.md, MEMORY.md)
+3. Note any ⚠️ warnings and suggest fixes
+
+---
+
 ### `"запусти Оркестратора"`
 
 **Trigger:** Роман говорит "запусти Оркестратора"

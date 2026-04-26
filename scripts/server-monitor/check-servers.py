@@ -11,12 +11,16 @@ import urllib.error
 import socket
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any
 
-CONFIG_FILE = "/home/rem/.openclaw/workspace/scripts/server-monitor/config.json"
-STATUS_FILE = "/home/rem/.openclaw/workspace/scripts/server-monitor/status.json"
-LOG_FILE = "/home/rem/.openclaw/workspace/scripts/server-monitor/monitor.log"
+import os
+
+# Динамическое определение workspace
+WORKSPACE = os.path.expanduser("~/.openclaw/workspace")
+CONFIG_FILE = f"{WORKSPACE}/scripts/server-monitor/config.json"
+STATUS_FILE = f"{WORKSPACE}/scripts/server-monitor/status.json"
+LOG_FILE = f"{WORKSPACE}/scripts/server-monitor/monitor.log"
 
 def check_http(host: str, port: int, path: str = "/", timeout: int = 5, expected_code: int = 200) -> tuple:
     """Проверка HTTP сервера"""
@@ -82,7 +86,7 @@ def check_server(server: Dict[str, Any]) -> tuple:
 
 def main():
     # Временные метки
-    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     date_human = datetime.now().strftime("%d.%m.%Y %H:%M")
     
     # Создание директории для логов

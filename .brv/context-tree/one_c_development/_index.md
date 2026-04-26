@@ -1,12 +1,10 @@
 ---
-children_hash: 350d4c1e67eea1edf7f709683e0c346c619c0026ab77f3fd662e284b7fdbaeeb
-compression_ratio: 0.44298245614035087
-condensation_order: 2
-covers: [context.md, http_response_parsing/_index.md]
-covers_token_total: 456
-summary_level: d2
-token_count: 202
-type: summary
+tags: []
+keywords: []
+importance: 56
+recency: 1
+maturity: draft
+accessCount: 2
 ---
 # Domain: one_c_development
 

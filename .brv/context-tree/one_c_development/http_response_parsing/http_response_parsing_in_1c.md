@@ -2,9 +2,10 @@
 title: HTTP Response Parsing in 1C
 tags: []
 keywords: []
-importance: 50
+importance: 56
 recency: 1
 maturity: draft
+accessCount: 2
 createdAt: '2026-04-01T09:56:32.849Z'
 updatedAt: '2026-04-01T09:56:32.849Z'
 ---

@@ -3,7 +3,13 @@
     {
       "order": 3,
       "path": "_index.md",
-      "tokens": 511,
+      "tokens": 729,
+      "type": "summary"
+    },
+    {
+      "order": 2,
+      "path": "ai_agents/_index.md",
+      "tokens": 464,
       "type": "summary"
     },
     {
@@ -16,24 +22,6 @@
       "order": 2,
       "path": "game_development/_index.md",
       "tokens": 165,
-      "type": "summary"
-    },
-    {
-      "order": 2,
-      "path": "infrastructure/_index.md",
-      "tokens": 177,
-      "type": "summary"
-    },
-    {
-      "order": 2,
-      "path": "llm_setup/_index.md",
-      "tokens": 132,
-      "type": "summary"
-    },
-    {
-      "order": 2,
-      "path": "one_c_development/_index.md",
-      "tokens": 202,
       "type": "summary"
     },
     {
@@ -55,10 +43,38 @@
       "type": "summary"
     },
     {
-      "order": 1,
-      "path": "infrastructure/telegram_bot/_index.md",
-      "tokens": 200,
-      "type": "summary"
+      "importance": 56,
+      "path": "one_c_development/http_response_parsing/http_response_parsing_in_1c.md",
+      "tokens": 437,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "ai_agents/context.md",
+      "tokens": 86,
+      "type": "context"
+    },
+    {
+      "importance": 50,
+      "path": "ai_agents/jawl_debugging/context.md",
+      "tokens": 69,
+      "type": "context"
+    },
+    {
+      "abstractPath": "ai_agents/jawl_debugging/soul_md_format_bug_fix.abstract.md",
+      "abstractTokens": 169,
+      "importance": 50,
+      "path": "ai_agents/jawl_debugging/soul_md_format_bug_fix.md",
+      "tokens": 169,
+      "type": "context"
+    },
+    {
+      "abstractPath": "ai_agents/jawl_debugging/soul_md_tool_call_bug_fix.abstract.md",
+      "abstractTokens": 156,
+      "importance": 50,
+      "path": "ai_agents/jawl_debugging/soul_md_tool_call_bug_fix.md",
+      "tokens": 156,
+      "type": "context"
     },
     {
       "importance": 50,
@@ -122,6 +138,28 @@
     },
     {
       "importance": 50,
+      "path": "llm_setup/jawl_debugging/context.md",
+      "tokens": 63,
+      "type": "context"
+    },
+    {
+      "abstractPath": "llm_setup/jawl_debugging/jawl_agent_debugging_session.abstract.md",
+      "abstractTokens": 185,
+      "importance": 50,
+      "path": "llm_setup/jawl_debugging/jawl_agent_debugging_session.md",
+      "tokens": 185,
+      "type": "context"
+    },
+    {
+      "abstractPath": "llm_setup/jawl_debugging/jawl_debugging_session_2026_04_26.abstract.md",
+      "abstractTokens": 171,
+      "importance": 50,
+      "path": "llm_setup/jawl_debugging/jawl_debugging_session_2026_04_26.md",
+      "tokens": 171,
+      "type": "context"
+    },
+    {
+      "importance": 50,
       "path": "llm_setup/model_switching_issues.md",
       "tokens": 213,
       "type": "context"
@@ -131,39 +169,15 @@
       "path": "llm_setup/ollama_local/context.md",
       "tokens": 55,
       "type": "context"
-    },
-    {
-      "importance": 50,
-      "path": "llm_setup/ollama_local/ollama_local_configuration.md",
-      "tokens": 302,
-      "type": "context"
-    },
-    {
-      "importance": 50,
-      "path": "one_c_development/context.md",
-      "tokens": 121,
-      "type": "context"
-    },
-    {
-      "importance": 50,
-      "path": "one_c_development/http_response_parsing/context.md",
-      "tokens": 80,
-      "type": "context"
-    },
-    {
-      "importance": 50,
-      "path": "one_c_development/http_response_parsing/http_response_parsing_in_1c.md",
-      "tokens": 433,
-      "type": "context"
     }
   ],
-  "generated_at": "2026-04-14T19:28:45.585Z",
+  "generated_at": "2026-04-26T19:37:57.275Z",
   "lane_tokens": {
-    "contexts": 3554,
+    "contexts": 3954,
     "stubs": 0,
-    "summaries": 1980
+    "summaries": 1951
   },
-  "source_fingerprint": "d1477a13397898aac157093736231c95493554abc74495e2e2eede5889d3f0f8",
-  "total_tokens": 5534,
+  "source_fingerprint": "405b91492a993f5c8093624a4559b9f0cdcc74e3f758a4fd5124ee78c63c2769",
+  "total_tokens": 5905,
   "version": 1
 }

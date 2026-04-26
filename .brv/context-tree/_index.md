@@ -1,75 +1,66 @@
 ---
-children_hash: 7bc4298025cfba1eb2471ca4693f82785565772247ba119767178ef9a12f5d71
-compression_ratio: 0.4130962004850445
+children_hash: e38b5ca64b38ae080d9e2a2504381a0bf4a945c91342c9eed7dcc1562de70878
+compression_ratio: 0.321570357300397
 condensation_order: 3
-covers: [facts/_index.md, game_development/_index.md, infrastructure/_index.md, llm_setup/_index.md, one_c_development/_index.md]
-covers_token_total: 1237
+covers: [ai_agents/_index.md, facts/_index.md, game_development/_index.md, infrastructure/_index.md, llm_setup/_index.md, one_c_development/_index.md]
+covers_token_total: 2267
 summary_level: d3
-token_count: 511
+token_count: 729
 type: summary
 ---
-# Context Tree Overview
+<think>The user wants me to create a structural summary at level d1 (domain level) from the provided knowledge entries. Looking at the context tree structure provided in the system prompt, d1 would be the domain level.
 
-Knowledge base organized into 5 domains covering personal facts, game development, infrastructure, LLM setup, and 1C development.
+The child entries contain:
+1. ai_agents/_index.md - Domain for AI agent projects with subtopic jawl_debugging
+2. facts/_index.md - Domain for personal information
+3. game_development/_index.md - Domain for game dev bug fixes
+4. infrastructure/_index.md - Domain for infrastructure
+5. llm_setup/_index.md - Domain for LLM setup with jawl_debugging, ollama_local, model_switching_issues
+6. one_c_development/_index.md - Domain for 1C development
 
-## facts/
-Personal information and preferences for **Roman**, a 1C programmer learning vibecoding methodology.
+These are all domain-level summaries (_index.md files). I need to create a d1 summary that condenses all these domains into an overview while preserving key facts and relationships.
 
-**Key Entry:** `personal/user_profile.md` — Complete profile with profession and learning objectives
+Key facts to preserve:
+- ai_agents: JAWL Telegram chatbot, SOUL.md config, Qdrant vector DB
+- facts: personal info domain for Roman (1C programmer learning vibecoding)
+- game_development: campfire lighting bug fix
+- infrastructure: server monitoring, Telegram bot, VPS selection, dashboard development
+- llm_setup: JAWL debugging, Ollama local config, model switching issues
+- one_c_development: HTTP response parsing for 1C
 
----
+I need to create a clean structural summary at the domain level that references these entries.</think>
 
-## game_development/
-Bug fixes for game rendering systems.
+# AI Agents Domain
 
-**Key Fix:** Campfire Survival lighting bug (2026-03-27) — Replaced GeometryMask with 4 positioned darkness rectangles to resolve full-screen blue rendering at depth 200.
+Domain for AI agent projects, debugging sessions, and configuration of local LLM setups.
 
-**Pattern:** Rendering bugs resolved by simplifying geometry masking to overlay rectangles.
+## Core Components
 
-**See:** `bug_fixes/campfire_survival_lighting_bug.md`
+### JAWL (Джинкс)
+Telegram chatbot agent with SOUL.md configuration and Qdrant vector database backend.
 
----
+**Architecture:**
+- Entry point: `python src/main.py` via `start-safe.sh` at `/home/rem/JAWL/scripts/`
+- Telegram integration: AiogramMessages library
+- Vector DB: Qdrant (lock file at `vector_db/.lock`)
 
-## infrastructure/
-Operational components for OpenClaw ecosystem.
+**Debugging Session (2026-04-26):**
+- SOUL.md tool call format: nested `{"thoughts": "...", "actions": [{"tool_name": "...", "parameters": {...}]}`
+- Dashboard reads `system.log`, not `startup_error.log`
+- Configuration: ticks=12, detailed_ticks=3, tick_action_max_chars=1000, max_tokens=1200
+- Qdrant lock cleanup required before start
 
-### monitoring/
-Server monitoring via `server-monitor/check-servers.py` on 15-minute cron. Monitors 5 servers. HEARTBEAT: 1 hour (changed from 5 min on 2026-03-15).
+**Bug fixes:**
+- `soul_md_format_bug_fix.md` — SOUL.md format corrected to `{thoughts, actions}` structure
+- `soul_md_tool_call_bug_fix.md` — tool_call parameters mapped to `tool_name` field
 
-**See:** `monitoring/server_monitoring_configuration.md`
+### Ollama Local Configuration
+Local LLM setup. Working: `qwen2.5:7b` via direct query. Not available: `qwen3.5:27b`. Subagent interface has reliability issues; vision models unreliable through subagent.
 
-### telegram_bot/
-Telegram integration using Cloudflare Quick Tunnel. Architecture: Telegram API → Cloudflare Tunnel → OpenClaw webhook.
+### Model Switching Issues
+Gateway restart resets primary model to default. Neko API format: `claude-opus-4-6[1m]` (brackets for context window).
 
-**Gap:** Permanent tunnel URL required for production.
-
-**See:** `telegram_bot/openclaw_telegram_bot_configuration.md`
-
----
-
-## llm_setup/
-Local LLM configuration and troubleshooting.
-
-**Working:** qwen2.5:7b (confirmed via direct query)
-**Unavailable:** qwen2.5:27b
-
-**Known Issues:** Subagent interface hangs; vision models unreliable through subagent.
-
-**See:** `ollama_local/ollama_local_configuration.md`
-
----
-
-## one_c_development/
-1C:Enterprise platform development patterns.
-
-### http_response_parsing/
-**Key Methods:**
-- `ПолучитьСтрокуИзДвоичныхДанных()` — reliable body extraction
-- `ПрочитатьJSON()` — JSON parsing
-- `ZipReader` — gzip decompression
-
-**Avoid:** `HTTPОтвет.ПолучитьТелоКакСтроку()` — unreliable
-
-**Source:** AIChat EPF (`C:\Users\rem\AIChat-build\AIChat.epf`)
-
-**See:** `http_response_parsing/http_response_parsing_in_1c.md`
+## Related Domains
+- `infrastructure/` — Telegram bot configuration, server monitoring
+- `llm_setup/` — LLM backend setup and debugging
+- `facts/personal/` — User profile for Roman (1C programmer learning vibecoding)

@@ -1,12 +1,10 @@
 ---
-children_hash: 921fb52b14afa780a25d4c00a0db1cb5a184bf9099547e1a8377b979a63172b3
-compression_ratio: 0.42961165048543687
-condensation_order: 2
-covers: [monitoring/_index.md, telegram_bot/_index.md]
-covers_token_total: 412
-summary_level: d2
-token_count: 177
-type: summary
+tags: []
+keywords: []
+importance: 53
+recency: 1
+maturity: draft
+accessCount: 1
 ---
 ## Infrastructure
 

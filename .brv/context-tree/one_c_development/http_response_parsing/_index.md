@@ -1,12 +1,10 @@
 ---
-children_hash: 96aa36de105bacb5bb1eaa969e1052291c0f84e62acf6502d8eecdc53a2814d8
-compression_ratio: 0.5185185185185185
-condensation_order: 1
-covers: [context.md, http_response_parsing_in_1c.md]
-covers_token_total: 513
-summary_level: d1
-token_count: 266
-type: summary
+tags: []
+keywords: []
+importance: 53
+recency: 1
+maturity: draft
+accessCount: 1
 ---
 # HTTP Response Parsing in 1C:Enterprise
 

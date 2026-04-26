@@ -359,3 +359,28 @@ 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
 **Есть файл `ГЛОССАРИЙ.md`** — расшифровки аббревиатур Романа. Прежде чем спрашивать "что значит X" — заглянуть туда!
 
 - **ЛКМ** = lossless-claw (LCM) — контекст-менеджмент OpenClaw (сжатие истории, хранение памяти сессий)
+
+## JAWL (Джинкс/Dasha) — 2026-04-26
+
+### Исправленный баг
+- **SOUL.md** имел НЕПРАВИЛЬНЫЙ формат tool_calls
+- Было: `{"name": "send_message", "parameters": {...}}`
+- Должно быть: `{"thoughts": "...", "actions": [{"tool_name": "AiogramMessages.send_message", "parameters": {...}}]}`
+- Файл: `/home/rem/JAWL/src/l3_agent/prompt/personality/SOUL.md`
+
+### Настройки (оставлены как было)
+- `ticks: 12, detailed_ticks: 3, tick_action_max_chars: 1000, max_tokens: 1200`
+
+### Важные пути
+- Точка входа: `python src/main.py` (НЕ `jawl.py` — требует TTY, не работает с nohup)
+- Запуск: `/home/rem/JAWL/scripts/start-safe.sh`
+- Qdrant lock: `/home/rem/JAWL/src/utils/local/data/vector_db/.lock`
+- Dashboard: `/home/rem/JAWL/dashboard.py` (port 5000)
+- Лог дашборда: `system.log` (был `startup_error.log` — исправлено)
+
+### Rem's Telegram
+- chat_id: 386235337
+- Бот: @Jawl_Jinx_bot
+
+### ByteRover issue
+- brv curate SIGKILL при длинных строках — используй MEMORY.md вместо brv для больших записей
