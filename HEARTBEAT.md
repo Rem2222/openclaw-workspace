@@ -131,7 +131,8 @@ openclaw subagents list --recent 30 | grep -q "running" && echo "⚠️ Есть
 
 ### **Последняя проверка дня** (при "на сегодня достаточно")
 - **Итоговая сводка** — темы, задачи, токены
-- **Проверка работы memory** — тестовый запрос к memory и ожидание результата
+- **Проверка работы памяти** — запустить `bash ~/.openclaw/workspace/scripts/memory-health-check.sh` и показать результат (LCM, MemPalace, ByteRover, файлы)
+- **MemPalace** — обновить базу: `mempalace mine ~/.openclaw/workspace --mode convos --wing rem`
 - **Git бэкап** — коммит + пуш в GitHub
 - **🔄 Проверка обновлений**:
 ```bash
