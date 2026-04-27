@@ -44,6 +44,15 @@
       "path": "/",
       "timeout": 5,
       "expected_code": 200
+    },
+    {
+      "name": "JAWL Dashboard",
+      "host": "localhost",
+      "port": 5000,
+      "type": "http",
+      "path": "/api/providers",
+      "timeout": 5,
+      "expected_code": 200
     }
   ]
 }

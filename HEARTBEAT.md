@@ -19,6 +19,36 @@ done
 
 **Cron:** Автоматическая проверка каждые 15 минут уже настроена.
 
+## 🤖 Мониторинг JAWL (Jinx)
+
+**JAWL сервисы** (проверять при каждом heartbeat):
+```bash
+# Статус JAWL сервисов
+bash /home/rem/JAWL/scripts/check-services.sh status
+
+# Быстрая проверка: JAWL + Dashboard
+JAWL_OK=$(pgrep -c -f "python.*src/main\.py" 2>/dev/null || echo "0")
+DASH_OK=$(curl -s -m 3 http://localhost:5000/api/providers > /dev/null 2>&1 && echo "1" || echo "0")
+echo "JAWL: $JAWL_OK, Dashboard: $DASH_OK"
+
+# Проверка Qdrant lock (ожидаемо залочен когда JAWL работает)
+if [ -f /home/rem/JAWL/src/utils/local/data/vector_db/.lock ]; then
+  echo "🔒 Qdrant залочен (норма)"
+fi
+```
+
+**JAWL скрипты:**
+- `/home/rem/JAWL/scripts/check-services.sh` — единый скрипт для проверки/запуска/остановки всех сервисов
+- `/home/rem/JAWL/scripts/start-safe.sh` — безопасный запуск JAWL + Dashboard (обновлён)
+
+**Сервисы JAWL:**
+- JAWL (Python, PID в `.pid` файле)
+- Dashboard Flask (порт 5000, PID в `.dash_pid` файле)
+- Qdrant (embedded в JAWL, не отдельный сервер)
+- venv (Python virtualenv в `/home/rem/JAWL/venv`)
+
+**Если JAWL DOWN:** попробовать перезапустить через `bash /home/rem/JAWL/scripts/check-services.sh start`
+
 ## ⚡ Мониторинг нагрузки процессора
 
 **При каждом heartbeat проверять нагрузку на процессы:**
