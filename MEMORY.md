@@ -384,3 +384,10 @@ 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
 
 ### ByteRover issue
 - brv curate SIGKILL при длинных строках — используй MEMORY.md вместо brv для больших записей
+
+## VPS (Remote Server)
+- **IP:** 81.17.100.103
+- **Root password:** OpenClaw2024!
+- **Deployed services:**
+  - Linear webhook: `/opt/linear-webhook/webhook_server.py`
+  - REM-26 webhook signature: `lin_wh_ON7bxEtXQxNAtUwxneY7tfqm3M0DTxbAahLn2dFEmtiq`
